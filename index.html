@@ -11,6 +11,9 @@
 <title>四级冲关 · 背单词</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
 <script>window.addEventListener('error',function(e){var f=document.getElementById('fatal');if(f){f.style.display='block';document.getElementById('fatalMsg').textContent=(e.message||'脚本错误')+'（行 '+(e.lineno||'?')+'）';}});</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -28,9 +31,14 @@
       radial-gradient(700px 700px at 50% 110%, rgba(168,85,247,.10), transparent 60%),
       var(--bg);
     color:#e5e7eb;
-    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,"Noto Sans SC",sans-serif;
+    font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",monospace;
+    font-variant-numeric:tabular-nums;
     overscroll-behavior-y:contain;
   }
+  .mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .ex-input{ font-family:'JetBrains Mono',ui-monospace,monospace; }
+  .ex-bar{ transition:width .45s cubic-bezier(.2,.9,.3,1); }
+  #exChart svg{ display:block; width:100%; height:auto; overflow:visible; }
   .glass{ background:var(--card); border:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
   .grad-text{ background:linear-gradient(90deg,#818cf8,#22d3ee); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .btn-known{ background:linear-gradient(135deg,#059669,#10b981); box-shadow:0 8px 24px rgba(16,185,129,.35); }
@@ -254,6 +262,109 @@
       </div>
     </section>
 
+    <!-- ============ 真题模考视图 ============ -->
+    <section id="view-exam" class="hidden">
+      <!-- 录入表单 -->
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-white text-sm">📝 真题模考录入</h3>
+          <span id="examEditTag" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">编辑中</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="exName" type="text" placeholder="套卷名称 如 2024年6月" class="bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400/50">
+          <input id="exDate" type="date" class="mono bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50">
+        </div>
+
+        <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
+          <span>🎧 听力 · 满分 249.5</span><span class="text-slate-500 font-normal">填答对题数</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-1.5">
+          <div>
+            <input id="exLA" type="number" inputmode="numeric" min="0" max="7" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 短篇新闻<br><span class="text-slate-600">7题 ×7.1</span></div>
+          </div>
+          <div>
+            <input id="exLB" type="number" inputmode="numeric" min="0" max="8" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长对话<br><span class="text-slate-600">8题 ×7.1</span></div>
+          </div>
+          <div>
+            <input id="exLC" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 听力篇章<br><span class="text-slate-600">10题 ×14.3</span></div>
+          </div>
+        </div>
+
+        <div class="mt-3 text-[11px] font-bold text-emerald-300 flex items-center justify-between">
+          <span>📖 阅读 · 满分 248.5</span><span class="text-slate-500 font-normal">填答对题数</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-1.5">
+          <div>
+            <input id="exRA" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 选词填空<br><span class="text-slate-600">10题 ×3.55</span></div>
+          </div>
+          <div>
+            <input id="exRB" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长篇阅读<br><span class="text-slate-600">10题 ×7.1</span></div>
+          </div>
+          <div>
+            <input id="exRC" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
+            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 仔细阅读<br><span class="text-slate-600">10题 ×14.2</span></div>
+          </div>
+        </div>
+
+        <!-- 实时计分 -->
+        <div class="mt-3.5 rounded-xl bg-black/35 border border-white/10 p-3.5">
+          <div class="flex items-center justify-between text-xs text-slate-300">
+            <span>🎧 听力得分</span><b id="exLScore" class="mono text-cyan-300 text-lg">0.0</b>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-300 mt-1">
+            <span>📖 阅读得分</span><b id="exRScore" class="mono text-emerald-300 text-lg">0.0</b>
+          </div>
+          <div class="flex items-end justify-between mt-2.5 pt-2.5 border-t border-white/10">
+            <span class="text-[11px] text-slate-400">客观题模拟总分 <span class="text-slate-600">/ 498</span></span>
+            <b id="exTotal" class="mono text-3xl grad-text">0.0</b>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <button id="exReset" class="glass rounded-xl py-3 text-xs text-slate-300 font-bold active:scale-95 transition">清空表单</button>
+          <button id="exSave" class="py-3 rounded-xl text-sm font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">保存记录</button>
+        </div>
+      </div>
+
+      <!-- 总分趋势 -->
+      <div class="glass rounded-2xl p-4 mt-3">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-white text-sm">📈 客观题总分趋势</h3>
+          <span id="exCount" class="mono text-[10px] text-slate-500">共 0 次</span>
+        </div>
+        <div id="exChart" class="w-full"></div>
+      </div>
+
+      <!-- 模块得分率对比 -->
+      <div class="glass rounded-2xl p-4 mt-3">
+        <div class="flex items-center justify-between mb-2.5">
+          <h3 class="font-bold text-white text-sm">🎯 模块得分率对比</h3>
+          <span class="text-[10px] text-slate-500">越短越弱</span>
+        </div>
+        <div id="exBars" class="space-y-2"></div>
+      </div>
+
+      <!-- 智能诊断 -->
+      <div class="glass rounded-2xl p-4 mt-3">
+        <h3 class="font-bold text-white text-sm mb-2">🩺 智能薄弱项诊断</h3>
+        <div id="exDiag" class="text-xs leading-relaxed text-slate-300"></div>
+      </div>
+
+      <!-- 历史档案 -->
+      <div class="glass rounded-2xl p-4 mt-3 mb-2">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-white text-sm">🗂️ 历史档案</h3>
+          <span class="text-[10px] text-slate-500">可编辑 / 删除</span>
+        </div>
+        <div id="exHistory" class="space-y-2"></div>
+      </div>
+    </section>
+
     <!-- ============ 设置/导入视图 ============ -->
     <section id="view-settings" class="hidden">
       <div class="glass rounded-2xl p-4">
@@ -289,10 +400,11 @@
   <!-- 底部导航 -->
   <nav class="fixed bottom-0 left-0 right-0 z-40">
     <div class="max-w-[480px] mx-auto px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-2" style="background:linear-gradient(0deg,#0a0e1a 55%,rgba(10,14,26,0))">
-      <div class="glass rounded-2xl grid grid-cols-4 py-2">
+      <div class="glass rounded-2xl grid grid-cols-5 py-2">
         <button class="navbtn active flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="learn"><span class="navico text-lg">📖</span>学习</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="stats"><span class="navico text-lg">📅</span>日历</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="quiz"><span class="navico text-lg">⚡</span>快答</button>
+        <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="exam"><span class="navico text-lg">📊</span>模考</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="settings"><span class="navico text-lg">⚙️</span>导入</button>
       </div>
     </div>
@@ -341,6 +453,65 @@ const BANK = {};
 const LS_KEY = 'cet4app_v1';
 const TAG_MAP = { 'usage':'用法', 'collocation':'搭配', 'idm':'习语', 'phrv':'短语动词' };
 
+/* ==================================================================
+   安全存储层 STORE
+   --------------------------------------------------------------
+   某些环境（iframe sandbox 缺少 allow-same-origin、Safari 无痕模式、
+   浏览器禁用 Cookie/存储）访问 localStorage 会直接抛 SecurityError，
+   导致整页脚本中断、白屏。这里统一封装：
+     · 启动时探测一次，能读写才启用 localStorage
+     · 任何 get/set 再包一层 try...catch，杜绝运行时抛错
+     · 探测失败自动降级到内存对象 __MEM，页面功能照常可用
+       （仅刷新后数据不保留，属于沙箱环境的客观限制）
+================================================================== */
+const __MEM = Object.create(null);
+const STORE = (function(){
+  let ls = null, writable = false;
+  try{
+    ls = window.localStorage;
+    const probe = '__cet4_probe__';
+    ls.setItem(probe, '1');
+    ls.removeItem(probe);
+    writable = true;
+  }catch(e){
+    try{
+      console.warn('[STORE] localStorage ' + (ls ? '可读但不可写' : '不可用（沙箱/隐私模式）')
+        + '，已降级为内存存储，本次会话数据不会持久化：' + (e && e.name));
+    }catch(_){}
+  }
+  const api = {
+    ok: writable,                         // 是否真正能持久化
+    readable: !!ls,
+    get(k){
+      if(ls){ try{ const v = ls.getItem(k); if(v !== null) return v; }catch(e){} }
+      return (k in __MEM) ? __MEM[k] : null;
+    },
+    set(k, v){
+      const s = String(v);
+      __MEM[k] = s;                       // 内存里永远留一份，作为兜底
+      if(ls && writable){ try{ ls.setItem(k, s); }catch(e){ /* 配额满或被禁用，静默失败 */ } }
+      return true;
+    },
+    remove(k){
+      delete __MEM[k];
+      if(ls && writable){ try{ ls.removeItem(k); }catch(e){} }
+    },
+    getJSON(k, def){
+      const raw = api.get(k);
+      if(raw === null || raw === '') return def;
+      try{
+        const v = JSON.parse(raw);
+        return (v === null || v === undefined) ? def : v;
+      }catch(e){ return def; }
+    },
+    setJSON(k, v){
+      try{ return api.set(k, JSON.stringify(v)); }
+      catch(e){ return false; }           // 循环引用等序列化异常也不抛出
+    }
+  };
+  return api;
+})();
+
 const defaultState = () => ({
   settings: { goal:30, autoSpeak:true, examDate:'2027-06-12' },
   known: {},        // deck -> { word:1 }
@@ -356,10 +527,45 @@ const defaultState = () => ({
   quizHist: {},     // 'YYYY-MM-DD' -> [{m:'v'|'l', score, right, wrong, ts}]
   quizWrong: {},    // 'YYYY-MM-DD' -> [{w,d}] 快答答错的词（今日错题本）
   wrongFreq: {},    // word -> 次数（错误频次统计，跨天累计）
+  exams: [],        // 真题模考记录 [{id,name,date,la,lb,lc,ra,rb,rc,L,R,total}]
 });
 let S = load();
-function load(){ try{ return Object.assign(defaultState(), JSON.parse(localStorage.getItem(LS_KEY)||'{}')); }catch(e){ return defaultState(); } }
-function save(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+/* 结构校正：保证关键容器类型正确，避免脏数据/老版本数据在 .push、in、[k] 时报错 */
+function normalizeState(m){
+  const base = defaultState();
+  if(!m || typeof m !== 'object' || Array.isArray(m)) return base;
+  if(!m.settings || typeof m.settings !== 'object' || Array.isArray(m.settings)) m.settings = base.settings;
+  else {
+    if(typeof m.settings.goal !== 'number' || !isFinite(m.settings.goal)) m.settings.goal = 30;
+    if(!isStr(m.settings.examDate) || !m.settings.examDate) m.settings.examDate = base.settings.examDate;
+  }
+  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','quizHist','quizWrong','wrongFreq','wrongToday']){
+    if(!m[k] || typeof m[k] !== 'object' || Array.isArray(m[k])) m[k] = {};
+  }
+  if(!Array.isArray(m.custom)) m.custom = [];
+  if(!Array.isArray(m.exams)) m.exams = [];
+  for(const k of ['core','phrase','ext']){
+    if(!m.known[k] || typeof m.known[k] !== 'object' || Array.isArray(m.known[k])) m.known[k] = {};
+  }
+  return m;
+}
+/* 读取：存储被禁、数据损坏、JSON 非法，全部静默回退到默认状态，绝不抛出 */
+function load(){
+  const merged = defaultState();
+  try{
+    const raw = STORE.get(LS_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      if(o && typeof o === 'object' && !Array.isArray(o)) Object.assign(merged, o);
+    }
+  }catch(e){ /* 解析失败：保留默认值 */ }
+  try{ return normalizeState(merged); }
+  catch(e){ return defaultState(); }
+}
+/* 写入：失败只记日志，不影响交互 */
+function save(){
+  try{ STORE.setJSON(LS_KEY, S); }catch(e){}
+}
 
 const today = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const T = () => { const k=today(); if(!S.stats[k]) S.stats[k]={n:0,r:0,t:0}; return S.stats[k]; };
@@ -496,7 +702,13 @@ function answer(good){
 }
 
 /* ================= 音标 & 例句（在线补充+缓存） ================= */
-const phonCache = JSON.parse(localStorage.getItem('cet4_phon')||'{}');
+/* 音标缓存：存储不可用时自动退化为内存缓存（本次会话有效） */
+let phonCache;
+try{
+  phonCache = STORE.getJSON('cet4_phon', {});
+  if(!phonCache || typeof phonCache !== 'object' || Array.isArray(phonCache)) phonCache = {};
+}catch(e){ phonCache = {}; }
+function savePhon(){ try{ STORE.setJSON('cet4_phon', phonCache); }catch(e){} }
 async function loadPhon(word){
   const el = document.getElementById('cPhon');
   if(!isStr(word) || !word.trim()){ el.textContent=''; return; }
@@ -509,9 +721,9 @@ async function loadPhon(word){
       const j = await r.json();
       let ph = '';
       for(const e of j){ if(e.phonetic){ ph=e.phonetic; break; } const p=(e.phonetics||[]).find(p=>p.text); if(p){ ph=p.text; break; } }
-      phonCache[word]=ph; localStorage.setItem('cet4_phon', JSON.stringify(phonCache));
+      phonCache[word]=ph; savePhon();
       if(cur && cur.word===word) el.textContent = ph;
-    } else { phonCache[word]=''; localStorage.setItem('cet4_phon', JSON.stringify(phonCache)); if(cur&&cur.word===word) el.textContent=''; }
+    } else { phonCache[word]=''; savePhon(); if(cur&&cur.word===word) el.textContent=''; }
   }catch(e){ if(cur&&cur.word===word) el.textContent=''; }
 }
 async function loadExample(word){
@@ -1049,6 +1261,148 @@ $('quizSeeWrong').addEventListener('click',()=>{
 });
 $('qReplay').addEventListener('click',()=>{ if(qAns && isStr(qAns.w)) speak(qAns.w); });
 
+/* ================= 真题模考（客观题计分 + 数据看板） ================= */
+const EXAM_SEC=[
+  ['la','听力A 短篇新闻',7,7.1],['lb','听力B 长对话',8,7.1],['lc','听力C 听力篇章',10,14.3],
+  ['ra','阅读A 选词填空',10,3.55],['rb','阅读B 长篇阅读',10,7.1],['rc','阅读C 仔细阅读',10,14.2],
+];
+const EXAM_ADVICE={
+  la:'短篇新闻：听开头 1-2 句抓主旨，注意数字、时间与转折词（but/however），每天精听 1 篇。',
+  lb:'长对话：先扫选项预判场景，重点抓问答对里第二个说话人，每天练 2 组。',
+  lc:'听力篇章：看选项圈关键词，跟读原文 3 遍（听→跟→默写），提升长句抗压能力。',
+  ra:'选词填空：先判词性（名/动/形/副）再选，单题仅 3.55 分，限时 8 分钟内做完。',
+  rb:'长篇阅读：关键词定位＋同义替换，每题 7.1 分性价比高，建议优先练到 8 题以上。',
+  rc:'仔细阅读：分值最高（每题 14.2），练"定位句 → 同义改写"，每天 2 篇精读并分析错因。'
+};
+function examScore(o){
+  const L=(o.la||0)*7.1+(o.lb||0)*7.1+(o.lc||0)*14.3;
+  const R=(o.ra||0)*3.55+(o.rb||0)*7.1+(o.rc||0)*14.2;
+  return { L:Math.round(L*10)/10, R:Math.round(R*10)/10, T:Math.round((L+R)*10)/10 };
+}
+function examReadForm(){
+  const o={};
+  for(const [k,,max] of EXAM_SEC){
+    const el=$('ex'+k.toUpperCase());
+    let v=parseInt(el.value,10); if(!isFinite(v)||v<0) v=0; if(v>max) v=max;
+    o[k]=v;
+  }
+  return o;
+}
+function examLive(){
+  const s=examScore(examReadForm());
+  $('exLScore').textContent=s.L.toFixed(1);
+  $('exRScore').textContent=s.R.toFixed(1);
+  $('exTotal').textContent=s.T.toFixed(1);
+}
+EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).addEventListener('input',examLive); });
+let editingExamId=null;
+function examResetForm(){
+  editingExamId=null; $('examEditTag').classList.add('hidden');
+  $('exName').value=''; $('exDate').value=today();
+  EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).value='0'; });
+  examLive();
+}
+$('exReset').addEventListener('click',()=>{ examResetForm(); toast('表单已清空'); });
+$('exSave').addEventListener('click',()=>{
+  const name=($('exName').value||'').trim();
+  const date=$('exDate').value||today();
+  if(!name){ toast('先填套卷名称，如 2024年6月'); return; }
+  const o=examReadForm();
+  if(!EXAM_SEC.some(([k])=>(o[k]||0)>0)){ toast('至少填一个「答对题数」'); return; }
+  const s=examScore(o);
+  if(!Array.isArray(S.exams)) S.exams=[];
+  if(editingExamId){
+    const rec=S.exams.find(x=>x.id===editingExamId);
+    if(rec) Object.assign(rec,{ name:name, date:date, la:o.la, lb:o.lb, lc:o.lc, ra:o.ra, rb:o.rb, rc:o.rc, L:s.L, R:s.R, total:s.T });
+    toast('✓ 已更新「'+name+'」');
+  }else{
+    S.exams.push({ id:'e'+Date.now()+Math.floor(Math.random()*1000), name:name, date:date, la:o.la, lb:o.lb, lc:o.lc, ra:o.ra, rb:o.rb, rc:o.rc, L:s.L, R:s.R, total:s.T });
+    toast('✓ 已保存「'+name+'」');
+  }
+  save(); examResetForm(); renderExam();
+});
+function renderExamChart(list){
+  const pts=list.slice(-8), box=$('exChart');
+  if(!pts.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-8 text-center">还没有模考记录<br>录入一次成绩，这里会出现你的分数曲线</div>'; return; }
+  const W=320,H=150,padL=30,padR=10,padT=16,padB=24,innerW=W-padL-padR,innerH=H-padT-padB,MAXT=498;
+  const x=i=> pts.length===1 ? padL+innerW/2 : padL+i*innerW/(pts.length-1);
+  const y=v=> padT+innerH*(1-Math.max(0,Math.min(v,MAXT))/MAXT);
+  const line=pts.map((p,i)=>x(i).toFixed(1)+','+y(p.total||0).toFixed(1)).join(' ');
+  const area='M '+x(0).toFixed(1)+' '+(padT+innerH)+' L '+pts.map((p,i)=>x(i).toFixed(1)+' '+y(p.total||0).toFixed(1)).join(' L ')+' L '+x(pts.length-1).toFixed(1)+' '+(padT+innerH)+' Z';
+  const grid=[0,250,498].map(v=>'<line x1="'+padL+'" y1="'+y(v)+'" x2="'+(W-padR)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.08)" stroke-width="1"/><text x="'+(padL-5)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="8" fill="#64748b">'+v+'</text>').join('');
+  const dots=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.total||0).toFixed(1)+'" r="3" fill="#22d3ee" stroke="#0a0e1a" stroke-width="1.5"/>'
+    +'<text x="'+x(i).toFixed(1)+'" y="'+(y(p.total||0)-8).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#67e8f9">'+Math.round(p.total||0)+'</text>'
+    +'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="7.5" fill="#64748b">'+String(p.date||'').slice(5).replace('-','/')+'</text>').join('');
+  box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="height:150px"><defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".35"/><stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>'
+    +grid+'<path d="'+area+'" fill="url(#exg)"/><polyline points="'+line+'" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+}
+function renderExamBars(list){
+  const box=$('exBars');
+  if(!list.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-3 text-center">暂无数据</div>'; return; }
+  const n=list.length;
+  box.innerHTML=EXAM_SEC.map(([k,label,maxQ])=>{
+    const sum=list.reduce((a,r)=>a+(r[k]||0),0);
+    const pct=Math.round(sum/(n*maxQ)*100);
+    const weak=pct<60;
+    const color=k.charAt(0)==='l'?'linear-gradient(90deg,#0891b2,#22d3ee)':'linear-gradient(90deg,#059669,#34d399)';
+    return '<div><div class="flex items-center justify-between text-[10px] mb-1">'
+      +'<span class="'+(weak?'text-rose-400 font-bold':'text-slate-300')+'">'+label+'</span>'
+      +'<span class="mono '+(weak?'text-rose-400':'text-slate-400')+'">'+pct+'%</span></div>'
+      +'<div class="h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="ex-bar h-full rounded-full" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
+  }).join('');
+}
+function renderExamDiag(list){
+  const box=$('exDiag');
+  if(!list.length){ box.innerHTML='<span class="text-slate-500">录入至少一次模考后，自动诊断薄弱模块。</span>'; return; }
+  const n=list.length;
+  const stats=EXAM_SEC.map(([k,label,maxQ])=>{
+    const sum=list.reduce((a,r)=>a+(r[k]||0),0);
+    return { k:k, label:label, pct:Math.round(sum/(n*maxQ)*100) };
+  });
+  const sorted=stats.slice().sort((a,b)=>a.pct-b.pct);
+  const worst=sorted[0], second=sorted[1];
+  const L=Math.round(stats.filter(s=>s.k.charAt(0)==='l').reduce((a,s)=>a+s.pct,0)/3);
+  const R=Math.round(stats.filter(s=>s.k.charAt(0)==='r').reduce((a,s)=>a+s.pct,0)/3);
+  let html='<div class="flex gap-2 mb-1"><span class="text-slate-500">·</span><span>客观题平均分 <b class="mono text-cyan-300">'+Math.round(list.reduce((a,r)=>a+(r.total||0),0)/n)+'</b> / 497（'+n+' 次模考）</span></div>';
+  html+='<div class="flex gap-2 mb-1"><span class="text-slate-500">·</span><span>听力平均正确率 <b class="mono '+(L<60?'text-rose-400':'text-emerald-300')+'">'+L+'%</b>　阅读平均正确率 <b class="mono '+(R<60?'text-rose-400':'text-emerald-300')+'">'+R+'%</b></span></div>';
+  if(worst.pct<60){
+    html+='<div class="mt-2 rounded-xl p-3" style="background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.35)"><div class="text-rose-400 font-bold text-[12px]">⚠️ 最薄弱：'+worst.label+'（正确率 '+worst.pct+'%）</div><div class="text-[11px] text-slate-300 mt-1 leading-relaxed">'+EXAM_ADVICE[worst.k]+'</div></div>';
+    if(second && second.pct<70) html+='<div class="mt-2 text-[11px] text-amber-300">次弱项：'+second.label+'（'+second.pct+'%），建议每周专项 2 次。</div>';
+  }else{
+    html+='<div class="mt-2 rounded-xl p-3" style="background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.3)"><div class="text-emerald-300 font-bold text-[12px]">✓ 各模块均在 60% 以上，整体均衡</div><div class="text-[11px] text-slate-300 mt-1">保持节奏，重点冲击分值最高的「仔细阅读」与「听力篇章」。</div></div>';
+  }
+  box.innerHTML=html;
+}
+function renderExamHistory(list){
+  const box=$('exHistory');
+  if(!list.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-3 text-center">还没有记录</div>'; return; }
+  box.innerHTML=list.slice().reverse().map(r=>'<div class="rounded-xl bg-black/25 border border-white/10 px-3 py-2.5">'
+    +'<div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-sm font-bold text-white truncate">'+r.name+'</div><div class="mono text-[10px] text-slate-500 mt-0.5">'+r.date+'</div></div>'
+    +'<div class="text-right shrink-0"><div class="mono text-base font-black grad-text">'+(r.total||0).toFixed(1)+'</div><div class="mono text-[9px] text-slate-500">听 '+(r.L||0).toFixed(0)+' · 读 '+(r.R||0).toFixed(0)+'</div></div></div>'
+    +'<div class="flex gap-2 mt-2"><button class="ex-edit flex-1 py-1.5 rounded-lg glass text-[10px] text-cyan-300 active:scale-95 transition" data-id="'+r.id+'">编辑</button>'
+    +'<button class="ex-del flex-1 py-1.5 rounded-lg glass text-[10px] text-rose-300 active:scale-95 transition" data-id="'+r.id+'">删除</button></div></div>').join('');
+  box.querySelectorAll('.ex-edit').forEach(b=>b.addEventListener('click',()=>examEdit(b.dataset.id)));
+  box.querySelectorAll('.ex-del').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.id, rec=(S.exams||[]).find(x=>x.id===id);
+    if(!rec) return;
+    if(!confirm('删除「'+rec.name+'」这条模考记录？')) return;
+    S.exams=S.exams.filter(x=>x.id!==id); save(); renderExam(); toast('已删除');
+  }));
+}
+function examEdit(id){
+  const r=(S.exams||[]).find(x=>x.id===id); if(!r) return;
+  editingExamId=id;
+  $('exName').value=r.name||''; $('exDate').value=r.date||today();
+  EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).value=r[k]||0; });
+  $('examEditTag').classList.remove('hidden');
+  examLive(); window.scrollTo(0,0); toast('已载入，修改后点「保存记录」');
+}
+function renderExam(){
+  const list=(S.exams||[]).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+  $('exCount').textContent='共 '+list.length+' 次';
+  renderExamChart(list); renderExamBars(list); renderExamDiag(list); renderExamHistory(list);
+}
+
 /* ================= 导入 ================= */
 $('btnImport').addEventListener('click',()=>{
   const txt=$('importText').value.trim(); const msg=$('importMsg');
@@ -1102,10 +1456,11 @@ function syncDeckChips(view){
 }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  ['learn','stats','quiz','settings'].forEach(v=>$('view-'+v).classList.toggle('hidden', v!==b.dataset.view));
+  ['learn','stats','quiz','exam','settings'].forEach(v=>$('view-'+v).classList.toggle('hidden', v!==b.dataset.view));
   syncDeckChips(b.dataset.view);
   if(b.dataset.view==='stats') renderStatsView();
   if(b.dataset.view==='quiz') renderQuizHome();
+  if(b.dataset.view==='exam') renderExam();
   window.scrollTo(0,0);
 }));
 
@@ -1137,9 +1492,27 @@ setInterval(()=>{ if(document.visibilityState==='visible'){ T().t+=5; save(); } 
 /* ================= 启动 ================= */
 const bootEl=document.getElementById('boot'); if(bootEl) bootEl.remove();
 renderChips(); buildQueue(); showCard(); renderStatsBar(); renderCountdown(); renderQuizHome();
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
+if($('exDate') && !$('exDate').value) $('exDate').value = today();
+examLive();
+/* 存储降级提示：沙箱/无痕环境下数据只在本次会话有效 */
+(function storageNotice(){
+  if(STORE.ok) return;
+  try{
+    const el=document.createElement('div');
+    el.textContent='存储受限：本次数据仅在当前页面有效';
+    el.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:55;'
+      +'padding:6px 12px;border-radius:999px;font-size:11px;white-space:nowrap;'
+      +'background:rgba(250,204,21,.14);color:#facc15;border:1px solid rgba(250,204,21,.28);'
+      +'pointer-events:none;transition:opacity .6s';
+    document.body.appendChild(el);
+    setTimeout(()=>{ el.style.opacity=0; setTimeout(()=>el.remove(),700); },5000);
+  }catch(e){}
+})();
+try{
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}catch(e){ /* 沙箱环境注册失败不影响使用 */ }
 </script>
 </body>
 </html>

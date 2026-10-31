@@ -264,70 +264,87 @@
 
     <!-- ============ 真题模考视图 ============ -->
     <section id="view-exam" class="hidden">
-      <!-- 录入表单 -->
-      <div class="glass rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-white text-sm">📝 真题模考录入</h3>
-          <span id="examEditTag" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">编辑中</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <input id="exName" type="text" placeholder="套卷名称 如 2024年6月" class="bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400/50">
-          <input id="exDate" type="date" class="mono bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50">
-        </div>
 
-        <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
-          <span>🎧 听力 · 满分 249.5</span><span class="text-slate-500 font-normal">填答对题数</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2 mt-1.5">
-          <div>
-            <input id="exLA" type="number" inputmode="numeric" min="0" max="7" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 短篇新闻<br><span class="text-slate-600">7题 ×7.1</span></div>
-          </div>
-          <div>
-            <input id="exLB" type="number" inputmode="numeric" min="0" max="8" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长对话<br><span class="text-slate-600">8题 ×7.1</span></div>
-          </div>
-          <div>
-            <input id="exLC" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 听力篇章<br><span class="text-slate-600">10题 ×14.3</span></div>
-          </div>
-        </div>
+      <!-- 录入表单：默认折叠，只留一个入口按钮 -->
+      <div class="glass rounded-2xl p-3.5">
+        <button id="exToggle" class="w-full flex items-center justify-between gap-2 active:scale-[.99] transition">
+          <span class="flex items-center gap-2 min-w-0">
+            <span class="text-base leading-none">📝</span>
+            <span id="exToggleText" class="text-sm font-bold text-white truncate">记录新模考成绩</span>
+          </span>
+          <span id="exToggleHint" class="mono text-[10px] text-cyan-300 shrink-0">展开 ▾</span>
+        </button>
 
-        <div class="mt-3 text-[11px] font-bold text-emerald-300 flex items-center justify-between">
-          <span>📖 阅读 · 满分 248.5</span><span class="text-slate-500 font-normal">填答对题数</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2 mt-1.5">
-          <div>
-            <input id="exRA" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 选词填空<br><span class="text-slate-600">10题 ×3.55</span></div>
+        <div id="exFormWrap" class="hidden">
+          <div class="h-px bg-white/10 my-3"></div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="mono text-[10px] text-slate-500">按官方权重实时计分 · 只填答对题数</span>
+            <span id="examEditTag" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">编辑中</span>
           </div>
-          <div>
-            <input id="exRB" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长篇阅读<br><span class="text-slate-600">10题 ×7.1</span></div>
-          </div>
-          <div>
-            <input id="exRC" type="number" inputmode="numeric" min="0" max="10" value="0" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60">
-            <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 仔细阅读<br><span class="text-slate-600">10题 ×14.2</span></div>
-          </div>
-        </div>
 
-        <!-- 实时计分 -->
-        <div class="mt-3.5 rounded-xl bg-black/35 border border-white/10 p-3.5">
-          <div class="flex items-center justify-between text-xs text-slate-300">
-            <span>🎧 听力得分</span><b id="exLScore" class="mono text-cyan-300 text-lg">0.0</b>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="exName" type="text" autocomplete="off" placeholder="套卷名称 如 2024年6月" class="bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400/50">
+            <input id="exDate" type="date" class="mono bg-black/30 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50">
           </div>
-          <div class="flex items-center justify-between text-xs text-slate-300 mt-1">
-            <span>📖 阅读得分</span><b id="exRScore" class="mono text-emerald-300 text-lg">0.0</b>
-          </div>
-          <div class="flex items-end justify-between mt-2.5 pt-2.5 border-t border-white/10">
-            <span class="text-[11px] text-slate-400">客观题模拟总分 <span class="text-slate-600">/ 498</span></span>
-            <b id="exTotal" class="mono text-3xl grad-text">0.0</b>
-          </div>
-        </div>
 
-        <div class="grid grid-cols-2 gap-2 mt-3">
-          <button id="exReset" class="glass rounded-xl py-3 text-xs text-slate-300 font-bold active:scale-95 transition">清空表单</button>
-          <button id="exSave" class="py-3 rounded-xl text-sm font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">保存记录</button>
+          <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
+            <span>🎧 听力 <span class="mono text-slate-500 font-normal">满分 249.5</span></span>
+            <span class="text-slate-500 font-normal">答对题数</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-1.5">
+            <div>
+              <input id="exLA" type="number" inputmode="numeric" min="0" max="7" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+              <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 短篇新闻<br><span class="text-slate-600">7题 ×7.1＝49.7</span></div>
+            </div>
+            <div>
+              <input id="exLB" type="number" inputmode="numeric" min="0" max="8" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+              <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长对话<br><span class="text-slate-600">8题 ×7.1＝56.8</span></div>
+            </div>
+            <div>
+              <input id="exLC" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+              <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 听力篇章<br><span class="text-slate-600">10题 ×14.3＝143</span></div>
+            </div>
+          </div>
+
+          <div class="mt-3 text-[11px] font-bold text-emerald-300 flex items-center justify-between">
+            <span>📖 阅读 <span class="mono text-slate-500 font-normal">满分 248.5</span></span>
+            <span class="text-slate-500 font-normal">答对题数</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-1.5">
+            <div>
+              <input id="exRA" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" placeholder="" class="ex-input w-full bg-black/20 border border-white/[.07] rounded-lg py-2.5 text-center text-base text-slate-400 focus:outline-none focus:border-slate-500/50 transition">
+              <div class="text-[9px] text-slate-500 mt-1 text-center leading-tight">A 选词填空<br><span class="text-slate-600">10题 ×3.55</span></div>
+            </div>
+            <div>
+              <input id="exRB" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60 focus:bg-emerald-400/[.06] transition">
+              <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长篇阅读<br><span class="text-slate-600">10题 ×7.1＝71</span></div>
+            </div>
+            <div>
+              <input id="exRC" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-emerald-400/60 focus:bg-emerald-400/[.06] transition">
+              <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 仔细阅读<br><span class="text-slate-600">10题 ×14.2＝142</span></div>
+            </div>
+          </div>
+
+          <!-- 实时计分 -->
+          <div class="mt-3.5 rounded-xl bg-black/35 border border-white/10 p-3.5">
+            <div class="flex items-center justify-between text-xs text-slate-300">
+              <span>🎧 听力得分</span><b id="exLScore" class="mono text-cyan-300 text-lg">0.0</b>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-300 mt-1">
+              <span>📖 阅读得分</span><b id="exRScore" class="mono text-emerald-300 text-lg">0.0</b>
+            </div>
+            <div class="flex items-end justify-between mt-2.5 pt-2.5 border-t border-white/10">
+              <span class="text-[11px] text-slate-400">客观题模拟总分 <span class="text-slate-600">/ 498</span></span>
+              <b id="exTotal" class="mono text-3xl grad-text">0.0</b>
+            </div>
+            <div class="mono text-[9px] text-slate-600 mt-1.5 leading-relaxed">听力 ＝ A×7.1 ＋ B×7.1 ＋ C×14.3<br>阅读 ＝ A×3.55 ＋ B×7.1 ＋ C×14.2</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button id="exReset" class="glass rounded-xl py-3 text-xs text-slate-300 font-bold active:scale-95 transition">清空表单</button>
+            <button id="exSave" class="py-3 rounded-xl text-sm font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">保存记录</button>
+          </div>
+          <button id="exCollapse" class="w-full mt-2 py-2 text-[11px] text-slate-500 active:scale-95 transition">收起表单 ▴</button>
         </div>
       </div>
 
@@ -344,24 +361,45 @@
       <div class="glass rounded-2xl p-4 mt-3">
         <div class="flex items-center justify-between mb-2.5">
           <h3 class="font-bold text-white text-sm">🎯 模块得分率对比</h3>
-          <span class="text-[10px] text-slate-500">越短越弱</span>
+          <span class="text-[10px] text-slate-500">按分值权重排序</span>
         </div>
         <div id="exBars" class="space-y-2"></div>
       </div>
 
       <!-- 智能诊断 -->
       <div class="glass rounded-2xl p-4 mt-3">
-        <h3 class="font-bold text-white text-sm mb-2">🩺 智能薄弱项诊断</h3>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-white text-sm">🩺 智能薄弱项诊断</h3>
+          <span class="text-[10px] text-slate-500">只看数据</span>
+        </div>
         <div id="exDiag" class="text-xs leading-relaxed text-slate-300"></div>
       </div>
 
       <!-- 历史档案 -->
-      <div class="glass rounded-2xl p-4 mt-3 mb-2">
+      <div class="glass rounded-2xl p-4 mt-3">
         <div class="flex items-center justify-between mb-2">
           <h3 class="font-bold text-white text-sm">🗂️ 历史档案</h3>
-          <span class="text-[10px] text-slate-500">可编辑 / 删除</span>
+          <span class="text-[10px] text-slate-500">点条目看详情</span>
         </div>
         <div id="exHistory" class="space-y-2"></div>
+      </div>
+
+      <!-- 考试技巧与干货指南（整卡可折叠） -->
+      <div class="glass rounded-2xl mt-3 mb-2 overflow-hidden">
+        <button id="gdToggle" class="w-full flex items-center justify-between gap-2 px-4 py-3.5 active:scale-[.99] transition">
+          <span class="flex items-center gap-2 min-w-0">
+            <span class="text-base leading-none">📚</span>
+            <span class="text-sm font-bold text-white truncate">考试技巧与干货指南</span>
+          </span>
+          <span class="flex items-center gap-2 shrink-0">
+            <span class="mono text-[9px] text-slate-600">写作 · 听力 · 阅读 · 翻译</span>
+            <span id="gdArrow" class="mono text-[10px] text-cyan-300">展开 ▾</span>
+          </span>
+        </button>
+        <div id="exGuideWrap" class="hidden px-3 pb-3">
+          <div id="exGuide" class="space-y-3"></div>
+          <div class="mono text-[9px] text-slate-600 mt-3 leading-relaxed">分值权重：听力 249.5 ＋ 阅读 248.5 ＋ 写作 106.5 ＋ 翻译 106.5 ＝ 710</div>
+        </div>
       </div>
     </section>
 
@@ -1262,146 +1300,413 @@ $('quizSeeWrong').addEventListener('click',()=>{
 $('qReplay').addEventListener('click',()=>{ if(qAns && isStr(qAns.w)) speak(qAns.w); });
 
 /* ================= 真题模考（客观题计分 + 数据看板） ================= */
-const EXAM_SEC=[
-  ['la','听力A 短篇新闻',7,7.1],['lb','听力B 长对话',8,7.1],['lc','听力C 听力篇章',10,14.3],
-  ['ra','阅读A 选词填空',10,3.55],['rb','阅读B 长篇阅读',10,7.1],['rc','阅读C 仔细阅读',10,14.2],
+const r1 = n => Math.round((n + Number.EPSILON) * 10) / 10;
+const EXAM_SEC = [
+  ['la','听力A 短篇新闻',7,7.1],
+  ['lb','听力B 长对话',8,7.1],
+  ['lc','听力C 听力篇章',10,14.3],
+  ['ra','阅读A 选词填空',10,3.55],
+  ['rb','阅读B 长篇阅读',10,7.1],
+  ['rc','阅读C 仔细阅读',10,14.2]
 ];
-const EXAM_ADVICE={
-  la:'短篇新闻：听开头 1-2 句抓主旨，注意数字、时间与转折词（but/however），每天精听 1 篇。',
-  lb:'长对话：先扫选项预判场景，重点抓问答对里第二个说话人，每天练 2 组。',
-  lc:'听力篇章：看选项圈关键词，跟读原文 3 遍（听→跟→默写），提升长句抗压能力。',
-  ra:'选词填空：先判词性（名/动/形/副）再选，单题仅 3.55 分，限时 8 分钟内做完。',
-  rb:'长篇阅读：关键词定位＋同义替换，每题 7.1 分性价比高，建议优先练到 8 题以上。',
-  rc:'仔细阅读：分值最高（每题 14.2），练"定位句 → 同义改写"，每天 2 篇精读并分析错因。'
+const SEC_BY = {};
+EXAM_SEC.forEach(function(a){ SEC_BY[a[0]] = { k:a[0], label:a[1], maxQ:a[2], w:a[3], max:r1(a[2]*a[3]) }; });
+const MAX_T = 498;
+/* 诊断只统计这 5 个板块，阅读 A 选词填空不进入诊断，也不给任何建议 */
+const DIAG_KEYS = ['lc','rc','rb','lb','la'];
+const DIAG_ADVICE = {
+  lc:'听力篇章每题 14.3 分，是听力里权重最高的一段。练法：盲听做题 → 对答案 → 逐句跟读 3 遍 → 标出转折词与数字，每两天 1 篇。',
+  rc:'仔细阅读每题 14.2 分，全卷权重最高。练法：题干划定位词 → 回原文找同义改写 → 错题归因（定位错/词义错/推理过度），每天 1 篇精读。',
+  rb:'长篇阅读每题 7.1 分，性价比高。练法：先圈 10 个题干里的人名、数字、专有名词，再扫读定位，限时 15 分钟。',
+  lb:'长对话每题 7.1 分：先读选项预判场景，重点听第二个说话人的回答。',
+  la:'短篇新闻每题 7.1 分：抓导语第一句的主语和动作，注意数字、时间与转折词。'
 };
 function examScore(o){
-  const L=(o.la||0)*7.1+(o.lb||0)*7.1+(o.lc||0)*14.3;
-  const R=(o.ra||0)*3.55+(o.rb||0)*7.1+(o.rc||0)*14.2;
-  return { L:Math.round(L*10)/10, R:Math.round(R*10)/10, T:Math.round((L+R)*10)/10 };
+  const L = (o.la||0)*7.1 + (o.lb||0)*7.1 + (o.lc||0)*14.3;
+  const R = (o.ra||0)*3.55 + (o.rb||0)*7.1 + (o.rc||0)*14.2;
+  return { L:r1(L), R:r1(R), T:r1(L+R) };
 }
+/* 空输入框按 0 处理，超出题数自动截断到上限 */
 function examReadForm(){
-  const o={};
-  for(const [k,,max] of EXAM_SEC){
-    const el=$('ex'+k.toUpperCase());
-    let v=parseInt(el.value,10); if(!isFinite(v)||v<0) v=0; if(v>max) v=max;
-    o[k]=v;
+  const o = {};
+  for(const sec of EXAM_SEC){
+    const k = sec[0], max = sec[2];
+    const el = $('ex'+k.toUpperCase());
+    let v = parseInt(el && el.value, 10);
+    if(!isFinite(v) || v < 0) v = 0;
+    if(v > max) v = max;
+    o[k] = v;
   }
   return o;
 }
 function examLive(){
-  const s=examScore(examReadForm());
-  $('exLScore').textContent=s.L.toFixed(1);
-  $('exRScore').textContent=s.R.toFixed(1);
-  $('exTotal').textContent=s.T.toFixed(1);
+  const s = examScore(examReadForm());
+  const a = $('exLScore'), b = $('exRScore'), c = $('exTotal');
+  if(a) a.textContent = s.L.toFixed(1);
+  if(b) b.textContent = s.R.toFixed(1);
+  if(c) c.textContent = s.T.toFixed(1);
 }
-EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).addEventListener('input',examLive); });
-let editingExamId=null;
+EXAM_SEC.forEach(function(sec){ const el = $('ex'+sec[0].toUpperCase()); if(el) el.addEventListener('input', examLive); });
+
+/* ---------- 折叠 / 展开 ---------- */
+let editingExamId = null;
+const exOpen = new Set();   /* 历史档案里已展开的记录 id */
+function examFormOpen(open){
+  const wrap = $('exFormWrap'); if(!wrap) return;
+  wrap.classList.toggle('hidden', !open);
+  $('exToggleText').textContent = open ? '真题模考录入' : '记录新模考成绩';
+  $('exToggleHint').textContent = open ? '收起 ▴' : '展开 ▾';
+}
+if($('exToggle')) $('exToggle').addEventListener('click', function(){
+  examFormOpen($('exFormWrap').classList.contains('hidden'));
+});
+if($('exCollapse')) $('exCollapse').addEventListener('click', function(){ examFormOpen(false); });
+
 function examResetForm(){
-  editingExamId=null; $('examEditTag').classList.add('hidden');
-  $('exName').value=''; $('exDate').value=today();
-  EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).value='0'; });
+  editingExamId = null;
+  $('examEditTag').classList.add('hidden');
+  $('exName').value = '';
+  $('exDate').value = today();
+  /* 输入框恢复空白，点进去直接敲数字，不用先删 0 */
+  EXAM_SEC.forEach(function(sec){ const el = $('ex'+sec[0].toUpperCase()); if(el) el.value = ''; });
   examLive();
 }
-$('exReset').addEventListener('click',()=>{ examResetForm(); toast('表单已清空'); });
-$('exSave').addEventListener('click',()=>{
-  const name=($('exName').value||'').trim();
-  const date=$('exDate').value||today();
+$('exReset').addEventListener('click', function(){ examResetForm(); toast('表单已清空'); });
+$('exSave').addEventListener('click', function(){
+  const name = ($('exName').value || '').trim();
+  const date = $('exDate').value || today();
   if(!name){ toast('先填套卷名称，如 2024年6月'); return; }
-  const o=examReadForm();
-  if(!EXAM_SEC.some(([k])=>(o[k]||0)>0)){ toast('至少填一个「答对题数」'); return; }
-  const s=examScore(o);
-  if(!Array.isArray(S.exams)) S.exams=[];
+  const o = examReadForm();
+  if(!EXAM_SEC.some(function(sec){ return (o[sec[0]]||0) > 0; })){ toast('至少填一个「答对题数」'); return; }
+  const s = examScore(o);
+  if(!Array.isArray(S.exams)) S.exams = [];
   if(editingExamId){
-    const rec=S.exams.find(x=>x.id===editingExamId);
-    if(rec) Object.assign(rec,{ name:name, date:date, la:o.la, lb:o.lb, lc:o.lc, ra:o.ra, rb:o.rb, rc:o.rc, L:s.L, R:s.R, total:s.T });
+    const rec = S.exams.find(function(x){ return x.id === editingExamId; });
+    if(rec) Object.assign(rec, { name:name, date:date, la:o.la, lb:o.lb, lc:o.lc, ra:o.ra, rb:o.rb, rc:o.rc, L:s.L, R:s.R, total:s.T });
     toast('✓ 已更新「'+name+'」');
   }else{
     S.exams.push({ id:'e'+Date.now()+Math.floor(Math.random()*1000), name:name, date:date, la:o.la, lb:o.lb, lc:o.lc, ra:o.ra, rb:o.rb, rc:o.rc, L:s.L, R:s.R, total:s.T });
     toast('✓ 已保存「'+name+'」');
   }
-  save(); examResetForm(); renderExam();
+  save(); examResetForm(); renderExam(); examFormOpen(false);
+  if($('exHistory') && $('exHistory').scrollIntoView) { /* 保存后停留在看板，不强制跳转 */ }
 });
+
+/* ---------- 总分趋势 ---------- */
 function renderExamChart(list){
-  const pts=list.slice(-8), box=$('exChart');
-  if(!pts.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-8 text-center">还没有模考记录<br>录入一次成绩，这里会出现你的分数曲线</div>'; return; }
-  const W=320,H=150,padL=30,padR=10,padT=16,padB=24,innerW=W-padL-padR,innerH=H-padT-padB,MAXT=498;
-  const x=i=> pts.length===1 ? padL+innerW/2 : padL+i*innerW/(pts.length-1);
-  const y=v=> padT+innerH*(1-Math.max(0,Math.min(v,MAXT))/MAXT);
-  const line=pts.map((p,i)=>x(i).toFixed(1)+','+y(p.total||0).toFixed(1)).join(' ');
-  const area='M '+x(0).toFixed(1)+' '+(padT+innerH)+' L '+pts.map((p,i)=>x(i).toFixed(1)+' '+y(p.total||0).toFixed(1)).join(' L ')+' L '+x(pts.length-1).toFixed(1)+' '+(padT+innerH)+' Z';
-  const grid=[0,250,498].map(v=>'<line x1="'+padL+'" y1="'+y(v)+'" x2="'+(W-padR)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.08)" stroke-width="1"/><text x="'+(padL-5)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="8" fill="#64748b">'+v+'</text>').join('');
-  const dots=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.total||0).toFixed(1)+'" r="3" fill="#22d3ee" stroke="#0a0e1a" stroke-width="1.5"/>'
-    +'<text x="'+x(i).toFixed(1)+'" y="'+(y(p.total||0)-8).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#67e8f9">'+Math.round(p.total||0)+'</text>'
-    +'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="7.5" fill="#64748b">'+String(p.date||'').slice(5).replace('-','/')+'</text>').join('');
-  box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="height:150px"><defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".35"/><stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>'
-    +grid+'<path d="'+area+'" fill="url(#exg)"/><polyline points="'+line+'" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+  const pts = list.slice(-8), box = $('exChart');
+  if(!pts.length){ box.innerHTML = '<div class="text-[11px] text-slate-500 py-8 text-center">还没有模考记录<br>录入一次成绩，这里会出现你的分数曲线</div>'; return; }
+  const W = 320, H = 150, padL = 34, padR = 10, padT = 16, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const x = i => pts.length === 1 ? padL + innerW/2 : padL + i*innerW/(pts.length-1);
+  const y = v => padT + innerH*(1 - Math.max(0, Math.min(v, MAX_T))/MAX_T);
+  const line = pts.map((p,i) => x(i).toFixed(1)+','+y(p.total||0).toFixed(1)).join(' ');
+  const area = 'M '+x(0).toFixed(1)+' '+(padT+innerH)+' L '+pts.map((p,i)=>x(i).toFixed(1)+' '+y(p.total||0).toFixed(1)).join(' L ')+' L '+x(pts.length-1).toFixed(1)+' '+(padT+innerH)+' Z';
+  const grid = [0,250,498].map(function(v){
+    return '<line x1="'+padL+'" y1="'+y(v)+'" x2="'+(W-padR)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.08)" stroke-width="1"/>'
+      + '<text x="'+(padL-6)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="8" fill="#64748b">'+v+'</text>';
+  }).join('');
+  const dots = pts.map(function(p,i){
+    return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.total||0).toFixed(1)+'" r="3" fill="#22d3ee" stroke="#0a0e1a" stroke-width="1.5"/>'
+      + '<text x="'+x(i).toFixed(1)+'" y="'+(y(p.total||0)-8).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#67e8f9">'+Math.round(p.total||0)+'</text>'
+      + '<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="7.5" fill="#64748b">'+String(p.date||'').slice(5).replace('-','/')+'</text>';
+  }).join('');
+  box.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" style="height:150px"><defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22d3ee" stop-opacity=".35"/><stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>'
+    + grid + '<path d="'+area+'" fill="url(#exg)"/><polyline points="'+line+'" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' + dots + '</svg>';
 }
+
+/* ---------- 模块得分率对比（按分值权重排序） ---------- */
 function renderExamBars(list){
-  const box=$('exBars');
-  if(!list.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-3 text-center">暂无数据</div>'; return; }
-  const n=list.length;
-  box.innerHTML=EXAM_SEC.map(([k,label,maxQ])=>{
-    const sum=list.reduce((a,r)=>a+(r[k]||0),0);
-    const pct=Math.round(sum/(n*maxQ)*100);
-    const weak=pct<60;
-    const color=k.charAt(0)==='l'?'linear-gradient(90deg,#0891b2,#22d3ee)':'linear-gradient(90deg,#059669,#34d399)';
-    return '<div><div class="flex items-center justify-between text-[10px] mb-1">'
-      +'<span class="'+(weak?'text-rose-400 font-bold':'text-slate-300')+'">'+label+'</span>'
-      +'<span class="mono '+(weak?'text-rose-400':'text-slate-400')+'">'+pct+'%</span></div>'
-      +'<div class="h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="ex-bar h-full rounded-full" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
+  const box = $('exBars');
+  if(!list.length){ box.innerHTML = '<div class="text-[11px] text-slate-500 py-3 text-center">暂无数据</div>'; return; }
+  const n = list.length;
+  const order = ['lc','rc','rb','lb','la','ra'];
+  box.innerHTML = order.map(function(k){
+    const s = SEC_BY[k];
+    const sum = list.reduce(function(a,r){ return a + (r[k]||0); }, 0);
+    const pct = Math.round(sum/(n*s.maxQ)*100);
+    const deemph = (k === 'ra');
+    const weak = !deemph && pct < 60;
+    const color = k.charAt(0)==='l' ? 'linear-gradient(90deg,#0891b2,#22d3ee)'
+      : (deemph ? 'linear-gradient(90deg,#334155,#475569)' : 'linear-gradient(90deg,#059669,#34d399)');
+    return '<div'+(deemph?' class="opacity-40"':'')+'>'
+      + '<div class="flex items-center justify-between text-[10px] mb-1 gap-2">'
+      + '<span class="truncate '+(weak?'text-rose-400 font-bold':'text-slate-300')+'">'+s.label+(deemph?' <span class="text-slate-600">· 不计入诊断</span>':'')+'</span>'
+      + '<span class="mono shrink-0 '+(weak?'text-rose-400':'text-slate-400')+'">'+pct+'%<span class="text-slate-600"> / 满 '+s.max+'</span></span>'
+      + '</div>'
+      + '<div class="h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="ex-bar h-full rounded-full" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
   }).join('');
 }
+
+/* ---------- 智能薄弱项诊断（只讲数据，聚焦听力 C 与仔细阅读） ---------- */
 function renderExamDiag(list){
-  const box=$('exDiag');
-  if(!list.length){ box.innerHTML='<span class="text-slate-500">录入至少一次模考后，自动诊断薄弱模块。</span>'; return; }
-  const n=list.length;
-  const stats=EXAM_SEC.map(([k,label,maxQ])=>{
-    const sum=list.reduce((a,r)=>a+(r[k]||0),0);
-    return { k:k, label:label, pct:Math.round(sum/(n*maxQ)*100) };
+  const box = $('exDiag');
+  if(!list.length){ box.innerHTML = '<span class="text-slate-500">录入至少一次模考后，这里只展示客观数据与状态变化。</span>'; return; }
+  const n = list.length;
+  const avg = k => list.reduce(function(a,r){ return a + (r[k]||0); }, 0)/n;
+  const avgT = list.reduce(function(a,r){ return a + (r.total||0); }, 0)/n;
+  const avgL = list.reduce(function(a,r){ return a + (r.L||0); }, 0)/n;
+  const avgR = list.reduce(function(a,r){ return a + (r.R||0); }, 0)/n;
+
+  const rows = DIAG_KEYS.map(function(k){
+    const s = SEC_BY[k], a = avg(k);
+    return { k:k, s:s, pct:Math.round(a/s.maxQ*100), lost:r1((s.maxQ - a)*s.w) };
   });
-  const sorted=stats.slice().sort((a,b)=>a.pct-b.pct);
-  const worst=sorted[0], second=sorted[1];
-  const L=Math.round(stats.filter(s=>s.k.charAt(0)==='l').reduce((a,s)=>a+s.pct,0)/3);
-  const R=Math.round(stats.filter(s=>s.k.charAt(0)==='r').reduce((a,s)=>a+s.pct,0)/3);
-  let html='<div class="flex gap-2 mb-1"><span class="text-slate-500">·</span><span>客观题平均分 <b class="mono text-cyan-300">'+Math.round(list.reduce((a,r)=>a+(r.total||0),0)/n)+'</b> / 497（'+n+' 次模考）</span></div>';
-  html+='<div class="flex gap-2 mb-1"><span class="text-slate-500">·</span><span>听力平均正确率 <b class="mono '+(L<60?'text-rose-400':'text-emerald-300')+'">'+L+'%</b>　阅读平均正确率 <b class="mono '+(R<60?'text-rose-400':'text-emerald-300')+'">'+R+'%</b></span></div>';
-  if(worst.pct<60){
-    html+='<div class="mt-2 rounded-xl p-3" style="background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.35)"><div class="text-rose-400 font-bold text-[12px]">⚠️ 最薄弱：'+worst.label+'（正确率 '+worst.pct+'%）</div><div class="text-[11px] text-slate-300 mt-1 leading-relaxed">'+EXAM_ADVICE[worst.k]+'</div></div>';
-    if(second && second.pct<70) html+='<div class="mt-2 text-[11px] text-amber-300">次弱项：'+second.label+'（'+second.pct+'%），建议每周专项 2 次。</div>';
+  const lPct = Math.round((avg('la')+avg('lb')+avg('lc'))/(7+8+10)*100);
+  const rPct = Math.round((avg('rb')+avg('rc'))/(10+10)*100);   /* 阅读核心只算 B+C */
+  const sorted = rows.slice().sort(function(a,b){ return b.lost - a.lost; });
+  const top = sorted[0], second = sorted[1];
+  const last = list[list.length-1];
+  const delta = r1((last.total||0) - avgT);
+
+  const line = function(label, value, color){
+    return '<div class="flex items-center justify-between py-1" style="border-top:1px solid rgba(255,255,255,.05)">'
+      + '<span class="text-slate-400 text-[11px]">'+label+'</span>'
+      + '<span class="mono text-[11px] '+(color||'text-slate-200')+'">'+value+'</span></div>';
+  };
+  let html = '<div class="rounded-xl bg-black/25 border border-white/10 px-3 py-1.5">';
+  html += line('客观题平均分', '<b>'+r1(avgT).toFixed(1)+'</b> <span class="text-slate-600">/ 498 · '+n+' 次</span>', 'text-cyan-300');
+  html += line('听力平均（A+B+C）', '<b>'+lPct+'%</b> <span class="text-slate-600">· '+r1(avgL).toFixed(1)+' 分</span>', lPct<60?'text-rose-400':'text-emerald-300');
+  html += line('阅读核心平均（B+C）', '<b>'+rPct+'%</b> <span class="text-slate-600">· '+r1(avgR).toFixed(1)+' 分</span>', rPct<60?'text-rose-400':'text-emerald-300');
+  html += line('最近一次 vs 平均', (delta>=0?'+':'')+delta.toFixed(1)+' 分', delta>=0?'text-emerald-300':'text-rose-400');
+  html += '</div>';
+
+  /* 逐模块客观数据 */
+  html += '<div class="mt-2 rounded-xl bg-black/25 border border-white/10 px-3 py-1.5">';
+  rows.slice().sort(function(a,b){ return b.s.w - a.s.w; }).forEach(function(r){
+    const hot = (r.k === 'lc' || r.k === 'rc');
+    html += '<div class="flex items-center justify-between py-1" style="border-top:1px solid rgba(255,255,255,.05)">'
+      + '<span class="text-[11px] '+(hot?'text-slate-200 font-bold':'text-slate-400')+'">'+r.s.label
+      + (hot?' <span class="text-cyan-400/70 text-[9px]">★高权重</span>':'')+'</span>'
+      + '<span class="mono text-[11px] '+(r.pct<60?'text-rose-400':'text-slate-300')+'">'+r.pct+'%'
+      + '<span class="text-slate-600"> · 每套失 '+r.lost.toFixed(1)+'</span></span></div>';
+  });
+  html += '</div>';
+
+  if(top && top.lost > 0){
+    html += '<div class="mt-2 rounded-xl p-3" style="background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.35)">'
+      + '<div class="text-rose-400 font-bold text-[12px]">⚠️ 失分最多：'+top.s.label+'</div>'
+      + '<div class="mono text-[11px] text-rose-300/90 mt-1">每套平均失 '+top.lost.toFixed(1)+' 分（'+top.s.w+' 分/题 · 正确率 '+top.pct+'%）</div>'
+      + '<div class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">'+DIAG_ADVICE[top.k]+'</div></div>';
+    if(second && second.lost >= 20){
+      html += '<div class="mt-2 text-[11px] text-amber-300/90 leading-relaxed">次优先：'+second.s.label+'，每套平均失 '+second.lost.toFixed(1)+' 分。'+DIAG_ADVICE[second.k]+'</div>';
+    }
   }else{
-    html+='<div class="mt-2 rounded-xl p-3" style="background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.3)"><div class="text-emerald-300 font-bold text-[12px]">✓ 各模块均在 60% 以上，整体均衡</div><div class="text-[11px] text-slate-300 mt-1">保持节奏，重点冲击分值最高的「仔细阅读」与「听力篇章」。</div></div>';
+    html += '<div class="mt-2 rounded-xl p-3" style="background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.3)">'
+      + '<div class="text-emerald-300 font-bold text-[12px]">✓ 五个板块均无显著失分</div>'
+      + '<div class="text-[11px] text-slate-300 mt-1">保持节奏，继续把「听力篇章」和「仔细阅读」的正确率稳定在 80% 以上。</div></div>';
   }
-  box.innerHTML=html;
+  html += '<div class="mono text-[9px] text-slate-600 mt-2 leading-relaxed">诊断范围：听力 A/B/C 与阅读 B/C 共五个板块。</div>';
+  box.innerHTML = html;
 }
+
+/* ---------- 历史档案（点击展开详情） ---------- */
 function renderExamHistory(list){
-  const box=$('exHistory');
-  if(!list.length){ box.innerHTML='<div class="text-[11px] text-slate-500 py-3 text-center">还没有记录</div>'; return; }
-  box.innerHTML=list.slice().reverse().map(r=>'<div class="rounded-xl bg-black/25 border border-white/10 px-3 py-2.5">'
-    +'<div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-sm font-bold text-white truncate">'+r.name+'</div><div class="mono text-[10px] text-slate-500 mt-0.5">'+r.date+'</div></div>'
-    +'<div class="text-right shrink-0"><div class="mono text-base font-black grad-text">'+(r.total||0).toFixed(1)+'</div><div class="mono text-[9px] text-slate-500">听 '+(r.L||0).toFixed(0)+' · 读 '+(r.R||0).toFixed(0)+'</div></div></div>'
-    +'<div class="flex gap-2 mt-2"><button class="ex-edit flex-1 py-1.5 rounded-lg glass text-[10px] text-cyan-300 active:scale-95 transition" data-id="'+r.id+'">编辑</button>'
-    +'<button class="ex-del flex-1 py-1.5 rounded-lg glass text-[10px] text-rose-300 active:scale-95 transition" data-id="'+r.id+'">删除</button></div></div>').join('');
-  box.querySelectorAll('.ex-edit').forEach(b=>b.addEventListener('click',()=>examEdit(b.dataset.id)));
-  box.querySelectorAll('.ex-del').forEach(b=>b.addEventListener('click',()=>{
-    const id=b.dataset.id, rec=(S.exams||[]).find(x=>x.id===id);
-    if(!rec) return;
-    if(!confirm('删除「'+rec.name+'」这条模考记录？')) return;
-    S.exams=S.exams.filter(x=>x.id!==id); save(); renderExam(); toast('已删除');
-  }));
+  const box = $('exHistory');
+  if(!list.length){ box.innerHTML = '<div class="text-[11px] text-slate-500 py-3 text-center">还没有记录</div>'; return; }
+  box.innerHTML = list.slice().reverse().map(function(r){
+    const open = exOpen.has(r.id);
+    let detail = '<div class="mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,.08)">';
+    EXAM_SEC.forEach(function(sec){
+      const k = sec[0], label = sec[1], maxQ = sec[2], w = sec[3];
+      const c = r[k]||0, sc = r1(c*w), mx = r1(maxQ*w);
+      const deemph = (k === 'ra');
+      const bad = !deemph && c/maxQ < 0.6;
+      detail += '<div class="flex items-center justify-between py-1.5'+(deemph?' opacity-40':'')+'" style="border-bottom:1px dashed rgba(255,255,255,.05)">'
+        + '<span class="text-[10px] '+(deemph?'text-slate-500':'text-slate-400')+'">'+label+(deemph?' · 忽略':'')+'</span>'
+        + '<span class="mono text-[10px] shrink-0 ml-2 '+(bad?'text-rose-400':'text-slate-300')+'">'
+        + c+'/'+maxQ+' 题 <span class="text-slate-600">→</span> '+sc.toFixed(1)+'<span class="text-slate-600"> / '+mx+'</span></span></div>';
+    });
+    detail += '<div class="flex items-center justify-between pt-2">'
+      + '<span class="text-[10px] text-cyan-300">听力小计</span><span class="mono text-[11px] text-cyan-300">'+(r.L||0).toFixed(1)+' <span class="text-slate-600">/ 249.5</span></span></div>'
+      + '<div class="flex items-center justify-between">'
+      + '<span class="text-[10px] text-emerald-300">阅读小计</span><span class="mono text-[11px] text-emerald-300">'+(r.R||0).toFixed(1)+' <span class="text-slate-600">/ 248.5</span></span></div>'
+      + '<div class="flex items-center justify-between">'
+      + '<span class="text-[10px] text-white font-bold">客观题合计</span><span class="mono text-[12px] font-black grad-text">'+(r.total||0).toFixed(1)+' <span class="text-slate-600">/ 498</span></span></div>'
+      + '<div class="flex gap-2 mt-2.5"><button class="ex-edit flex-1 py-1.5 rounded-lg glass text-[10px] text-cyan-300 active:scale-95 transition" data-id="'+r.id+'">编辑</button>'
+      + '<button class="ex-del flex-1 py-1.5 rounded-lg glass text-[10px] text-rose-300 active:scale-95 transition" data-id="'+r.id+'">删除</button></div>'
+      + '</div>';
+
+    return '<div class="rounded-xl bg-black/25 border border-white/10 overflow-hidden">'
+      + '<button class="ex-head w-full text-left px-3 py-2.5 active:bg-white/[.03] transition" data-id="'+r.id+'">'
+      + '<div class="flex items-center justify-between gap-2">'
+      + '<div class="min-w-0"><div class="text-sm font-bold text-white truncate">'+r.name+'</div>'
+      + '<div class="mono text-[10px] text-slate-500 mt-0.5">'+r.date+'</div></div>'
+      + '<div class="text-right shrink-0"><div class="mono text-base font-black grad-text">'+(r.total||0).toFixed(1)+'</div>'
+      + '<div class="mono text-[9px] text-slate-500">听 '+(r.L||0).toFixed(0)+' · 读 '+(r.R||0).toFixed(0)+'</div></div>'
+      + '<span class="mono text-[10px] text-slate-500 shrink-0">'+(open?'▴':'▾')+'</span></div></button>'
+      + '<div class="px-3 pb-3'+(open?'':' hidden')+'">'+detail+'</div></div>';
+  }).join('');
+
+  box.querySelectorAll('.ex-head').forEach(function(h){
+    h.addEventListener('click', function(){
+      const id = h.dataset.id;
+      if(exOpen.has(id)) exOpen.delete(id); else exOpen.add(id);
+      renderExamHistory(list);
+    });
+  });
+  box.querySelectorAll('.ex-edit').forEach(function(b){
+    b.addEventListener('click', function(ev){ ev.stopPropagation(); examEdit(b.dataset.id); });
+  });
+  box.querySelectorAll('.ex-del').forEach(function(b){
+    b.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      const id = b.dataset.id, rec = (S.exams||[]).find(function(x){ return x.id === id; });
+      if(!rec) return;
+      if(!confirm('删除「'+rec.name+'」这条模考记录？')) return;
+      S.exams = S.exams.filter(function(x){ return x.id !== id; }); save(); renderExam(); toast('已删除');
+    });
+  });
 }
 function examEdit(id){
-  const r=(S.exams||[]).find(x=>x.id===id); if(!r) return;
-  editingExamId=id;
-  $('exName').value=r.name||''; $('exDate').value=r.date||today();
-  EXAM_SEC.forEach(([k])=>{ $('ex'+k.toUpperCase()).value=r[k]||0; });
+  const r = (S.exams||[]).find(function(x){ return x.id === id; }); if(!r) return;
+  editingExamId = id;
+  $('exName').value = r.name || '';
+  $('exDate').value = r.date || today();
+  EXAM_SEC.forEach(function(sec){
+    const el = $('ex'+sec[0].toUpperCase());
+    if(el) el.value = (r[sec[0]]||0) > 0 ? r[sec[0]] : '';
+  });
   $('examEditTag').classList.remove('hidden');
-  examLive(); window.scrollTo(0,0); toast('已载入，修改后点「保存记录」');
+  examLive(); examFormOpen(true);
+  if($('exFormWrap') && $('exFormWrap').scrollIntoView) $('exFormWrap').scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('已载入，修改后点「保存记录」');
 }
 function renderExam(){
-  const list=(S.exams||[]).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
-  $('exCount').textContent='共 '+list.length+' 次';
+  const list = (S.exams||[]).slice().sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); });
+  $('exCount').textContent = '共 '+list.length+' 次';
   renderExamChart(list); renderExamBars(list); renderExamDiag(list); renderExamHistory(list);
 }
+
+/* ================= 考试技巧与干货指南（整卡折叠 · 按考试顺序分块） ================= */
+const GUIDE_GROUPS = [
+  {
+    title:'写作技巧', sub:'Part I · 30 分钟 · 106.5 分 · 120-180 词',
+    items:[{
+      t:'写作 · 三段式骨架', m:'106.5 分', accent:'#818cf8',
+      pts:[
+        '三段式：现象或观点 → 两个理由配例子 → 总结与建议，每段 4-6 句。',
+        '开头改写题目，不要照抄题干原句；准备 2 个万能开头句式。',
+        '准备 5-6 个高级替换：important → crucial，think → hold the view that，many → a host of。',
+        '首段别犯低级语法错（主谓一致、时态），阅卷第一印象就在这里。',
+        '留 3 分钟通读，检查拼写、单复数和冠词。'
+      ]
+    }]
+  },
+  {
+    title:'听力技巧', sub:'Part II · Section A / B / C 三段独立应对',
+    items:[
+      {
+        t:'听力 Section A · 短篇新闻', m:'7题 · 7.1 分/题 · 49.7 分', accent:'#22d3ee',
+        pts:[
+          '导语第一句通常就是主旨：先抓「谁 + 做了什么 + 结果」。',
+          '数字、时间、地点、人名是高频考点，边听边在选项旁做标记。',
+          'but / however / actually / in fact 之后高频出答案。',
+          '一题没听清立刻跳到下一题，不要用后一题的时间纠结前一题。',
+          '三篇新闻各自独立，篇间停顿用来快速扫下一组选项。'
+        ]
+      },
+      {
+        t:'听力 Section B · 长对话', m:'8题 · 7.1 分/题 · 56.8 分', accent:'#22d3ee',
+        pts:[
+          '预读选项判断场景：校园、求职、租房、旅行、医疗最常考。',
+          '答案多在第二个说话人处；第一个人的问句本身就是提示词。',
+          '语气词 well / actually / I am afraid 后面常跟态度题答案。',
+          '数字题注意二次计算（原价与折扣价、开始时间与迟到时长）。',
+          '结尾常问「接下来做什么」，重点听最后两句。'
+        ]
+      },
+      {
+        t:'听力 Section C · 听力篇章', m:'10题 · 14.3 分/题 · 143 分', accent:'#22d3ee',
+        pts:[
+          '听力里权重最高的一段，10 题 143 分，优先保证这里的正确率。',
+          '先扫选项圈名词与形容词，预判文章主题和结构。',
+          '题目顺序即文章顺序，跟着录音走，不要提前找答案。',
+          '长句只抓主干（谁 + 动作 + 结果），举例与重复可以略听。',
+          '最后一题常考主旨或态度，听到结尾不要提前放松。'
+        ]
+      }
+    ]
+  },
+  {
+    title:'阅读与翻译技巧', sub:'Part III 阅读 B/C 主攻 · Part IV 翻译',
+    items:[
+      {
+        t:'阅读 Section A · 选词填空', m:'10题 · 3.55 分/题 · 35.5 分', accent:'#f43f5e',
+        warn:'性价比极低，建议战略性放弃；若最后时间有多，可遵循「限时 8 分钟内、先判断词性（名/动/形/副）再选择」的应急策略，并将节省下来的宝贵时间全部留给仔细阅读、长篇阅读与翻译。',
+        pts:[]
+      },
+      {
+        t:'阅读 Section B · 长篇阅读（信息匹配）', m:'10题 · 7.1 分/题 · 71 分', accent:'#34d399',
+        pts:[
+          '先题干后原文：10 个题干里圈人名、数字、专有名词、极端词。',
+          '核心是同义替换：题干词在原文常换成近义词或换词性。',
+          '一段可能对应两题，也可能一段都不对应，不要硬凑。',
+          '限时 15 分钟，先做最有把握的，剩下靠排除法。',
+          '首末句和转折句最容易承载匹配信息。'
+        ]
+      },
+      {
+        t:'阅读 Section C · 仔细阅读', m:'10题 · 14.2 分/题 · 142 分', accent:'#34d399',
+        pts:[
+          '全卷最高权重，10 题 142 分，务必留足 20 分钟。',
+          '顺序出题：第一题答案通常在首段，最后一题在末段或全文主旨。',
+          '定位句必读上下各一句，答案多藏在同义改写里。',
+          '干扰项三大特征：绝对化（all / never / only）、偷换主体、部分正确。',
+          '错题按三类归因：定位错、词义错、推理过度；同类错三次就专项突破。'
+        ]
+      },
+      {
+        t:'翻译 · 汉译英段落', m:'106.5 分 · 140-160 词', accent:'#a78bfa',
+        pts:[
+          '先通读全段划主干（谁 + 做什么），再补修饰成分。',
+          '遇到不会的词用解释法：剪纸 → paper-cutting, a traditional Chinese art of cutting paper。',
+          '文化高频词块必须背：四大发明、丝绸之路、传统节日、非物质文化遗产。',
+          '长句拆成短句，宁简单不错；时态统一，介绍性内容用一般现在时。',
+          '写完检查主谓一致、单复数和介词搭配，这三类错最容易被扣分。'
+        ]
+      }
+    ]
+  }
+];
+
+function guideCard(it){
+  let body = '';
+  if(it.warn){
+    body += '<div class="mx-3 mt-2.5 rounded-lg px-2.5 py-2" style="background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.32)">'
+      + '<div class="text-[10px] font-bold text-rose-300 mb-1">⚠️ 战略提示</div>'
+      + '<div class="text-[11px] leading-relaxed text-rose-100/90">'+it.warn+'</div></div>';
+  }
+  if(it.pts && it.pts.length){
+    body += '<div class="px-3 py-2">' + it.pts.map(function(p){
+      return '<div class="flex gap-1.5 text-[11px] leading-relaxed text-slate-300 mt-1.5"><span class="shrink-0" style="color:'+it.accent+'99">›</span><span>'+p+'</span></div>';
+    }).join('') + '</div>';
+  }
+  return '<div class="rounded-xl bg-black/30 border border-white/10 overflow-hidden">'
+    + '<div class="flex items-center justify-between gap-2 px-3 py-2" style="border-left:3px solid '+it.accent+';border-bottom:1px solid rgba(255,255,255,.06)">'
+    + '<span class="text-[11px] font-bold text-white truncate">'+it.t+'</span>'
+    + '<span class="mono text-[9px] text-slate-500 shrink-0">'+it.m+'</span></div>'
+    + body + '</div>';
+}
+function renderGuide(){
+  const box = $('exGuide'); if(!box) return;
+  box.innerHTML = GUIDE_GROUPS.map(function(g, gi){
+    return '<div>'
+      + '<div class="flex items-center gap-2 mb-1.5">'
+      + '<span class="mono text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-400/25 shrink-0">STEP '+(gi+1)+'</span>'
+      + '<span class="text-[11px] font-bold text-slate-100 shrink-0">'+g.title+'</span>'
+      + '<span class="mono text-[9px] text-slate-600 truncate">'+g.sub+'</span></div>'
+      + '<div class="space-y-2">' + g.items.map(guideCard).join('') + '</div></div>';
+  }).join('');
+}
+function guideOpen(open){
+  const wrap = $('exGuideWrap'); if(!wrap) return;
+  wrap.classList.toggle('hidden', !open);
+  const arrow = $('gdArrow'); if(arrow) arrow.textContent = open ? '收起 ▴' : '展开 ▾';
+}
+if($('gdToggle')) $('gdToggle').addEventListener('click', function(){
+  guideOpen($('exGuideWrap').classList.contains('hidden'));
+});
 
 /* ================= 导入 ================= */
 $('btnImport').addEventListener('click',()=>{
@@ -1493,7 +1798,7 @@ setInterval(()=>{ if(document.visibilityState==='visible'){ T().t+=5; save(); } 
 const bootEl=document.getElementById('boot'); if(bootEl) bootEl.remove();
 renderChips(); buildQueue(); showCard(); renderStatsBar(); renderCountdown(); renderQuizHome();
 if($('exDate') && !$('exDate').value) $('exDate').value = today();
-examLive();
+examLive(); renderGuide();
 /* 存储降级提示：沙箱/无痕环境下数据只在本次会话有效 */
 (function storageNotice(){
   if(STORE.ok) return;

@@ -416,7 +416,11 @@
               <h3 class="font-bold text-white text-sm">🎧 历年听力专项训练</h3>
               <span id="ltDone" class="mono text-[10px] text-slate-500">已练 0/43</span>
             </div>
-            <div class="mono text-[9px] text-slate-600 mb-2.5">2016-2026.6 真题音频 · 本地播放 · 不跳外部</div>
+            <div class="mono text-[9px] text-slate-600 mb-2.5">2016-2026.6 真题音频 · 本地播放 · 不跳外部 · <span class="text-slate-500">📶 手机练习记得连 WiFi</span></div>
+
+            <div id="ltWifiTip" class="hidden mb-2.5 text-[10px] leading-relaxed rounded-lg px-2.5 py-2 border" style="background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.35)">
+              <span class="text-amber-300 font-bold">📶 检测到当前使用手机流量</span><span class="text-amber-200/80"> · 每套听力音频约 8MB，建议先连接 WiFi 再练习，避免消耗流量～</span>
+            </div>
 
             <div class="grid grid-cols-2 gap-2">
               <select id="ltYear" class="mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50"></select>
@@ -447,7 +451,10 @@
                 <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.25">1.25x</button>
                 <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.5">1.5x</button>
               </div>
-              <div id="ltErr" class="hidden mt-1.5 text-[10px] text-rose-300">音频加载失败：请确认 listening/audio 目录与页面同层级部署。</div>
+              <div id="ltErr" class="hidden mt-1.5 text-[10px] text-rose-300 leading-relaxed">
+                <div id="ltErrText">音频加载失败</div>
+                <div id="ltErrSrc" class="mono text-slate-500 mt-0.5 break-all"></div>
+              </div>
             </div>
 
             <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
@@ -1838,6 +1845,22 @@ function ltRead(){ return {
 function ltShowScore(){ $('ltScore').textContent = ltScore(ltRead()).toFixed(1); }
 let ltCur = '';
 
+/* ---------- WiFi 提醒：检测到手机流量时显示警示条 ---------- */
+(function(){
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const tip = $('ltWifiTip');
+  if(!tip) return;
+  function isCellular(){
+    if(!conn) return false;
+    const t = conn.type || '';
+    const e = conn.effectiveType || '';
+    return t === 'cellular' || /2g|3g|4g|5g/.test(e);
+  }
+  function ltNetRefresh(){ tip.classList.toggle('hidden', !isCellular()); }
+  if(conn && typeof conn.addEventListener === 'function'){ conn.addEventListener('change', ltNetRefresh); }
+  ltNetRefresh();
+})();
+
 /* ---------- 选择器 ---------- */
 function ltFillYear(){
   const years = []; LT_MANIFEST.forEach(function(p){ if(years.indexOf(p.y) < 0) years.push(p.y); });
@@ -2048,6 +2071,16 @@ $('ltClear').addEventListener('click', function(){
     }
     if(a.paused){ const pr=a.play(); if(pr&&pr.catch) pr.catch(function(){ $('ltState').textContent='再点一次播放'; }); }
     else a.pause();
+  });
+  a.addEventListener('error', function(){
+    $('ltErr').classList.remove('hidden');
+    $('ltState').textContent='';
+    const code = a.error ? a.error.code : 0;
+    const src = a.currentSrc || a.src || '';
+    const tail = src.split('/').slice(-2).join('/');
+    const msg = {1:'下载被中断',2:'网络错误',3:'音频解码失败',4:'找不到音频文件（404 / 路径不对）'}[code] || '未知错误';
+    $('ltErrText').textContent = '⚠️ 音频加载失败：' + msg;
+    $('ltErrSrc').textContent = '文件：' + (tail || '未知') + ' · 手机上播放请确认已把整个 listening/audio 文件夹上传到仓库（与 index.html 同级）';
   });
   /* 倍速 0.75 / 1.0 / 1.25 / 1.5，记住上次选择 */
   const spBtns=Array.prototype.slice.call(document.querySelectorAll('.lt-sp'));

@@ -59,6 +59,9 @@
   input[type=range]{ accent-color:#22d3ee; }
   .swipe-hint{ transition:opacity .2s; }
   .accordion-body{ overflow:hidden; transition:max-height .3s ease; }
+  .lt-sp-on{ color:#22d3ee !important; border-color:rgba(34,211,238,.65) !important; background:rgba(34,211,238,.14) !important; font-weight:700; }
+  #ltBar{ touch-action:none; }
+  #ltBar::after{ content:''; position:absolute; inset:-8px 0; }
   ::-webkit-scrollbar{ width:0; height:0 }
   .no-sel{ user-select:none; -webkit-user-select:none; }
   .toast{ animation:toastIn .25s ease; }
@@ -265,6 +268,8 @@
     <!-- ============ 真题模考视图 ============ -->
     <section id="view-exam" class="hidden">
 
+      <!-- 真题模考大板块 -->
+
       <!-- 录入表单：默认折叠，只留一个入口按钮 -->
       <div class="glass rounded-2xl p-3.5">
         <button id="exToggle" class="w-full flex items-center justify-between gap-2 active:scale-[.99] transition">
@@ -403,6 +408,101 @@
       </div>
     </section>
 
+    <!-- ============ 听力专项视图 ============ -->
+    <section id="view-listen" class="hidden">
+      <div class="glass rounded-2xl p-4 mx-auto" style="max-width:640px">
+<div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-bold text-white text-sm">🎧 历年听力专项训练</h3>
+              <span id="ltDone" class="mono text-[10px] text-slate-500">已练 0/43</span>
+            </div>
+            <div class="mono text-[9px] text-slate-600 mb-2.5">2016-2026.6 真题音频 · 本地播放 · 不跳外部</div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <select id="ltYear" class="mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50"></select>
+              <select id="ltPaper" class="mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50"></select>
+            </div>
+
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
+                <span id="ltTitle" class="truncate">—</span>
+                <span id="ltState" class="mono text-slate-600 shrink-0"></span>
+              </div>
+              <audio id="ltAudio" preload="metadata" class="hidden"></audio>
+              <div class="flex items-center gap-2.5 rounded-xl bg-black/30 border border-white/10 px-3 py-2.5">
+                <button id="ltPlay" aria-label="播放/暂停" class="w-9 h-9 shrink-0 rounded-full text-white text-base leading-none flex items-center justify-center active:scale-90 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 4px 14px rgba(34,211,238,.3)">▶</button>
+                <div class="flex-1 min-w-0">
+                  <div id="ltBar" class="relative h-5 cursor-pointer select-none" title="点击或拖动跳转">
+                    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/10"></div>
+                    <div id="ltBarFill" class="absolute left-0 top-1/2 h-1.5 rounded-full" style="width:0%;transform:translateY(-50%);background:linear-gradient(90deg,#0891b2,#22d3ee)"></div>
+                    <div id="ltBarKnob" class="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-cyan-300 shadow" style="left:0%;transform:translate(-50%,-50%)"></div>
+                  </div>
+                  <div class="flex justify-between mono text-[9px] text-slate-500 mt-0.5"><span id="ltCur">0:00</span><span id="ltDur">--:--</span></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="mono text-[9px] text-slate-500 shrink-0">倍速</span>
+                <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="0.75">0.75x</button>
+                <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1">1.0x</button>
+                <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.25">1.25x</button>
+                <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.5">1.5x</button>
+              </div>
+              <div id="ltErr" class="hidden mt-1.5 text-[10px] text-rose-300">音频加载失败：请确认 listening/audio 目录与页面同层级部署。</div>
+            </div>
+
+            <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
+              <span>✍️ 答对题数 <span class="mono text-slate-500 font-normal">满分 249.5</span></span>
+              <span class="text-slate-500 font-normal">A 7题×7.1 · B 8题×7.1 · C 10题×14.3</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-1.5">
+              <div>
+                <input id="ltA" type="number" inputmode="numeric" min="0" max="7" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+                <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 短篇新闻<br><span class="text-slate-600">×7.1</span></div>
+              </div>
+              <div>
+                <input id="ltB" type="number" inputmode="numeric" min="0" max="8" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+                <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长对话<br><span class="text-slate-600">×7.1</span></div>
+              </div>
+              <div>
+                <input id="ltC" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
+                <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 听力篇章<br><span class="text-slate-600">×14.3</span></div>
+              </div>
+            </div>
+            <div class="mt-2.5 rounded-xl bg-black/35 border border-white/10 px-3.5 py-2.5 flex items-end justify-between">
+              <span class="text-[11px] text-slate-400">本次听力得分 <span class="mono text-slate-600">＝ A×7.1 ＋ B×7.1 ＋ C×14.3</span></span>
+              <b id="ltScore" class="mono text-2xl grad-text">0.0</b>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <button id="ltSave" class="py-2.5 rounded-xl text-xs font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">保存本次成绩</button>
+              <button id="ltClear" class="glass rounded-xl py-2.5 text-xs text-slate-300 font-bold active:scale-95 transition">清空本题作答</button>
+            </div>
+
+            <div class="mt-3">
+              <div class="text-[11px] font-bold text-slate-200 mb-1.5 flex items-center justify-between">
+                <span>成绩记录 <span class="mono text-[9px] text-slate-600">点击任意一条可回填作答</span></span>
+                <span id="ltTimes" class="mono text-[10px] text-cyan-300">本题已练 0 次</span>
+              </div>
+              <div id="ltList" class="space-y-1.5 max-h-60 overflow-y-auto pr-0.5"></div>
+            </div>
+
+            <div class="mt-3">
+              <button id="ltHistToggle" class="w-full glass rounded-xl py-2 text-[11px] text-slate-200 font-bold active:scale-[.99] transition flex items-center justify-between px-3">
+                <span>🕘 本题练习历史</span>
+                <span class="flex items-center gap-2"><span id="ltHistCount" class="mono text-[9px] text-slate-600">0 条</span><span id="ltHistArrow" class="mono text-[10px] text-cyan-300">展开 ▾</span></span>
+              </button>
+              <div id="ltHistWrap" class="hidden mt-1.5 space-y-1.5 max-h-60 overflow-y-auto pr-0.5"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <button id="ltExport" class="glass rounded-xl py-2.5 text-[11px] text-slate-200 font-bold active:scale-95 transition">⬇ 导出备份 JSON</button>
+              <button id="ltImportBtn" class="glass rounded-xl py-2.5 text-[11px] text-slate-200 font-bold active:scale-95 transition">⬆ 导入恢复 JSON</button>
+            </div>
+            <input id="ltImportFile" type="file" accept="application/json,.json" class="hidden">
+            <div class="mono text-[9px] text-slate-600 mt-2 leading-relaxed">每次点击「保存本次成绩」都会追加一条独立记录（不覆盖历史）；作答即实时写入 localStorage；导出建议每周一次。</div>
+          </div>
+    </section>
+
     <!-- ============ 设置/导入视图 ============ -->
     <section id="view-settings" class="hidden">
       <div class="glass rounded-2xl p-4">
@@ -438,11 +538,12 @@
   <!-- 底部导航 -->
   <nav class="fixed bottom-0 left-0 right-0 z-40">
     <div class="max-w-[480px] mx-auto px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-2" style="background:linear-gradient(0deg,#0a0e1a 55%,rgba(10,14,26,0))">
-      <div class="glass rounded-2xl grid grid-cols-5 py-2">
+      <div class="glass rounded-2xl grid grid-cols-6 py-2">
         <button class="navbtn active flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="learn"><span class="navico text-lg">📖</span>学习</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="stats"><span class="navico text-lg">📅</span>日历</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="quiz"><span class="navico text-lg">⚡</span>快答</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="exam"><span class="navico text-lg">📊</span>模考</button>
+        <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="listen"><span class="navico text-lg">🎧</span>听力</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="settings"><span class="navico text-lg">⚙️</span>导入</button>
       </div>
     </div>
@@ -566,6 +667,8 @@ const defaultState = () => ({
   quizWrong: {},    // 'YYYY-MM-DD' -> [{w,d}] 快答答错的词（今日错题本）
   wrongFreq: {},    // word -> 次数（错误频次统计，跨天累计）
   exams: [],        // 真题模考记录 [{id,name,date,la,lb,lc,ra,rb,rc,L,R,total}]
+  listen: {},       // 听力专项 id -> {la,lb,lc,score,ts}
+  listenCur: '',    // 上次选中的听力套题
 });
 let S = load();
 /* 结构校正：保证关键容器类型正确，避免脏数据/老版本数据在 .push、in、[k] 时报错 */
@@ -577,11 +680,25 @@ function normalizeState(m){
     if(typeof m.settings.goal !== 'number' || !isFinite(m.settings.goal)) m.settings.goal = 30;
     if(!isStr(m.settings.examDate) || !m.settings.examDate) m.settings.examDate = base.settings.examDate;
   }
-  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','quizHist','quizWrong','wrongFreq','wrongToday']){
+  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','quizHist','quizWrong','wrongFreq','wrongToday','listen']){
     if(!m[k] || typeof m[k] !== 'object' || Array.isArray(m[k])) m[k] = {};
   }
   if(!Array.isArray(m.custom)) m.custom = [];
   if(!Array.isArray(m.exams)) m.exams = [];
+  if(!isStr(m.listenCur)) m.listenCur = '';
+  /* 听力记录迁移：旧格式无 history 数组 -> 自动补上（历史只增不减） */
+  if(m.listen && typeof m.listen === 'object' && !Array.isArray(m.listen)){
+    Object.keys(m.listen).forEach(function(k){
+      const r = m.listen[k];
+      if(!r || typeof r !== 'object' || Array.isArray(r)) return;
+      if(!Array.isArray(r.history)){
+        r.history = [];
+        if(isFinite(r.la) && isFinite(r.lb) && isFinite(r.lc) && r.ts){
+          r.history.push({ ts: r.ts, la: r.la, lb: r.lb, lc: r.lc, score: r.score });
+        }
+      }
+    });
+  }
   for(const k of ['core','phrase','ext']){
     if(!m.known[k] || typeof m.known[k] !== 'object' || Array.isArray(m.known[k])) m.known[k] = {};
   }
@@ -1708,6 +1825,377 @@ if($('gdToggle')) $('gdToggle').addEventListener('click', function(){
   guideOpen($('exGuideWrap').classList.contains('hidden'));
 });
 
+/* ================= 历年听力专项训练（2016-2026.6） ================= */
+const LT_MANIFEST = [{"id":"2016-06-1","y":2016,"m":6,"s":1,"label":"2016年6月 · 第1套","audio":"listening/audio/2016-06-1.mp3","text":"listening/text/2016-06-1.pdf","analysis":"listening/analysis/2016-06.pdf"},{"id":"2016-06-2","y":2016,"m":6,"s":2,"label":"2016年6月 · 第2套","audio":"listening/audio/2016-06-2.mp3","text":"listening/text/2016-06-2.pdf","analysis":"listening/analysis/2016-06.pdf"},{"id":"2016-12-1","y":2016,"m":12,"s":1,"label":"2016年12月 · 第1套","audio":"listening/audio/2016-12-1.mp3","text":"listening/text/2016-12-1.pdf","analysis":"listening/analysis/2016-12.pdf"},{"id":"2016-12-2","y":2016,"m":12,"s":2,"label":"2016年12月 · 第2套","audio":"listening/audio/2016-12-2.mp3","text":"listening/text/2016-12-2.pdf","analysis":"listening/analysis/2016-12.pdf"},{"id":"2017-06-1","y":2017,"m":6,"s":1,"label":"2017年6月 · 第1套","audio":"listening/audio/2017-06-1.mp3","text":"listening/text/2017-06-1.pdf","analysis":"listening/analysis/2017-06.pdf"},{"id":"2017-06-2","y":2017,"m":6,"s":2,"label":"2017年6月 · 第2套","audio":"listening/audio/2017-06-2.mp3","text":"listening/text/2017-06-2.pdf","analysis":"listening/analysis/2017-06.pdf"},{"id":"2017-12-1","y":2017,"m":12,"s":1,"label":"2017年12月 · 第1套","audio":"listening/audio/2017-12-1.mp3","text":"listening/text/2017-12-1.pdf","analysis":"listening/analysis/2017-12.pdf"},{"id":"2017-12-2","y":2017,"m":12,"s":2,"label":"2017年12月 · 第2套","audio":"listening/audio/2017-12-2.mp3","text":"listening/text/2017-12-2.pdf","analysis":"listening/analysis/2017-12.pdf"},{"id":"2018-06-1","y":2018,"m":6,"s":1,"label":"2018年6月 · 第1套","audio":"listening/audio/2018-06-1.mp3","text":"listening/text/2018-06-1.pdf","analysis":"listening/analysis/2018-06.pdf"},{"id":"2018-06-2","y":2018,"m":6,"s":2,"label":"2018年6月 · 第2套","audio":"listening/audio/2018-06-2.mp3","text":"listening/text/2018-06-2.pdf","analysis":"listening/analysis/2018-06.pdf"},{"id":"2018-12-1","y":2018,"m":12,"s":1,"label":"2018年12月 · 第1套","audio":"listening/audio/2018-12-1.mp3","text":"listening/text/2018-12-1.pdf","analysis":"listening/analysis/2018-12.pdf"},{"id":"2018-12-2","y":2018,"m":12,"s":2,"label":"2018年12月 · 第2套","audio":"listening/audio/2018-12-2.mp3","text":"listening/text/2018-12-2.pdf","analysis":"listening/analysis/2018-12.pdf"},{"id":"2019-06-1","y":2019,"m":6,"s":1,"label":"2019年6月 · 第1套","audio":"listening/audio/2019-06-1.mp3","text":"listening/text/2019-06-1.pdf","analysis":"listening/analysis/2019-06.pdf"},{"id":"2019-06-2","y":2019,"m":6,"s":2,"label":"2019年6月 · 第2套","audio":"listening/audio/2019-06-2.mp3","text":"listening/text/2019-06-2.pdf","analysis":"listening/analysis/2019-06.pdf"},{"id":"2019-12-1","y":2019,"m":12,"s":1,"label":"2019年12月 · 第1套","audio":"listening/audio/2019-12-1.mp3","text":"listening/text/2019-12-1.pdf","analysis":"listening/analysis/2019-12.pdf"},{"id":"2019-12-2","y":2019,"m":12,"s":2,"label":"2019年12月 · 第2套","audio":"listening/audio/2019-12-2.mp3","text":"listening/text/2019-12-2.pdf","analysis":"listening/analysis/2019-12.pdf"},{"id":"2020-07-1","y":2020,"m":7,"s":1,"label":"2020年7月 · 第1套","audio":"listening/audio/2020-07-1.mp3","text":"listening/text/2020-07-1.pdf","analysis":"listening/analysis/2020-07.pdf"},{"id":"2020-09-1","y":2020,"m":9,"s":1,"label":"2020年9月 · 第1套","audio":"listening/audio/2020-09-1.mp3","text":"listening/text/2020-09-1.pdf","analysis":"listening/analysis/2020-09.pdf"},{"id":"2020-12-1","y":2020,"m":12,"s":1,"label":"2020年12月 · 第1套","audio":"listening/audio/2020-12-1.mp3","text":"listening/text/2020-12-1.pdf","analysis":"listening/analysis/2020-12.pdf"},{"id":"2020-12-2","y":2020,"m":12,"s":2,"label":"2020年12月 · 第2套","audio":"listening/audio/2020-12-2.mp3","text":"listening/text/2020-12-2.pdf","analysis":"listening/analysis/2020-12.pdf"},{"id":"2021-06-1","y":2021,"m":6,"s":1,"label":"2021年6月 · 第1套","audio":"listening/audio/2021-06-1.mp3","text":"listening/text/2021-06-1.pdf","analysis":"listening/analysis/2021-06.pdf"},{"id":"2021-06-2","y":2021,"m":6,"s":2,"label":"2021年6月 · 第2套","audio":"listening/audio/2021-06-2.mp3","text":"listening/text/2021-06-2.pdf","analysis":"listening/analysis/2021-06.pdf"},{"id":"2021-12-1","y":2021,"m":12,"s":1,"label":"2021年12月 · 第1套","audio":"listening/audio/2021-12-1.mp3","text":"listening/text/2021-12-1.pdf","analysis":"listening/analysis/2021-12.pdf"},{"id":"2021-12-2","y":2021,"m":12,"s":2,"label":"2021年12月 · 第2套","audio":"listening/audio/2021-12-2.mp3","text":"listening/text/2021-12-2.pdf","analysis":"listening/analysis/2021-12.pdf"},{"id":"2022-06-1","y":2022,"m":6,"s":1,"label":"2022年6月 · 第1套","audio":"listening/audio/2022-06-1.mp3","text":"listening/text/2022-06-1.pdf","analysis":"listening/analysis/2022-06.pdf"},{"id":"2022-09-1","y":2022,"m":9,"s":1,"label":"2022年9月 · 第1套","audio":"listening/audio/2022-09-1.mp3","text":"listening/text/2022-09-1.pdf","analysis":"listening/analysis/2022-09.pdf"},{"id":"2022-12-1","y":2022,"m":12,"s":1,"label":"2022年12月 · 第1套","audio":"listening/audio/2022-12-1.mp3","text":"listening/text/2022-12-1.pdf","analysis":"listening/analysis/2022-12.pdf"},{"id":"2022-12-2","y":2022,"m":12,"s":2,"label":"2022年12月 · 第2套","audio":"listening/audio/2022-12-2.mp3","text":"listening/text/2022-12-2.pdf","analysis":"listening/analysis/2022-12.pdf"},{"id":"2023-03-1","y":2023,"m":3,"s":1,"label":"2023年3月 · 第1套","audio":"listening/audio/2023-03-1.mp3","text":"listening/text/2023-03-1.pdf","analysis":"listening/analysis/2023-03.pdf"},{"id":"2023-06-1","y":2023,"m":6,"s":1,"label":"2023年6月 · 第1套","audio":"listening/audio/2023-06-1.mp3","text":"listening/text/2023-06-1.pdf","analysis":"listening/analysis/2023-06.pdf"},{"id":"2023-06-2","y":2023,"m":6,"s":2,"label":"2023年6月 · 第2套","audio":"listening/audio/2023-06-2.mp3","text":"listening/text/2023-06-2.pdf","analysis":"listening/analysis/2023-06.pdf"},{"id":"2023-12-1","y":2023,"m":12,"s":1,"label":"2023年12月 · 第1套","audio":"listening/audio/2023-12-1.mp3","text":"listening/text/2023-12-1.pdf","analysis":"listening/analysis/2023-12.pdf"},{"id":"2023-12-2","y":2023,"m":12,"s":2,"label":"2023年12月 · 第2套","audio":"listening/audio/2023-12-2.mp3","text":"listening/text/2023-12-2.pdf","analysis":"listening/analysis/2023-12.pdf"},{"id":"2024-06-1","y":2024,"m":6,"s":1,"label":"2024年6月 · 第1套","audio":"listening/audio/2024-06-1.mp3","text":"listening/text/2024-06-1.pdf","analysis":"listening/analysis/2024-06.pdf"},{"id":"2024-06-2","y":2024,"m":6,"s":2,"label":"2024年6月 · 第2套","audio":"listening/audio/2024-06-2.mp3","text":"listening/text/2024-06-2.pdf","analysis":"listening/analysis/2024-06.pdf"},{"id":"2024-12-1","y":2024,"m":12,"s":1,"label":"2024年12月 · 第1套","audio":"listening/audio/2024-12-1.mp3","text":"listening/text/2024-12-1.pdf","analysis":"listening/analysis/2024-12.pdf"},{"id":"2024-12-2","y":2024,"m":12,"s":2,"label":"2024年12月 · 第2套","audio":"listening/audio/2024-12-2.mp3","text":"listening/text/2024-12-2.pdf","analysis":"listening/analysis/2024-12.pdf"},{"id":"2025-06-1","y":2025,"m":6,"s":1,"label":"2025年6月 · 第1套","audio":"listening/audio/2025-06-1.mp3","text":"listening/text/2025-06-1.pdf","analysis":"listening/analysis/2025-06.pdf"},{"id":"2025-06-2","y":2025,"m":6,"s":2,"label":"2025年6月 · 第2套","audio":"listening/audio/2025-06-2.mp3","text":"listening/text/2025-06-2.pdf","analysis":"listening/analysis/2025-06.pdf"},{"id":"2025-12-1","y":2025,"m":12,"s":1,"label":"2025年12月 · 第1套","audio":"listening/audio/2025-12-1.mp3","text":"listening/text/2025-12-1.pdf","analysis":"listening/analysis/2025-12.pdf"},{"id":"2025-12-2","y":2025,"m":12,"s":2,"label":"2025年12月 · 第2套","audio":"listening/audio/2025-12-2.mp3","text":"listening/text/2025-12-2.pdf","analysis":"listening/analysis/2025-12.pdf"},{"id":"2026-06-1","y":2026,"m":6,"s":1,"label":"2026年6月 · 第1套","audio":"listening/audio/2026-06-1.mp3","text":"listening/text/2026-06-1.pdf","analysis":"listening/analysis/2026-06.pdf"},{"id":"2026-06-2","y":2026,"m":6,"s":2,"label":"2026年6月 · 第2套","audio":"listening/audio/2026-06-2.mp3","text":"listening/text/2026-06-2.pdf","analysis":"listening/analysis/2026-06.pdf"}];
+const LT_BY_ID = {};
+LT_MANIFEST.forEach(function(p){ LT_BY_ID[p.id] = p; });
+function ltScore(o){ return r1((o.la||0)*7.1 + (o.lb||0)*7.1 + (o.lc||0)*14.3); }
+function ltRead(){ return {
+  la: Math.max(0, Math.min(7,  parseInt($('ltA').value, 10) || 0)),
+  lb: Math.max(0, Math.min(8,  parseInt($('ltB').value, 10) || 0)),
+  lc: Math.max(0, Math.min(10, parseInt($('ltC').value, 10) || 0))
+}; }
+function ltShowScore(){ $('ltScore').textContent = ltScore(ltRead()).toFixed(1); }
+let ltCur = '';
+
+/* ---------- 选择器 ---------- */
+function ltFillYear(){
+  const years = []; LT_MANIFEST.forEach(function(p){ if(years.indexOf(p.y) < 0) years.push(p.y); });
+  const sel = $('ltYear'); sel.innerHTML = '';
+  years.slice().reverse().forEach(function(y){
+    const op = document.createElement('option'); op.value = y; op.textContent = y + ' 年'; sel.appendChild(op);
+  });
+}
+function ltFillPaper(year){
+  const sel = $('ltPaper'); sel.innerHTML = '';
+  LT_MANIFEST.filter(function(p){ return p.y === Number(year); }).forEach(function(p){
+    const op = document.createElement('option'); op.value = p.id; op.textContent = p.label; sel.appendChild(op);
+  });
+}
+/* 记忆上一次选题，刷新后不丢 */
+function ltRemember(id){ S.listenCur = id; save(); }
+
+/* ---------- 加载某一套 ---------- */
+function ltLoad(id, keepAnswer){
+  const p = LT_BY_ID[id]; if(!p) return;
+  ltCur = id; ltRemember(id);
+  $('ltTitle').textContent = p.label + ' 听力真题音频';
+  const audio = $('ltAudio');
+  audio.src = p.audio;
+  $('ltErr').classList.add('hidden');
+  $('ltState').textContent = '';
+  /* 回填已保存作答（切换年份/场次时） */
+  if(!keepAnswer){
+    const rec = (S.listen || {})[id];
+    $('ltA').value = rec && rec.la > 0 ? rec.la : '';
+    $('ltB').value = rec && rec.lb > 0 ? rec.lb : '';
+    $('ltC').value = rec && rec.lc > 0 ? rec.lc : '';
+    ltShowScore();
+  }
+  ltRenderHist();
+}
+function ltCurPaper(){ return LT_BY_ID[ltCur] || LT_MANIFEST[0]; }
+
+/* ---------- 作答：实时强制落盘 ---------- */
+['ltA','ltB','ltC'].forEach(function(id){
+  $(id).addEventListener('input', function(){
+    ltShowScore();
+    ltPersist(false);   /* 每次击键即写入 localStorage，刷新不丢 */
+  });
+});
+function ltPersist(explicit){
+  if(!ltCur) return;
+  const o = ltRead();
+  const now = Date.now();
+  /* 当前作答实时更新（不覆盖历史）；history 数组只增不减 */
+  if(!S.listen[ltCur] || typeof S.listen[ltCur] !== 'object') S.listen[ltCur] = {};
+  const rec = S.listen[ltCur];
+  if(!Array.isArray(rec.history)) rec.history = [];
+  rec.la = o.la; rec.lb = o.lb; rec.lc = o.lc; rec.score = ltScore(o); rec.ts = now;
+  if(explicit){
+    /* 保存 = 追加一条独立历史记录，绝不覆盖旧数据 */
+    rec.history.push({ ts: now, la: o.la, lb: o.lb, lc: o.lc, score: ltScore(o) });
+  }
+  save();                       /* 立刻落盘 */
+  renderLtList(); ltRenderDone(); ltRenderHist();
+  if(explicit) toast('✓ 已保存「' + ltCurPaper().label + '」· ' + rec.score.toFixed(1) + ' 分（第 ' + rec.history.length + ' 次练习）');
+}
+$('ltSave').addEventListener('click', function(){ ltPersist(true); });
+$('ltClear').addEventListener('click', function(){
+  $('ltA').value = ''; $('ltB').value = ''; $('ltC').value = '';
+  ltShowScore(); ltPersist(false); toast('已清空本题作答');
+});
+
+/* ---------- 播放器：自定义进度条（点击/拖动任意跳转，seek 自愈 + Blob 兜底）+ 倍速 ---------- */
+(function(){
+  const a=$('ltAudio'), bar=$('ltBar'), fill=$('ltBarFill'), knob=$('ltBarKnob');
+  let dragging=false, pending=null, lastTarget=-1, failCount=0;
+  let blobUrl='', blobLoading=false, durTimer=null;
+
+  function fmt(t){ if(!isFinite(t)||t<0) return '--:--'; t=Math.floor(t); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); }
+  function ui(r){ const pc=(Math.min(1,Math.max(0,r))*100).toFixed(2)+'%'; fill.style.width=pc; knob.style.left=pc; }
+  function clientX(e){
+    if(e.touches && e.touches.length) return e.touches[0].clientX;
+    if(e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
+    return e.clientX;
+  }
+  function ratio(e){
+    const rc = bar.getBoundingClientRect();
+    if(!rc.width) return 0;
+    return (clientX(e) - rc.left) / rc.width;
+  }
+  /* seekable 上限：服务器不支持 Range 时，未缓冲位置浏览器会钳回原处 */
+  function seekEnd(){
+    try{ const sk=a.seekable; if(sk && sk.length) return sk.end(sk.length-1); }catch(_){}
+    return 0;
+  }
+  /* 杀手锏：整文件加载为 Blob —— 本地内存 seek，时长 100% 精准、拖动 100% 生效，
+     不受服务器 Range 支持限制；swap 时保留当前进度与播放状态 */
+  function ensureBlob(t, keepPos){
+    if(blobLoading || blobUrl) return;
+    if(!a.currentSrc || /^blob:/.test(a.currentSrc)) return;
+    if(location.protocol==='file:'){ $('ltState').textContent='此位置暂无法跳转'; return; }
+    if(typeof fetch!=='function'){ $('ltState').textContent='当前环境无法加载完整音频'; return; }
+    blobLoading=true;
+    $('ltState').textContent='\u23f3 正在加载完整音频，完成后即可任意拖动\u2026';
+    const wasPaused=a.paused, pos=(isFinite(a.currentTime)&&a.currentTime<1e100)?a.currentTime:0;
+    fetch(a.currentSrc).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function(b){
+        blobUrl=URL.createObjectURL(b);
+        a.src=blobUrl;
+        a.addEventListener('loadedmetadata', function apply(){
+          a.removeEventListener('loadedmetadata', apply);
+          blobLoading=false;
+          const dur=isFinite(a.duration)?a.duration:0;
+          $('ltDur').textContent=fmt(dur);
+          if(pending!=null && dur>0){
+            const r=pending; pending=null;    /* 之前拖动时算不出时长 → 现在补跳 */
+            doSeek(r);
+          } else if(keepPos && dur>0 && Math.abs(a.currentTime-pos)>0.5){
+            const target=Math.min(pos,dur);   /* 恢复加载前的播放进度 */
+            try{ a.currentTime=target; }catch(_){}
+            ui(target/dur); $('ltCur').textContent=fmt(target);
+          }
+          $('ltState').textContent = wasPaused ? '\u23f8 已暂停' : '\u25b6 播放中';
+          if(!wasPaused){ const pr=a.play(); if(pr&&pr.catch) pr.catch(function(){}); }
+        });
+      })
+      .catch(function(){ blobLoading=false; $('ltState').textContent='音频加载失败，请重试'; });
+  }
+  function doSeek(r){
+    r=Math.min(1,Math.max(0,r));
+    lastTarget=-1; failCount=0;
+    /* duration 无穷/未知（VBR 或无 Range 服务器）：先记 pending，同时触发 Blob 加载来解锁 */
+    if(!isFinite(a.duration) || a.duration<=0){ pending=r; ui(r); ensureBlob(0,true); return; }
+    const t=r*a.duration;
+    const m=seekEnd();
+    if(m>0 && t>m+0.25){ pending=r; ui(r); $('ltCur').textContent=fmt(t); ensureBlob(0,true); return; }  /* 未缓冲 */
+    try{ a.currentTime=t; lastTarget=t; }
+    catch(e){ pending=r; ui(r); ensureBlob(0,true); return; }
+    ui(r); $('ltCur').textContent=fmt(t);
+  }
+  function seek(r){ doSeek(r); }
+  /* pending 重试：缓冲推进后把没跳成的位置补上 */
+  function retryPending(){
+    if(pending==null || dragging) return;
+    if(!isFinite(a.duration) || a.duration<=0) return;
+    const t=pending*a.duration;
+    const m=seekEnd();
+    if(m<=0 || t<=m+0.25){ const r=pending; pending=null; doSeek(r); }
+  }
+  ['progress','canplay','canplaythrough','durationchange'].forEach(function(ev){ a.addEventListener(ev, retryPending); });
+
+  function startDrag(e){ dragging = true; seek(ratio(e)); if(e.cancelable) e.preventDefault(); }
+  function moveDrag(e){ if(!dragging) return; seek(ratio(e)); if(e.cancelable) e.preventDefault(); }
+  function endDrag(e){ if(!dragging) return; dragging = false; seek(ratio(e)); }
+  /* 鼠标通道：move/up 绑 window，拖到条外也不断 */
+  bar.addEventListener('mousedown', function(e){ startDrag(e); window.addEventListener('mousemove', moveDrag); window.addEventListener('mouseup', upMouse); });
+  function upMouse(e){ endDrag(e); window.removeEventListener('mousemove', moveDrag); window.removeEventListener('mouseup', upMouse); }
+  /* 触屏通道 */
+  bar.addEventListener('touchstart', startDrag, { passive:false });
+  bar.addEventListener('touchmove', moveDrag, { passive:false });
+  bar.addEventListener('touchend', endDrag);
+  bar.addEventListener('touchcancel', function(){ dragging=false; });
+  bar.addEventListener('click', function(e){ if(!isFinite(a.duration) || a.duration <= 0) return; seek(ratio(e)); });
+
+  a.addEventListener('timeupdate',function(){
+    if(dragging) return;
+    if(isFinite(a.duration)&&a.duration>0) ui(a.currentTime/a.duration);
+    $('ltCur').textContent=fmt(a.currentTime);
+  });
+  /* seek 完成后验证：被浏览器钳回（位置偏离>1.5s）→ 重试；再失败 → Blob 兜底 */
+  a.addEventListener('seeked',function(){
+    if(dragging) return;
+    if(isFinite(a.duration)&&a.duration>0){
+      ui(a.currentTime/a.duration);
+      $('ltCur').textContent=fmt(a.currentTime);
+    }
+    if(lastTarget>=0){
+      if(Math.abs(a.currentTime-lastTarget)<=1.5){ failCount=0; }
+      else{
+        failCount++;
+        if(blobUrl){ lastTarget=-1; return; }
+        if(failCount>=2){ const t=lastTarget; lastTarget=-1; ensureBlob(t,false); }
+        else if(isFinite(a.duration)&&a.duration>0){ pending=lastTarget/a.duration; }
+      }
+    }
+  });
+  a.addEventListener('loadedmetadata',function(){
+    $('ltDur').textContent=fmt(a.duration);
+    /* 时长算不出（VBR MP3 / 无 Range 服务器）：稍等片刻仍未知就自动 Blob 加载 */
+    if(!isFinite(a.duration) || a.duration<=0){
+      if(durTimer) clearTimeout(durTimer);
+      durTimer=setTimeout(function(){
+        if(!isFinite(a.duration) || a.duration<=0) ensureBlob(0,true);
+      }, 800);
+    }
+    retryPending();
+  });
+  a.addEventListener('durationchange',function(){ $('ltDur').textContent=fmt(a.duration); });
+  a.addEventListener('emptied',function(){
+    if(blobLoading) return;                          /* Blob 切换中，保留新 URL */
+    ui(0); $('ltCur').textContent='0:00'; $('ltDur').textContent='--:--';
+    pending=null; lastTarget=-1; failCount=0;
+    if(durTimer){ clearTimeout(durTimer); durTimer=null; }
+    if(blobUrl){ try{ URL.revokeObjectURL(blobUrl); }catch(_){} blobUrl=''; }
+  });
+  /* 播放/暂停：播到结尾或位置异常时自动回零，避免"重播无声" */
+  $('ltPlay').addEventListener('click',function(){
+    const atEnd = isFinite(a.duration) && a.duration>0 && a.currentTime >= a.duration-0.5;
+    if(!isFinite(a.currentTime) || a.currentTime>1e100 || atEnd){
+      try{ a.currentTime=0; }catch(_){}
+      ui(0); $('ltCur').textContent='0:00';
+    }
+    if(a.paused){ const pr=a.play(); if(pr&&pr.catch) pr.catch(function(){ $('ltState').textContent='再点一次播放'; }); }
+    else a.pause();
+  });
+  /* 倍速 0.75 / 1.0 / 1.25 / 1.5，记住上次选择 */
+  const spBtns=Array.prototype.slice.call(document.querySelectorAll('.lt-sp'));
+  function setSpeed(sp, keep){
+    sp=Number(sp)||1; if([0.75,1,1.25,1.5].indexOf(sp)<0) sp=1;
+    try{ a.playbackRate=sp; }catch(e){}
+    spBtns.forEach(function(b){ b.classList.toggle('lt-sp-on', Number(b.dataset.sp)===sp); });
+    if(!keep){ S.settings.ltSpeed=sp; save(); }
+  }
+  spBtns.forEach(function(b){ b.addEventListener('click',function(){ setSpeed(b.dataset.sp); $('ltState').textContent='倍速 '+b.textContent; }); });
+  setSpeed((S.settings && S.settings.ltSpeed)||1, true);
+})();
+
+/* ---------- 成绩记录列表 ---------- */
+function ltRenderDone(){
+  const n = Object.keys(S.listen || {}).filter(function(k){ const r = S.listen[k]; return r && (r.la > 0 || r.lb > 0 || r.lc > 0); }).length;
+  $('ltDone').textContent = '已练 ' + n + '/' + LT_MANIFEST.length;
+}
+function renderLtList(){
+  const box = $('ltList'); if(!box) return;
+  const keys = Object.keys(S.listen || {}).filter(function(k){ return LT_BY_ID[k]; });
+  if(!keys.length){ box.innerHTML = '<div class="text-[10px] text-slate-500 py-2 text-center">还没有作答记录</div>'; return; }
+  keys.sort(function(a,b){ return (S.listen[b].ts||0) - (S.listen[a].ts||0); });
+  box.innerHTML = keys.map(function(k){
+    const r = S.listen[k], p = LT_BY_ID[k];
+    const pct = Math.round((r.la + r.lb + r.lc) / 25 * 100);
+    const d = r.ts ? new Date(r.ts) : null;
+    const ds = d ? (d.getMonth()+1) + '/' + d.getDate() : '';
+    const n = Array.isArray(r.history) ? r.history.length : 0;
+    return '<button class="lt-item w-full flex items-center justify-between gap-2 rounded-lg bg-black/25 border border-white/10 px-2.5 py-1.5 active:scale-[.99] transition" data-id="'+k+'">'
+      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-200 block truncate">'+p.label+' <span class="mono text-[9px] text-cyan-400/80">×'+n+'次</span></span>'
+      + '<span class="mono text-[9px] text-slate-600">A'+r.la+' B'+r.lb+' C'+r.lc+' · '+ds+'</span></span>'
+      + '<span class="mono text-sm font-black shrink-0 '+(pct<60?'text-rose-400':'grad-text')+'">'+(r.score||0).toFixed(1)+'</span></button>';
+  }).join('');
+  box.querySelectorAll('.lt-item').forEach(function(b){
+    b.addEventListener('click', function(){
+      const id = b.dataset.id;
+      const y = LT_BY_ID[id].y;
+      $('ltYear').value = y; ltFillPaper(y); $('ltPaper').value = id;
+      ltLoad(id, false); ltRemember(id);
+      toast('已切换到 ' + LT_BY_ID[id].label);
+    });
+  });
+}
+
+/* ---------- 本题练习历史（追加式，只增不减） ---------- */
+function ltHistOf(id){
+  const r = (S.listen || {})[id];
+  return r && Array.isArray(r.history) ? r.history : [];
+}
+function ltRenderHist(){
+  if(!ltCur) return;
+  const h = ltHistOf(ltCur);
+  $('ltHistCount').textContent = h.length + ' 条';
+  $('ltTimes').textContent = '本题已练 ' + h.length + ' 次';
+  const box = $('ltHistWrap');
+  if(!h.length){
+    box.innerHTML = '<div class="text-[10px] text-slate-500 py-2 text-center">本题还没有保存过成绩，答题后点「保存本次成绩」即可追加一条</div>';
+    return;
+  }
+  const sorted = h.slice().sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+  box.innerHTML = sorted.map(function(e, i){
+    const d = e.ts ? new Date(e.ts) : null;
+    const ds = d ? (d.getMonth()+1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') : '';
+    const pct = Math.round((e.la + e.lb + e.lc) / 25 * 100);
+    const idx = h.length - sorted.indexOf(e);   /* 第几次练习（按时间正序） */
+    return '<button class="lt-hist w-full flex items-center justify-between gap-2 rounded-lg bg-black/20 border border-white/[.08] px-2.5 py-1.5 active:scale-[.99] transition" data-ts="'+(e.ts||0)+'">'
+      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-300 block">第 '+idx+' 次 · <span class="mono text-[9px] text-slate-500">'+ds+'</span></span>'
+      + '<span class="mono text-[9px] text-slate-600">A'+e.la+' B'+e.lb+' C'+e.lc+'（对 '+((+e.la||0)+(+e.lb||0)+(+e.lc||0))+'/25 题）</span></span>'
+      + '<span class="mono text-sm font-black shrink-0 '+(pct<60?'text-rose-400':'grad-text')+'">'+(e.score||0).toFixed(1)+'</span></button>';
+  }).join('');
+  box.querySelectorAll('.lt-hist').forEach(function(b){
+    b.addEventListener('click', function(){
+      const e = h.find(function(x){ return (x.ts||0) === Number(b.dataset.ts); });
+      if(!e) return;
+      $('ltA').value = e.la > 0 ? e.la : '';
+      $('ltB').value = e.lb > 0 ? e.lb : '';
+      $('ltC').value = e.lc > 0 ? e.lc : '';
+      ltShowScore(); ltPersist(false);
+      toast('已回填第 ' + (h.length - sorted.indexOf(e)) + ' 次作答');
+    });
+  });
+}
+$('ltHistToggle').addEventListener('click', function(){
+  const wrap = $('ltHistWrap');
+  wrap.classList.toggle('hidden');
+  $('ltHistArrow').textContent = wrap.classList.contains('hidden') ? '展开 ▾' : '收起 ▴';
+  if(!wrap.classList.contains('hidden')) ltRenderHist();
+});
+
+/* ---------- 导出备份 / 导入恢复 ---------- */
+$('ltExport').addEventListener('click', function(){
+  try{
+    const payload = { app:'cet4-listening', v:1, exported:new Date().toISOString(), listen:S.listen || {} };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cet4-listening-backup-' + today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('✓ 已导出 ' + Object.keys(S.listen || {}).length + ' 条记录');
+  }catch(e){ toast('导出失败：' + e.message); }
+});
+$('ltImportBtn').addEventListener('click', function(){ $('ltImportFile').click(); });
+$('ltImportFile').addEventListener('change', function(ev){
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const j = JSON.parse(reader.result);
+      const incoming = j && j.listen && typeof j.listen === 'object' ? j.listen : (j && typeof j === 'object' ? j : null);
+      if(!incoming) throw new Error('文件里没有 listen 记录');
+      let n = 0;
+      Object.keys(incoming).forEach(function(k){
+        const r = incoming[k];
+        if(r && typeof r === 'object' && LT_BY_ID[k] && isFinite(r.la) && isFinite(r.lb) && isFinite(r.lc)){
+          const hist = Array.isArray(r.history)
+            ? r.history.filter(function(e){ return e && typeof e === 'object' && isFinite(e.la) && isFinite(e.lb) && isFinite(e.lc); })
+                .map(function(e){ return { ts:+e.ts||0, la:+e.la||0, lb:+e.lb||0, lc:+e.lc||0, score:ltScore(e) }; })
+            : [];
+          S.listen[k] = { la:+r.la||0, lb:+r.lb||0, lc:+r.lc||0, score:ltScore(r), ts:+r.ts||Date.now(), history:hist };
+          n++;
+        }
+      });
+      if(!n) throw new Error('没有可识别的有效记录');
+      save(); renderLtList(); ltRenderDone();
+      if(ltCur && S.listen[ltCur]){ const r = S.listen[ltCur]; $('ltA').value=r.la>0?r.la:''; $('ltB').value=r.lb>0?r.lb:''; $('ltC').value=r.lc>0?r.lc:''; ltShowScore(); }
+      toast('✓ 已恢复 ' + n + ' 条练习记录');
+    }catch(e){ toast('导入失败：' + e.message); }
+    ev.target.value = '';
+  };
+  reader.readAsText(f);
+});
+
+/* ---------- 初始化 ---------- */
+function ltInit(){
+  if(!LT_MANIFEST.length){ $('ltTitle').textContent = '未检测到听力资源（listening 清单为空）'; return; }
+  ltFillYear();
+  let cur = S.listenCur && LT_BY_ID[S.listenCur] ? S.listenCur : LT_MANIFEST[0].id;
+  $('ltYear').value = LT_BY_ID[cur].y;
+  ltFillPaper(LT_BY_ID[cur].y);
+  $('ltPaper').value = cur;
+  ltLoad(cur, false);
+  ltRenderDone(); renderLtList();
+}
+$('ltYear').addEventListener('change', function(){ ltFillPaper($('ltYear').value); ltLoad($('ltPaper').value, false); });
+$('ltPaper').addEventListener('change', function(){ ltLoad($('ltPaper').value, false); });
+
 /* ================= 导入 ================= */
 $('btnImport').addEventListener('click',()=>{
   const txt=$('importText').value.trim(); const msg=$('importMsg');
@@ -1761,7 +2249,7 @@ function syncDeckChips(view){
 }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  ['learn','stats','quiz','exam','settings'].forEach(v=>$('view-'+v).classList.toggle('hidden', v!==b.dataset.view));
+  ['learn','stats','quiz','exam','listen','settings'].forEach(v=>$('view-'+v).classList.toggle('hidden', v!==b.dataset.view));
   syncDeckChips(b.dataset.view);
   if(b.dataset.view==='stats') renderStatsView();
   if(b.dataset.view==='quiz') renderQuizHome();
@@ -1798,7 +2286,7 @@ setInterval(()=>{ if(document.visibilityState==='visible'){ T().t+=5; save(); } 
 const bootEl=document.getElementById('boot'); if(bootEl) bootEl.remove();
 renderChips(); buildQueue(); showCard(); renderStatsBar(); renderCountdown(); renderQuizHome();
 if($('exDate') && !$('exDate').value) $('exDate').value = today();
-examLive(); renderGuide();
+examLive(); renderGuide(); ltInit();
 /* 存储降级提示：沙箱/无痕环境下数据只在本次会话有效 */
 (function storageNotice(){
   if(STORE.ok) return;

@@ -70,6 +70,10 @@
   .chest-shake{ animation:shake 1.6s ease infinite; }
   @keyframes shake{ 0%,90%,100%{ transform:rotate(0) } 93%{ transform:rotate(-6deg) } 96%{ transform:rotate(6deg) } }
   .timer-ring{ transition:stroke-dashoffset .3s linear; }
+  main select{ max-width:100%; }
+  main select option{ max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wr-mode{ background:rgba(0,0,0,.3); color:#94a3b8; border:1px solid rgba(255,255,255,.1); }
+  .wr-mode-on{ background:linear-gradient(135deg,#0891b2,#22d3ee) !important; color:#fff !important; border-color:transparent !important; box-shadow:0 4px 14px rgba(34,211,238,.25); }
 </style>
 </head>
 <body class="no-sel">
@@ -96,77 +100,11 @@
         </div>
         <div class="text-[11px] text-slate-400">累计坚持（天）</div>
       </div>
+      <button id="btnGear" aria-label="导入与设置" class="ml-1 w-8 h-8 shrink-0 rounded-full glass flex items-center justify-center text-slate-400 text-sm active:scale-90 transition">⚙️</button>
     </div>
-    <!-- 板块切换 -->
-    <div id="deckChips" class="flex gap-2 mt-3 overflow-x-auto pb-1"></div>
   </header>
 
   <main class="flex-1 px-4 pb-40">
-
-    <!-- ============ 学习视图 ============ -->
-    <section id="view-learn">
-      <div class="glass rounded-2xl p-3 mb-3 flex items-center justify-between text-xs">
-        <div>今日新词 <b id="tNew" class="text-cyan-300">0</b>/<span id="tGoal">30</span></div>
-        <div>今日复习 <b id="tRev" class="text-indigo-300">0</b></div>
-        <div>本板块已掌握 <b id="tKnown" class="text-emerald-300">0</b></div>
-      </div>
-      <!-- 当前词库独立进度条 -->
-      <div class="glass rounded-2xl px-3 py-2.5 mb-3">
-        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1.5">
-          <span id="progLabel">核心词汇进度</span><span id="progPct" class="text-cyan-300 font-bold">0%</span>
-        </div>
-        <div class="h-2 rounded-full bg-white/10 overflow-hidden">
-          <div id="deckProg" class="h-full rounded-full" style="width:0%;background:linear-gradient(90deg,#22d3ee,#34d399);transition:width .4s"></div>
-        </div>
-      </div>
-
-      <!-- 卡片 -->
-      <div id="cardWrap" class="relative" style="touch-action:pan-y">
-        <div id="card" class="glass rounded-3xl p-5 card-anim">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <h2 id="cWord" class="text-[26px] font-extrabold text-white break-words leading-tight">—</h2>
-                <button id="btnSpeak" class="shrink-0 w-9 h-9 rounded-full glass flex items-center justify-center text-lg active:scale-90 transition">🔊</button>
-              </div>
-              <div id="cPhon" class="text-sm text-cyan-300/90 mt-1 h-5"></div>
-            </div>
-            <span id="cType" class="shrink-0 text-[10px] px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/20 mt-1"></span>
-          </div>
-
-          <div id="cDef" class="mt-3 text-[15px] leading-relaxed text-slate-200 whitespace-pre-wrap"></div>
-
-          <div id="cExample" class="mt-3 text-xs text-slate-400 leading-relaxed hidden">
-            <span class="text-slate-500">例句</span>
-            <div id="cExampleText" class="mt-1 italic"></div>
-          </div>
-
-          <!-- 折叠标签 -->
-          <div class="mt-4 space-y-2" id="tabs"></div>
-        </div>
-        <div id="hintRight" class="swipe-hint absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 font-bold text-sm opacity-0 pointer-events-none">认识 ✓</div>
-        <div id="hintLeft" class="swipe-hint absolute left-2 top-1/2 -translate-y-1/2 text-orange-400 font-bold text-sm opacity-0 pointer-events-none">模糊 ✗</div>
-      </div>
-
-      <div class="text-center text-[11px] text-slate-500 mt-2">向右滑 = 认识 · 向左滑 = 模糊 · 剩余队列 <span id="qLeft">0</span></div>
-
-      <!-- 底部大按钮 -->
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <button id="btnWrong" class="btn-wrong text-white font-bold text-lg rounded-2xl py-4 active:scale-95 transition">记错了 / 模糊</button>
-        <button id="btnKnown" class="btn-known text-white font-bold text-lg rounded-2xl py-4 active:scale-95 transition">下一个 / 认识</button>
-      </div>
-
-      <div class="flex items-center justify-between mt-4 text-xs text-slate-400 px-1">
-        <label class="flex items-center gap-2">
-          <input id="autoSpeak" type="checkbox" class="w-4 h-4 rounded accent-cyan-400">
-          自动朗读新卡片
-        </label>
-        <label class="flex items-center gap-2">
-          每日新词
-          <input id="goalInput" type="number" min="5" max="200" class="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-center text-cyan-300">
-        </label>
-      </div>
-    </section>
 
     <!-- ============ 日历视图（标准月历） ============ -->
     <section id="view-stats" class="hidden">
@@ -181,8 +119,7 @@
         </div>
         <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
         <div class="flex items-center justify-center gap-4 mt-3 text-[10px] text-slate-500">
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>背过词</span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>打卡/日记/快答</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>打卡 / 日记 / 快答</span>
         </div>
       </div>
 
@@ -196,29 +133,30 @@
           <button id="btnAI" class="px-4 py-2.5 rounded-xl font-bold text-xs text-white active:scale-95 transition" style="background:linear-gradient(135deg,#6366f1,#a855f7);box-shadow:0 6px 18px rgba(139,92,246,.35)">🤖 AI 智能分析</button>
         </div>
 
-        <!-- 单词练习：自动统计 -->
-        <div class="mt-3 rounded-2xl bg-black/25 border border-white/10 p-3.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">🔤 单词练习 <span class="text-[9px] text-slate-500 font-normal">（自动统计）</span></span>
-            <span class="text-[10px] text-slate-500">目标 <span id="dpGoal">30</span></span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mt-2.5 text-center">
-            <div class="bg-white/5 rounded-xl py-2"><div id="dpNew" class="text-lg font-bold text-cyan-300">0</div><div class="text-[9px] text-slate-400">新词</div></div>
-            <div class="bg-white/5 rounded-xl py-2"><div id="dpRev" class="text-lg font-bold text-indigo-300">0</div><div class="text-[9px] text-slate-400">复习</div></div>
-          </div>
-        </div>
-
-        <!-- 其他练习：一键打卡 -->
+        <!-- 今日打卡 -->
         <div class="mt-3">
-          <div class="text-xs font-bold text-slate-200 mb-2">其他练习打卡 <span class="text-[9px] text-slate-500 font-normal">（轻触即记录）</span></div>
+          <div class="text-xs font-bold text-slate-200 mb-2">今日打卡 <span class="text-[9px] text-slate-500 font-normal">（轻触即记录）</span></div>
           <div id="ckGrid" class="grid grid-cols-2 gap-2"></div>
         </div>
 
         <!-- 学习日记 -->
         <div class="mt-3">
-          <div class="text-xs font-bold text-slate-200 mb-2">📓 学习日记 <span class="text-[9px] text-slate-500 font-normal">（备考心得 / 错题反思 / 心情）</span></div>
-          <textarea id="diaryText" rows="4" placeholder="今天学了什么？哪里卡住了？写两句，AI 复盘更准…" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50"></textarea>
-          <button id="btnDiary" class="w-full mt-2 py-2.5 rounded-xl text-xs font-bold text-cyan-300 glass active:scale-95 transition">保存日记</button>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs font-bold text-slate-200">📓 学习日记 <span class="text-[9px] text-slate-500 font-normal">（备考心得 / 错题反思 / 心情）</span></div>
+            <button id="btnAllDiary" class="mono text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-lg active:scale-95 transition" style="background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.25)">全部日记 ›</button>
+          </div>
+          <div id="dpDiaryEmpty" class="text-[11px] text-slate-500 py-1">这一天还没有日记，写两句吧 👇</div>
+          <div id="dpDiaryView" class="hidden rounded-xl bg-black/25 border border-white/10 p-3">
+            <div id="dpDiaryBody" class="text-[12px] text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+            <div class="flex items-center justify-between mt-2">
+              <span id="dpDiaryMeta" class="mono text-[9px] text-slate-500"></span>
+              <button id="btnDiaryEdit" class="text-[10px] font-bold text-cyan-300 active:scale-95 transition">✏️ 编辑</button>
+            </div>
+          </div>
+          <div id="diaryEditWrap" class="mt-2 hidden">
+            <textarea id="diaryText" rows="4" placeholder="今天学了什么？哪里卡住了？写两句，AI 复盘更准…" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50"></textarea>
+            <button id="btnDiary" class="w-full mt-2 py-2.5 rounded-xl text-xs font-bold text-cyan-300 glass active:scale-95 transition">保存日记</button>
+          </div>
         </div>
       </div>
     </section>
@@ -510,6 +448,85 @@
           </div>
     </section>
 
+    <!-- ============ 写作专项视图 ============ -->
+    <section id="view-write" class="hidden">
+      <div class="glass rounded-2xl p-4 mx-auto" style="max-width:640px">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-white text-sm">✍️ 写作专项训练</h3>
+          <span id="wrDone" class="mono text-[10px] text-slate-500">已练 0 道</span>
+        </div>
+        <div class="mono text-[9px] text-slate-600 mb-2.5">CET-4 官方五档评分（15 分制）· 120-180 词 · 四维加权诊断 · 本地引擎不联网</div>
+
+        <!-- 双模切换 -->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="wrModeBank" class="wr-mode rounded-xl py-2 mono text-[11px] font-bold transition">📚 十年真题库</button>
+          <button id="wrModeAi" class="wr-mode rounded-xl py-2 mono text-[11px] font-bold transition">🤖 AI 模拟出题</button>
+        </div>
+
+        <!-- 真题库 -->
+        <div id="wrBankPane" class="mt-2">
+          <div class="grid grid-cols-2 gap-2">
+            <select id="wrYear" class="w-full min-w-0 mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50"></select>
+            <select id="wrSet" class="w-full min-w-0 mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50" style="text-overflow:ellipsis"></select>
+          </div>
+        </div>
+
+        <!-- AI 出题 -->
+        <div id="wrAiPane" class="hidden mt-2">
+          <div class="grid grid-cols-2 gap-2">
+            <select id="wrAiType" class="w-full min-w-0 mono bg-black/30 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50">
+              <option value="">随机题型</option>
+              <option value="essay">议论文</option>
+              <option value="letter">书信</option>
+              <option value="report">报告</option>
+              <option value="proposal">提案</option>
+              <option value="ad">广告</option>
+            </select>
+            <button id="wrAiGen" class="rounded-lg py-2 mono text-[11px] font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);box-shadow:0 4px 14px rgba(124,58,237,.28)">🎲 换一题</button>
+          </div>
+        </div>
+
+        <!-- 题目 -->
+        <div class="mt-3 rounded-xl bg-black/30 border border-white/10 p-3">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span id="wrTag" class="mono text-[9px] px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,.14);color:#67e8f9;border:1px solid rgba(34,211,238,.3)">[—]</span>
+            <span id="wrKind" class="mono text-[9px] px-2 py-0.5 rounded-full" style="background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3)">议论文</span>
+          </div>
+          <div id="wrTitle" class="text-white text-sm font-bold mt-2 leading-snug">—</div>
+          <div id="wrDir" class="text-[11px] text-slate-300 leading-relaxed mt-1.5"></div>
+          <div id="wrReq" class="text-[10px] text-slate-500 leading-relaxed mt-1.5"></div>
+        </div>
+
+        <!-- 写作区 -->
+        <textarea id="wrText" rows="9" spellcheck="false" autocomplete="off" placeholder="Type your essay here…  (建议先列 3 段：观点 → 论证 → 总结)" class="mt-3 w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-[13px] leading-relaxed text-slate-100 focus:outline-none focus:border-cyan-400/60 transition resize-y"></textarea>
+
+        <div class="flex items-center justify-between mt-1.5">
+          <div id="wrCount" class="mono text-[11px] font-bold text-slate-400">0 词</div>
+          <div id="wrWarn" class="mono text-[10px] text-slate-500 text-right">目标 120-180 词</div>
+        </div>
+        <div class="relative h-1.5 mt-1 rounded-full bg-white/10 overflow-hidden">
+          <div id="wrBar" class="h-full rounded-full transition-all" style="width:0%;background:linear-gradient(90deg,#0891b2,#22d3ee)"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <button id="wrScore" class="py-2.5 rounded-xl text-xs font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">🤖 智能评分</button>
+          <button id="wrClear" class="glass rounded-xl py-2.5 text-xs text-slate-300 font-bold active:scale-95 transition">清空重写</button>
+        </div>
+
+        <!-- 评分结果 -->
+        <div id="wrResult" class="hidden mt-3"></div>
+
+        <!-- 历史 -->
+        <div class="mt-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-cyan-300">📜 练习记录（只增不覆盖）</span>
+            <span id="wrTimes" class="mono text-[10px] text-slate-500">本篇 0 次</span>
+          </div>
+          <div id="wrHist" class="mt-1.5 space-y-1.5"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ 设置/导入视图 ============ -->
     <section id="view-settings" class="hidden">
       <div class="glass rounded-2xl p-4">
@@ -525,6 +542,26 @@
           <button id="btnClearCustom" class="py-3 rounded-xl font-bold text-sm text-rose-300 glass active:scale-95 transition">清空自定义</button>
         </div>
         <div id="importMsg" class="text-xs mt-2 text-cyan-300"></div>
+      </div>
+      <div class="glass rounded-2xl p-4 mt-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-white">💾 全量备份 / 恢复</h3>
+            <div class="text-[10px] text-slate-500 mono mt-0.5">打卡天数 · 学习日记 · 模考 · 写作 · 听力 · 已背单词</div>
+          </div>
+          <span class="mono text-[9px] text-cyan-300 px-2 py-1 rounded-lg shrink-0" style="background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.25)">建议每周</span>
+        </div>
+        <div id="bkStat" class="mono text-[10px] text-slate-400 mt-2.5 leading-relaxed"></div>
+        <button id="btnBkExport" class="w-full mt-2.5 py-3 rounded-xl font-bold text-sm text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">⬇ 导出全部数据</button>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button id="btnBkMerge" class="py-2.5 rounded-xl font-bold text-xs text-cyan-300 glass active:scale-95 transition">⬆ 导入并合并</button>
+          <button id="btnBkOver" class="py-2.5 rounded-xl font-bold text-xs text-rose-300 glass active:scale-95 transition">⟲ 覆盖恢复</button>
+        </div>
+        <input id="bkFile" type="file" accept="application/json,.json" class="hidden">
+        <div class="text-[10px] text-slate-500 leading-relaxed mt-2">
+          <b class="text-slate-300">合并</b>：保留现有数据，只补充备份里多出来的（推荐换设备时用）<br>
+          <b class="text-slate-300">覆盖</b>：用备份文件完全替换当前数据（清缓存后找回时用）
+        </div>
       </div>
       <div class="glass rounded-2xl p-4 mt-3 text-[11px] text-slate-400 leading-relaxed">
         <b class="text-slate-200 text-sm">📱 数据存储说明（本地化）</b><br>
@@ -545,13 +582,12 @@
   <!-- 底部导航 -->
   <nav class="fixed bottom-0 left-0 right-0 z-40">
     <div class="max-w-[480px] mx-auto px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-2" style="background:linear-gradient(0deg,#0a0e1a 55%,rgba(10,14,26,0))">
-      <div class="glass rounded-2xl grid grid-cols-6 py-2">
-        <button class="navbtn active flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="learn"><span class="navico text-lg">📖</span>学习</button>
-        <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="stats"><span class="navico text-lg">📅</span>日历</button>
+      <div class="glass rounded-2xl grid grid-cols-5 py-2">
+        <button class="navbtn active flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="stats"><span class="navico text-lg">📅</span>日历</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="quiz"><span class="navico text-lg">⚡</span>快答</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="exam"><span class="navico text-lg">📊</span>模考</button>
         <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="listen"><span class="navico text-lg">🎧</span>听力</button>
-        <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="settings"><span class="navico text-lg">⚙️</span>导入</button>
+        <button class="navbtn flex flex-col items-center gap-0.5 text-[10px] text-slate-500" data-view="write"><span class="navico text-lg">✍️</span>写作</button>
       </div>
     </div>
   </nav>
@@ -566,6 +602,18 @@
       <button id="aiClose" class="w-8 h-8 rounded-full glass text-slate-400 shrink-0">✕</button>
     </div>
     <div id="aiBody" class="px-5 pb-5 text-sm leading-relaxed"></div>
+  </div>
+</div>
+
+
+<!-- 全部日记弹窗 -->
+<div id="diaryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5" style="background:rgba(0,0,0,.65)">
+  <div class="glass rounded-3xl w-full max-w-[380px] toast" style="max-height:82vh;overflow-y:auto">
+    <div class="flex items-center justify-between p-5 pb-3">
+      <h4 class="font-bold text-white flex items-center gap-2">📓 全部日记 <span id="diaryCount" class="text-[10px] font-normal text-slate-500"></span></h4>
+      <button id="diaryClose" class="w-8 h-8 rounded-full glass text-slate-400 shrink-0">✕</button>
+    </div>
+    <div id="diaryList" class="px-4 pb-5"></div>
   </div>
 </div>
 
@@ -668,6 +716,7 @@ const defaultState = () => ({
   stats: {},        // 'YYYY-MM-DD' -> {n,r,t}
   checkins: {},     // 'YYYY-MM-DD' -> {listening:1, reading:1, writing:1, translating:1}
   diary: {},        // 'YYYY-MM-DD' -> '当天学习日记'
+  diaryTs: {},      // 'YYYY-MM-DD' -> 最后保存时间戳
   quizBestV: 0,     // 看词模式最佳分
   quizBestL: 0,     // 听音模式最佳分
   quizHist: {},     // 'YYYY-MM-DD' -> [{m:'v'|'l', score, right, wrong, ts}]
@@ -676,6 +725,9 @@ const defaultState = () => ({
   exams: [],        // 真题模考记录 [{id,name,date,la,lb,lc,ra,rb,rc,L,R,total}]
   listen: {},       // 听力专项 id -> {la,lb,lc,score,ts}
   listenCur: '',    // 上次选中的听力套题
+  write: {},        // 写作 promptId -> {history:[{ts,n,score,dims,sug,text}]}（只增不减）
+  writeDraft: {},   // 写作 promptId -> 草稿文本
+  writeCur: '',     // 上次选中的写作题目
 });
 let S = load();
 /* 结构校正：保证关键容器类型正确，避免脏数据/老版本数据在 .push、in、[k] 时报错 */
@@ -687,12 +739,20 @@ function normalizeState(m){
     if(typeof m.settings.goal !== 'number' || !isFinite(m.settings.goal)) m.settings.goal = 30;
     if(!isStr(m.settings.examDate) || !m.settings.examDate) m.settings.examDate = base.settings.examDate;
   }
-  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','quizHist','quizWrong','wrongFreq','wrongToday','listen']){
+  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','diaryTs','quizHist','quizWrong','wrongFreq','wrongToday','listen']){
     if(!m[k] || typeof m[k] !== 'object' || Array.isArray(m[k])) m[k] = {};
   }
   if(!Array.isArray(m.custom)) m.custom = [];
   if(!Array.isArray(m.exams)) m.exams = [];
   if(!isStr(m.listenCur)) m.listenCur = '';
+  if(!isStr(m.writeCur)) m.writeCur = '';
+  if(!m.writeDraft || typeof m.writeDraft !== 'object' || Array.isArray(m.writeDraft)) m.writeDraft = {};
+  if(!m.write || typeof m.write !== 'object' || Array.isArray(m.write)) m.write = {};
+  Object.keys(m.write).forEach(function(k){
+    const r = m.write[k];
+    if(!r || typeof r !== 'object' || Array.isArray(r)){ m.write[k] = { history: [] }; return; }
+    if(!Array.isArray(r.history)) r.history = [];
+  });
   /* 听力记录迁移：旧格式无 history 数组 -> 自动补上（历史只增不减） */
   if(m.listen && typeof m.listen === 'object' && !Array.isArray(m.listen)){
     Object.keys(m.listen).forEach(function(k){
@@ -776,240 +836,6 @@ function calcTotalDays(){
   return days.size;
 }
 function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-
-/* ================= 学习队列 ================= */
-let queue = [];      // [{word, def, isNew, deckId}]
-let cur = null;      // 当前卡
-function buildQueue(){
-  const deck = deckById(curDeck);
-  const known = deck.known;
-  const wrong = (S.wrongToday[curDeck]||[]).filter(w=>isStr(w) && w.trim() && !known[w]);
-  const todayN = T().n;
-  let newQuota = Math.max(0, S.settings.goal - todayN);
-  queue = wrong.map(w=>({ word:w, isNew:false }));
-  if(newQuota>0){
-    /* 混学随机抽样：新词随机打乱抽取，避免总按字母顺序刷 */
-    const fresh=deck.list.filter(e=>{
-      if(!e || !isStr(e.w) || !e.w.trim()) return false;
-      return !known[e.w] && !(S.seenAny[curDeck]&&S.seenAny[curDeck][e.w]);
-    });
-    for(let i=fresh.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=fresh[i]; fresh[i]=fresh[j]; fresh[j]=t; }
-    for(const e of fresh){ if(newQuota<=0) break; queue.push({ word:e.w, isNew:true }); newQuota--; }
-  }
-  // 复习错词排前面，新词在后
-  queue.sort((a,b)=>(a.isNew?1:0)-(b.isNew?1:0));
-}
-function defOf(deckId, word){
-  if(!isStr(word)) return '';
-  const deck = deckById(deckId);
-  const e = deck.list.find(x=>x && x.w===word);
-  return (e && isStr(e.d))? e.d : '';
-}
-function showCard(){
-  const deck = deckById(curDeck);
-  document.getElementById('tKnown').textContent = Object.keys(deck.known).length;
-  document.getElementById('qLeft').textContent = queue.length;
-  if(!queue.length || !queue[0] || !isStr(queue[0].word)){
-    cur=null;
-    document.getElementById('cWord').textContent = queue.length? '词条数据异常，已跳过' : '本节完成 🎉';
-    if(queue.length) queue.shift();
-    document.getElementById('cPhon').textContent='';
-    document.getElementById('cType').textContent='';
-    document.getElementById('cDef').textContent = T().n >= S.settings.goal
-      ? '今日目标已达成，去日历看看你的火焰 🔥'
-      : '队列为空。点任意按钮或明天再来，或去「导入」加词。';
-    hideExample(); clearTabs();
-    return;
-  }
-  cur = queue[0];
-  const def = defOf(curDeck, cur.word);
-  document.getElementById('cWord').textContent = cur.word;
-  document.getElementById('cDef').textContent = prettyDef(def);
-  const type = isStr(def) ? def.match(/^(usage|collocation|idm|phrv)\./) : null;
-  document.getElementById('cType').textContent = type? TAG_MAP[type[1]] : '';
-  loadPhon(cur.word);
-  loadExample(cur.word);
-  buildTabs(cur.word, type? type[1] : null);
-  const card=document.getElementById('card');
-  card.classList.remove('card-anim'); void card.offsetWidth; card.classList.add('card-anim');
-  if(S.settings.autoSpeak) setTimeout(()=>speak(cur.word), 350);
-}
-function prettyDef(d){
-  if(!isStr(d)) return '';
-  return d.replace(/\b(usage|collocation|idm|phrv)\.\s*/g,'').replace(/(vt|vi|n|adj|adv)\./g,'$1.');
-}
-function hideExample(){ document.getElementById('cExample').classList.add('hidden'); }
-function clearTabs(){ document.getElementById('tabs').innerHTML=''; }
-
-function answer(good){
-  if(!cur || !isStr(cur.word)) { if(cur) { queue.shift(); showCard(); } return; }
-  const deck = deckById(curDeck), word = cur.word;
-  const t = T();
-  if(!S.seenAny[curDeck]) S.seenAny[curDeck]={};
-  S.seenAny[curDeck][word]=1;
-  if(cur.isNew) t.n++; else t.r++;
-  if(good){
-    if(deck.id==='custom') S.customKnown[word]=1; else { if(!S.known[deck.id]) S.known[deck.id]={}; S.known[deck.id][word]=1; }
-    const wl = S.wrongToday[curDeck]||[];
-    const i = wl.indexOf(word); if(i>-1){ wl.splice(i,1); }
-    toast('✓ 已掌握');
-  }else{
-    if(!S.wrongToday[curDeck]) S.wrongToday[curDeck]=[];
-    if(!S.wrongToday[curDeck].includes(word)) S.wrongToday[curDeck].push(word);
-    if(isStr(word)) S.wrongFreq[word]=(S.wrongFreq[word]||0)+1; /* 错误频次累计 */
-    toast('✗ 已加入今日复习池');
-  }
-  queue.shift(); save(); renderStatsBar(); renderCountdown(); renderChips();
-  showCard();
-}
-
-/* ================= 音标 & 例句（在线补充+缓存） ================= */
-/* 音标缓存：存储不可用时自动退化为内存缓存（本次会话有效） */
-let phonCache;
-try{
-  phonCache = STORE.getJSON('cet4_phon', {});
-  if(!phonCache || typeof phonCache !== 'object' || Array.isArray(phonCache)) phonCache = {};
-}catch(e){ phonCache = {}; }
-function savePhon(){ try{ STORE.setJSON('cet4_phon', phonCache); }catch(e){} }
-async function loadPhon(word){
-  const el = document.getElementById('cPhon');
-  if(!isStr(word) || !word.trim()){ el.textContent=''; return; }
-  if(word.split(' ').length>1){ el.textContent=''; return; } // 词组不查
-  if(phonCache[word]!==undefined){ el.textContent = phonCache[word]||''; return; }
-  el.textContent = '…';
-  try{
-    const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
-    if(r.ok){
-      const j = await r.json();
-      let ph = '';
-      for(const e of j){ if(e.phonetic){ ph=e.phonetic; break; } const p=(e.phonetics||[]).find(p=>p.text); if(p){ ph=p.text; break; } }
-      phonCache[word]=ph; savePhon();
-      if(cur && cur.word===word) el.textContent = ph;
-    } else { phonCache[word]=''; savePhon(); if(cur&&cur.word===word) el.textContent=''; }
-  }catch(e){ if(cur&&cur.word===word) el.textContent=''; }
-}
-async function loadExample(word){
-  hideExample();
-  if(!isStr(word) || /[ /]/.test(word)) return; // 词组跳过
-  try{
-    const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
-    if(!r.ok) return;
-    const j = await r.json();
-    let ex='', pos='';
-    outer: for(const e of j){ for(const m of (e.meanings||[])){ for(const d of (m.definitions||[])){ if(d.example){ ex=d.example; pos=m.partOfSpeech; break outer; } } } }
-    if(ex && cur && cur.word===word){
-      document.getElementById('cExampleText').textContent = ex;
-      document.getElementById('cExample').classList.remove('hidden');
-    }
-  }catch(e){}
-}
-
-/* ================= 卡片折叠标签 ================= */
-const ROOTS = [
-  ['spect','看 (inspect检查, respect尊重)'],['dict','说 (predict预言)'],['duc/duct','引导 (conduct指挥)'],['ject','投掷 (project投射)'],
-  ['port','搬运 (import进口)'],['scrib/script','写 (describe描述)'],['tract','拉拽 (attract吸引)'],['vert/vers','转 (convert转换)'],
-  ['tain/ten','握持 (contain包含)'],['press','压 (impress印象)'],['struct','建造 (structure结构)'],['vis/vid','看 (visible可见)'],
-  ['aud','听 (audience听众)'],['bio','生命 (biology生物)'],['geo','地 (geography地理)'],['graph','写/画 (photograph照片)'],
-  ['mit/miss','送/发 (transmit传送)'],['mob/mot','移动 (promote促进)'],['pos','放置 (position位置)'],['rupt','破 (interrupt打断)'],
-  ['sist','站立 (assist协助)'],['spect/spic','看 (suspect怀疑)'],['form','形状 (reform改革)'],['cred','相信 (credit信用)'],
-  ['cur/curr','跑 (occur发生)'],['fac/fect','做 (effect效果)'],['fer','带来 (transfer转移)'],['grad','步/级 (progress进步)'],
-  ['log','言语 (dialogue对话)'],['pel/puls','推 (expel驱逐)'],['plex/plic','折叠 (complicate复杂)'],['ven','来 (prevent预防)'],
-  ['pre-','前 (preview预习)'],['re-','再/回 (return返回)'],['un-','不 (unfair不公平)'],['in-/im-','不 (incorrect不正确)'],
-  ['dis-','相反 (dislike不喜欢)'],['mis-','错误 (mistake错误)'],['sub-','下 (subway地铁)'],['super-','超 (superb极佳)'],
-  ['trans-','穿越 (transport运输)'],['inter-','之间 (international国际)'],['ex-','出 (export出口)'],['com-/con-','共同 (confirm确认)'],
-  ['-tion','名词:动作 (action)'],['-ment','名词:结果 (development)'],['-able','形容词:能够 (available)'],['-ful','形容词:充满 (useful)'],
-  ['-less','形容词:无 (careless)'],['-ly','副词:…地 (quickly)'],['-ize','动词:使…化 (realize)'],['-ous','形容词:多…的 (famous)'],
-];
-function buildTabs(word, phraseTag){
-  const box = document.getElementById('tabs');
-  box.innerHTML='';
-  const tabs = phraseTag
-    ? [['comb','📚 词组类型'],['syn','🔗 近义表达']]
-    : [['col','📚 词组搭配'],['der','🌿 同族派生'],['root','🧩 词根词缀'],['syn','🔗 近义词']];
-  for(const [key,label] of tabs){
-    const wrap = document.createElement('div');
-    wrap.className='rounded-xl overflow-hidden border border-white/10';
-    wrap.innerHTML = `<button class="w-full flex items-center justify-between px-3 py-2.5 text-xs text-slate-300 bg-white/5"><span>${label}</span><span class="text-slate-500">▾</span></button>
-      <div class="accordion-body max-h-0 px-3 text-xs text-slate-300" data-body></div>`;
-    const body = wrap.querySelector('[data-body]');
-    const head = wrap.querySelector('button');
-    head.addEventListener('click', ()=>{
-      const open = body.style.maxHeight && body.style.maxHeight!=='0px';
-      body.style.maxHeight = open? '0px' : (body.scrollHeight+30)+'px';
-      wrap.querySelector('span:last-child').textContent = open? '▾':'▴';
-      if(!open && !body.dataset.loaded){ fetchTab(key, word, body); body.dataset.loaded=1; }
-    });
-    box.appendChild(wrap);
-  }
-}
-async function fetchTab(key, word, body){
-  if(!isStr(word) || !word.trim()){ body.innerHTML='<span class="text-slate-500 py-2 block">词条数据不完整，无法查询</span>'; return; }
-  body.innerHTML='<span class="text-slate-500">加载中…</span>';
-  try{
-    if(key==='root'){
-      const w=word.toLowerCase(); const hits=[];
-      for(const [r,mean] of ROOTS){ const parts=r.split('/'); if(parts.some(p=>w.includes(p.replace('-','')))) hits.push(`<b class="text-cyan-300">${r}</b> ${mean}`); }
-      body.innerHTML = hits.length? '<div class="py-2 space-y-1">'+hits.slice(0,4).map(h=>`<div>${h}</div>`).join('')+'</div>' : '<span class="text-slate-500 py-2 block">未在词库中匹配到常见词根词缀</span>';
-      return;
-    }
-    if(key==='col'){
-      /* 词组搭配：只从用户上传的《四级核心词组》+《拓展词组》真题词库中精准匹配，绝不瞎编 */
-      const w=word.toLowerCase().replace(/[^a-z]/g,'');
-      if(!w){ body.innerHTML='<span class="text-slate-500 py-2 block">词条数据不完整</span>'; return; }
-      const esc=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const re=new RegExp('(^|[^a-z])'+esc+'([^a-z]|$)','i');
-      const hits=[], seen=new Set();
-      for(const e of BANK.phrase.concat(BANK.ext)){
-        if(!e || !isStr(e.w) || !isStr(e.d)) continue;
-        const lw=e.w.toLowerCase();
-        if(lw===w || seen.has(lw)) continue;      // 单词本身不算搭配；去重
-        if(re.test(lw)){ seen.add(lw); hits.push(e); }
-      }
-      body.innerHTML = hits.length
-        ? '<div class="py-2 space-y-2">'+hits.slice(0,8).map(e=>
-            `<div class="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5">
-               <b class="text-cyan-300">${e.w}</b>
-               <div class="text-[11px] text-slate-400 mt-0.5">${prettyDef(e.d).slice(0,60)}</div>
-             </div>`).join('')+'</div>'
-        : '<span class="text-slate-500 py-2 block">真题词组库（1537 条）中暂无含该词的搭配</span>';
-      return;
-    }
-    if(key==='comb'){
-      /* 词组卡片：从真题词库找含相同关键词的真实词组 */
-      const words=word.toLowerCase().split(/[^a-z]+/).filter(x=>x.length>2);
-      if(!words.length){ body.innerHTML='<span class="text-slate-500 py-2 block">词条数据不完整</span>'; return; }
-      const hits=[], seen=new Set([word.toLowerCase()]);
-      for(const e of BANK.phrase.concat(BANK.ext)){
-        if(!e || !isStr(e.w) || !isStr(e.d)) continue;
-        const lw=e.w.toLowerCase();
-        if(seen.has(lw)) continue;
-        if(words.some(w=>new RegExp('(^|[^a-z])'+w+'([^a-z]|$)','i').test(lw))){ seen.add(lw); hits.push(e); }
-      }
-      body.innerHTML = hits.length
-        ? '<div class="py-2 space-y-2">'+hits.slice(0,6).map(e=>
-            `<div class="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5">
-               <b class="text-cyan-300">${e.w}</b>
-               <div class="text-[11px] text-slate-400 mt-0.5">${prettyDef(e.d).slice(0,60)}</div>
-             </div>`).join('')+'</div>'
-        : '<span class="text-slate-500 py-2 block">真题词组库中暂无相近搭配</span>';
-      return;
-    }
-    if(key==='der'){
-      const stem = word.replace(/(ing|ed|es|s|ly|er|est|ion|tion|ment|ness|ful|ous|ive|al)$/,'') || word;
-      const j = await (await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(stem)}*&max=10`)).json();
-      const list = j.filter(x=>x.word!==word);
-      body.innerHTML = list.length? '<div class="py-2 flex flex-wrap gap-1.5">'+list.map(x=>`<span class="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-200">${x.word}</span>`).join('')+'</div>' : '<span class="text-slate-500 py-2 block">暂无同族词</span>';
-      return;
-    }
-    if(key==='syn'){
-      const j = await (await fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=8`)).json();
-      body.innerHTML = j.length? '<div class="py-2 flex flex-wrap gap-1.5">'+j.map(x=>`<span class="px-2 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-200">${x.word}</span>`).join('')+'</div>' : '<span class="text-slate-500 py-2 block">暂无近义词</span>';
-      return;
-    }
-  }catch(e){
-    body.innerHTML='<span class="text-slate-500 py-2 block">需要联网获取，当前不可用</span>';
-  }
-}
 
 /* ================= 语音朗读（含缩写预处理） ================= */
 let voiceEN=null;
@@ -1112,45 +938,7 @@ function unlockTTS(){
 }
 ['touchend','click'].forEach(ev=>document.addEventListener(ev, unlockTTS, {passive:true}));
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(e){} } });
-document.getElementById('btnSpeak').addEventListener('click', ()=>{ if(cur) speak(cur.word); });
 
-/* ================= 手势滑动 ================= */
-let sx=0, sy=0, dx=0, dragging=false;
-const cardWrap=document.getElementById('cardWrap'), card=document.getElementById('card');
-cardWrap.addEventListener('touchstart', e=>{ dragging=true; sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; card.style.transition='none'; }, {passive:true});
-cardWrap.addEventListener('touchmove', e=>{
-  if(!dragging) return;
-  dx=e.touches[0].clientX-sx; const dy=e.touches[0].clientY-sy;
-  if(Math.abs(dx)>Math.abs(dy)){
-    card.style.transform=`translateX(${dx}px) rotate(${dx/25}deg)`;
-    document.getElementById('hintRight').style.opacity = dx>40? 1:0;
-    document.getElementById('hintLeft').style.opacity = dx<-40? 1:0;
-  }
-}, {passive:true});
-cardWrap.addEventListener('touchend', ()=>{
-  if(!dragging) return; dragging=false;
-  card.style.transition='';
-  document.getElementById('hintRight').style.opacity=0; document.getElementById('hintLeft').style.opacity=0;
-  if(dx>80){ card.classList.add('fly-right'); setTimeout(()=>{ card.classList.remove('fly-right'); card.style.transform=''; answer(true); },280); }
-  else if(dx<-80){ card.classList.add('fly-left'); setTimeout(()=>{ card.classList.remove('fly-left'); card.style.transform=''; answer(false); },280); }
-  else card.style.transform='';
-});
-
-document.getElementById('btnKnown').addEventListener('click', ()=>answer(true));
-document.getElementById('btnWrong').addEventListener('click', ()=>answer(false));
-
-/* ================= 统计条 / 热力图 ================= */
-function renderStatsBar(){
-  const t=T();
-  document.getElementById('tNew').textContent=t.n;
-  document.getElementById('tGoal').textContent=S.settings.goal;
-  document.getElementById('tRev').textContent=t.r;
-  /* 当前词库独立进度条 */
-  const dk=deckById(curDeck);
-  const pct=Math.min(100,Math.round(Object.keys(dk.known).length/Math.max(1,dk.list.length)*100));
-  const bar=document.getElementById('deckProg');
-  if(bar){ bar.style.width=pct+'%'; document.getElementById('progPct').textContent=pct+'%'; document.getElementById('progLabel').textContent=dk.name+'进度'; }
-}
 function renderStatsView(){
   renderMonthCal(); renderCheckinPanel();
 }
@@ -1168,22 +956,20 @@ function renderMonthCal(){
   for(let i=0;i<lead;i++){ const f=document.createElement('div'); grid.appendChild(f); }
   for(let d=1;d<=dim;d++){
     const k=calY+'-'+pad2(calM+1)+'-'+pad2(d);
-    const s=S.stats[k]||{n:0,r:0}; const wc=(s.n||0)+(s.r||0);
     const on=active(k);
     const future=k>todayK;
     const sel=k===selectedDate;
     const b=document.createElement('button');
     b.className='relative h-11 rounded-xl flex flex-col items-center justify-center text-xs border active:scale-90 transition '
       +(sel?'chip-active font-bold':(future?'text-slate-600 border-white/5':'text-slate-300 border-white/10'));
-    if(!sel && wc>0) b.style.background='rgba(34,211,238,'+Math.min(0.10+wc/120,0.32)+')';
     const ckk=S.checkins && S.checkins[k];
     const hasCk=(ckk && Object.values(ckk).some(v=>v)) || (isStr(S.diary[k]) && S.diary[k].trim()) || (Array.isArray(S.quizHist[k]) && S.quizHist[k].length>0);
-    const hasWc=wc>0;
+    if(!sel && hasCk) b.style.background='rgba(16,185,129,.14)';
     b.innerHTML='<span>'+d+'</span>'
-      +((hasWc||hasCk)?'<span class="absolute bottom-1 flex gap-1">'+(hasWc?'<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>':'')+(hasCk?'<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>':'')+'</span>':'');
+      +(hasCk?'<span class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>':'');
     if(k===todayK) b.style.boxShadow='0 0 0 2px rgba(103,232,249,.55)';
     if(future){ b.disabled=true; b.style.opacity=.45; }
-    else b.addEventListener('click',()=>{ selectedDate=k; renderMonthCal(); renderCheckinPanel(); });
+    else b.addEventListener('click',()=>{ selectedDate=k; diaryEditing=false; renderMonthCal(); renderCheckinPanel(); });
     grid.appendChild(b);
   }
 }
@@ -1191,7 +977,7 @@ $('calPrev').addEventListener('click',()=>{ calM--; if(calM<0){calM=11;calY--;} 
 $('calNext').addEventListener('click',()=>{ calM++; if(calM>11){calM=0;calY++;} renderMonthCal(); });
 /* ================= 月历联动：多维打卡 + 学习日记 ================= */
 const CK_MODULES=[['listening','🎧 听力'],['reading','📖 阅读'],['writing','✍️ 写作'],['translating','🔤 翻译']];
-let selectedDate=null;
+let selectedDate=null, diaryEditing=false;
 const WD=['日','一','二','三','四','五','六'];
 function parseKey(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
 function renderCheckinPanel(){
@@ -1199,9 +985,6 @@ function renderCheckinPanel(){
   const dd=parseKey(d);
   $('dpDate').textContent = d===today()? '今天' : (d===fmt(new Date(Date.now()-86400000))? '昨天' : `${dd.getMonth()+1}月${dd.getDate()}日`);
   $('dpWeekday').textContent = d + ' · 星期' + WD[dd.getDay()] + (d>today()? '' : '') ;
-  const s=S.stats[d]||{n:0,r:0,t:0};
-  $('dpNew').textContent=s.n||0; $('dpRev').textContent=s.r||0;
-  $('dpGoal').textContent=S.settings.goal;
   const ck=(S.checkins[d])||{};
   const grid=$('ckGrid'); grid.innerHTML='';
   CK_MODULES.forEach(([id,label])=>{
@@ -1214,8 +997,26 @@ function renderCheckinPanel(){
     b.addEventListener('click',()=>toggleCK(id));
     grid.appendChild(b);
   });
-  const dv=S.diary[d];
-  $('diaryText').value = isStr(dv)? dv : '';
+  /* 日记：有内容 → 只读展示；无内容或点「编辑」→ 编辑器 */
+  const dv = isStr(S.diary[d]) ? S.diary[d] : '';
+  const empty=$('dpDiaryEmpty'), view=$('dpDiaryView'), wrap=$('diaryEditWrap');
+  if(dv.trim() && !diaryEditing){
+    empty.classList.add('hidden');
+    view.classList.remove('hidden');
+    wrap.classList.add('hidden');
+    $('dpDiaryBody').textContent = dv;
+    const ts = S.diaryTs && S.diaryTs[d];
+    $('dpDiaryMeta').textContent = (ts ? fmtTime(ts)+' · ' : '') + dv.trim().length + ' 字';
+  }else{
+    empty.classList.toggle('hidden', !!dv.trim());
+    view.classList.add('hidden');
+    wrap.classList.remove('hidden');
+  }
+  $('diaryText').value = dv;
+}
+function fmtTime(ts){
+  const x=new Date(ts);
+  return (x.getMonth()+1)+'月'+x.getDate()+'日 '+pad2(x.getHours())+':'+pad2(x.getMinutes());
 }
 function toggleCK(id){
   if(!S.checkins[selectedDate]) S.checkins[selectedDate]={};
@@ -1227,10 +1028,56 @@ function toggleCK(id){
 $('btnDiary').addEventListener('click',()=>{
   const v=$('diaryText').value;
   if(!isStr(v) || !v.trim()){ toast('先写点什么再保存哦'); return; }
-  S.diary[selectedDate]=v.trim(); save(); renderCountdown();
-  toast('📓 日记已保存到 '+(selectedDate===today()?'今天':selectedDate));
+  const d=selectedDate||today();
+  S.diary[d]=v.trim();
+  if(!S.diaryTs || typeof S.diaryTs!=='object') S.diaryTs={};
+  S.diaryTs[d]=Date.now();
+  if(!S.checkins[d] || typeof S.checkins[d]!=='object') S.checkins[d]={};
+  S.checkins[d].diary=1;
+  save(); diaryEditing=false;
+  renderCountdown(); renderCheckinPanel(); renderMonthCal();
+  toast('📓 日记已保存到 '+(d===today()?'今天':d));
 });
+$('btnDiaryEdit').addEventListener('click',()=>{
+  diaryEditing=true; renderCheckinPanel();
+  try{ $('diaryText').focus(); }catch(e){}
+});
+$('btnAllDiary').addEventListener('click',()=>{ renderDiaryList(); $('diaryModal').classList.remove('hidden'); });
+$('diaryClose').addEventListener('click',()=>$('diaryModal').classList.add('hidden'));
 $('diaryText').addEventListener('blur',()=>{ /* 移动端键盘收起不影响 */ });
+
+/* 全部日记：按日期倒序列出，点任意一篇跳回那天的日历 */
+function renderDiaryList(){
+  const keys=Object.keys(S.diary||{}).filter(function(k){ return isStr(S.diary[k]) && S.diary[k].trim(); }).sort().reverse();
+  $('diaryCount').textContent='共 '+keys.length+' 篇';
+  const box=$('diaryList');
+  if(!keys.length){
+    box.innerHTML='<div class="text-[11px] text-slate-500 text-center py-8">还没有写过日记<br>回到日历页写第一篇吧 ✍️</div>';
+    return;
+  }
+  box.innerHTML=keys.map(function(k){
+    const dd=parseKey(k), txt=S.diary[k];
+    const ts=S.diaryTs && S.diaryTs[k];
+    const label=(k===today()? '今天' : (dd.getMonth()+1)+'月'+dd.getDate()+'日');
+    return '<button class="diary-item w-full text-left rounded-xl bg-black/25 border border-white/10 px-3 py-2.5 mb-2 active:scale-[.98] transition" data-k="'+k+'">'
+      +'<div class="flex items-center justify-between gap-2"><span class="text-[11px] font-bold text-cyan-300 shrink-0">'+label
+      +' <span class="text-[9px] text-slate-500 font-normal">星期'+WD[dd.getDay()]+' · '+k+'</span></span>'
+      +'<span class="mono text-[9px] text-slate-500 shrink-0">'+txt.trim().length+' 字</span></div>'
+      +'<div class="text-[11px] text-slate-300 leading-snug mt-1 break-words">'+wrEsc(txt.slice(0,80))+(txt.length>80?'…':'')+'</div>'
+      +(ts?'<div class="mono text-[8px] text-slate-600 mt-1">'+fmtTime(ts)+'</div>':'')
+      +'</button>';
+  }).join('');
+  box.querySelectorAll('.diary-item').forEach(function(b){
+    b.addEventListener('click',function(){
+      const k=b.dataset.k, dd=parseKey(k);
+      selectedDate=k; diaryEditing=false; calY=dd.getFullYear(); calM=dd.getMonth();
+      $('diaryModal').classList.add('hidden');
+      setView('stats');
+      renderMonthCal(); renderCheckinPanel();
+      window.scrollTo(0,0);
+    });
+  });
+}
 
 /* ================= AI 智能复盘（免 Key 本地规则引擎） ================= */
 function aiAnalyze(){
@@ -1252,7 +1099,7 @@ function aiAnalyze(){
     else if(s.n>0) assess.push('今日新词 '+s.n+'/'+goal+' 个，还差 '+(goal-s.n)+' 个。');
     else if(s.r>0) assess.push('今天只做了复习（'+s.r+' 次），没有推新词。');
     if(done.length) assess.push('已完成打卡：'+done.join('、')+'。');
-    if(wordCnt>0) assess.push('单词练习合计 '+wordCnt+' 次，用时约 '+Math.round((s.t||0)/60)+' 分钟。');
+    if(wordCnt>0) assess.push('学习记录合计 '+wordCnt+' 次，用时约 '+Math.round((s.t||0)/60)+' 分钟。');
     if(s.n>0 && s.n<goal) advice.push('剩余新词分 2 轮完成，每轮后来一局「60秒快答」自测，记住率会明显提升。');
     if((s.r||0)>=20) advice.push('复习量较大（'+s.r+' 次）：错题池在滚动是好事，但别让新词停滞。');
     if(missed.length) advice.push('今天还没碰：'+missed.join('、')+'。四级各题型雨露均沾，挑最弱的一个补 15 分钟。');
@@ -1308,6 +1155,11 @@ $('aiClose').addEventListener('click',()=>$('aiModal').classList.add('hidden'));
 function totalKnown(){ return decks().reduce((a,dk)=>a+Object.keys(dk.known).length,0); }
 
 /* ================= 60秒快答（双模式极限挑战） ================= */
+/* 释义美化：去掉 usage./collocation. 等标签前缀（快答选项与错题本共用） */
+function prettyDef(d){
+  if(!isStr(d)) return '';
+  return d.replace(/\b(usage|collocation|idm|phrv)\.\s*/g,'').replace(/\s+/g,' ').trim();
+}
 let qTimer=null, qScore=0, qCombo=0, qLeft=60, qMode='v', qRight=0, qWrong=0, qAns=null;
 function allEntries(){ return decks().flatMap(d=>d.list).filter(e=>e && isStr(e.w) && e.w.trim() && isStr(e.d) && e.d.trim()); }
 function renderQuizHome(){
@@ -1879,12 +1731,24 @@ function ltFillPaper(year){
 function ltRemember(id){ S.listenCur = id; save(); }
 
 /* ---------- 加载某一套 ---------- */
+/* 音频多路径回退：仓库根目录 → listening/audio 子目录 → GitHub Pages 线上 */
+let ltCandidates = [], ltCandIdx = 0;
+function ltSetSrc(p){
+  const cands = [p.audio, 'listening/audio/' + p.audio];
+  try{
+    if(location.href.indexOf('https://rowan78336.github.io/cet4_study/') !== 0)
+      cands.push('https://rowan78336.github.io/cet4_study/' + p.audio);
+  }catch(_){}
+  ltCandidates = cands.filter(function(u,i,arr){ return arr.indexOf(u) === i; });
+  ltCandIdx = 0;
+  $('ltAudio').src = ltCandidates[0];
+}
 function ltLoad(id, keepAnswer){
   const p = LT_BY_ID[id]; if(!p) return;
   ltCur = id; ltRemember(id);
   $('ltTitle').textContent = p.label + ' 听力真题音频';
-  const audio = $('ltAudio');
-  audio.src = p.audio;
+  $('ltErr').classList.add('hidden');
+  ltSetSrc(p);
   $('ltErr').classList.add('hidden');
   $('ltState').textContent = '';
   /* 回填已保存作答（切换年份/场次时） */
@@ -1918,6 +1782,11 @@ function ltPersist(explicit){
   if(explicit){
     /* 保存 = 追加一条独立历史记录，绝不覆盖旧数据 */
     rec.history.push({ ts: now, la: o.la, lb: o.lb, lc: o.lc, score: ltScore(o) });
+  }
+  if(explicit && (o.la + o.lb + o.lc) > 0){
+    const dk = today();
+    if(!S.checkins[dk] || typeof S.checkins[dk] !== 'object') S.checkins[dk] = {};
+    S.checkins[dk].listening = 1;
   }
   save();                       /* 立刻落盘 */
   renderLtList(); ltRenderDone(); ltRenderHist();
@@ -2073,14 +1942,24 @@ $('ltClear').addEventListener('click', function(){
     else a.pause();
   });
   a.addEventListener('error', function(){
+    /* Blob 播放出错不参与路径回退 */
+    const curSrc = a.currentSrc || a.src || '';
+    if(curSrc.indexOf('blob:') === 0){ ensureBlob(-1, false); return; }
+    /* 还有候选路径 → 静默换下一个源重试 */
+    if(ltCandIdx < ltCandidates.length - 1){
+      ltCandIdx++;
+      $('ltState').textContent = '正在尝试备用音频源 (' + (ltCandIdx+1) + '/' + ltCandidates.length + ')…';
+      a.src = ltCandidates[ltCandIdx];
+      try{ a.load(); }catch(_){}
+      return;
+    }
     $('ltErr').classList.remove('hidden');
     $('ltState').textContent='';
     const code = a.error ? a.error.code : 0;
-    const src = a.currentSrc || a.src || '';
-    const tail = src.split('/').slice(-2).join('/');
+    const tail = (ltCandidates[0] || '').split('/').slice(-1)[0] || '未知';
     const msg = {1:'下载被中断',2:'网络错误',3:'音频解码失败',4:'找不到音频文件（404 / 路径不对）'}[code] || '未知错误';
     $('ltErrText').textContent = '⚠️ 音频加载失败：' + msg;
-    $('ltErrSrc').textContent = '文件：' + (tail || '未知') + ' · 手机上播放请确认该 mp3 已上传到仓库根目录（与 index.html 同级）';
+    $('ltErrSrc').textContent = '文件：' + tail + ' · 已尝试 ' + ltCandidates.length + ' 个路径（本地目录 / listening/audio/ / GitHub 线上）都失败，请检查网络';
   });
   /* 倍速 0.75 / 1.0 / 1.25 / 1.5，记住上次选择 */
   const spBtns=Array.prototype.slice.call(document.querySelectorAll('.lt-sp'));
@@ -2215,6 +2094,205 @@ $('ltImportFile').addEventListener('change', function(ev){
   reader.readAsText(f);
 });
 
+/* ---------- 全量备份 / 恢复（打卡·日记·模考·写作·听力·词库 一次打包） ---------- */
+function bkSummary(){
+  const ck = Object.keys(S.checkins||{}).filter(function(k){ const o=S.checkins[k]; return o && typeof o==='object' && Object.keys(o).some(function(f){ return o[f]; }); });
+  const dy = Object.keys(S.diary||{}).filter(function(k){ return isStr(S.diary[k]) && S.diary[k].trim(); });
+  const wr = Object.keys(S.write||{}).reduce(function(a,k){
+    const r=S.write[k]; return a + (r && Array.isArray(r.history) ? r.history.length : 0);
+  },0);
+  return {
+    days: ck.length,
+    days7: ck.filter(function(k){
+      const t = new Date(k + 'T00:00:00').getTime();
+      return isFinite(t) && (Date.now() - t) < 7*86400000;
+    }).length,
+    diaries: dy.length,
+    exams: Array.isArray(S.exams) ? S.exams.length : 0,
+    writes: wr,
+    listens: Object.keys(S.listen||{}).length,
+    words: Object.keys((S.known&&S.known.core)||{}).length
+  };
+}
+function bkRenderStat(){
+  const el=$('bkStat'); if(!el) return;
+  const c=bkSummary();
+  el.textContent = '当前：打卡 ' + c.days + ' 天（近 7 天 ' + c.days7 + ' 天）· 日记 ' + c.diaries + ' 篇 · 模考 '
+    + c.exams + ' 条 · 写作 ' + c.writes + ' 篇 · 听力 ' + c.listens + ' 套 · 已背 ' + c.words + ' 词';
+}
+function bkNormalize(d){
+  const merged = defaultState();
+  if(d && typeof d === 'object' && !Array.isArray(d)) Object.assign(merged, d);
+  return normalizeState(merged);
+}
+function bkPayload(){
+  return { app:'cet4-study', v:2, exported:new Date().toISOString(), counts:bkSummary(), data:S };
+}
+function bkDownload(){
+  const payload = bkPayload();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cet4-全量备份-' + today() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ try{ URL.revokeObjectURL(a.href); }catch(_){} }, 2000);
+  return payload.counts;
+}
+/* 合并规则：只补不删；同日取较大值 / 同条按时间戳去重 */
+function bkMergeData(inc){
+  const b = bkNormalize(inc);
+  ['core','phrase','ext'].forEach(function(d){
+    if(!S.known[d] || typeof S.known[d]!=='object') S.known[d]={};
+    Object.keys(b.known[d]||{}).forEach(function(w){ if(!S.known[d][w]) S.known[d][w]=1; });
+  });
+  Object.keys(b.customKnown||{}).forEach(function(w){ if(!S.customKnown[w]) S.customKnown[w]=1; });
+  (b.custom||[]).forEach(function(e){
+    if(!e || !isStr(e.w) || !e.w.trim()) return;
+    if(!S.custom.some(function(x){ return x && x.w===e.w; })) S.custom.push(e);
+  });
+  Object.keys(b.stats||{}).forEach(function(k){
+    const c=b.stats[k]; if(!c || typeof c!=='object') return;
+    const a=S.stats[k];
+    if(!a){ S.stats[k]={ n:+c.n||0, r:+c.r||0, t:+c.t||0 }; return; }
+    a.n=Math.max(+a.n||0,+c.n||0); a.r=Math.max(+a.r||0,+c.r||0); a.t=Math.max(+a.t||0,+c.t||0);
+  });
+  Object.keys(b.checkins||{}).forEach(function(k){
+    const c=b.checkins[k]; if(!c || typeof c!=='object') return;
+    if(!S.checkins[k] || typeof S.checkins[k]!=='object') S.checkins[k]={};
+    Object.keys(c).forEach(function(f){ if(c[f]) S.checkins[k][f]=1; });
+  });
+  Object.keys(b.diary||{}).forEach(function(k){
+    if(!isStr(S.diary[k]) || !S.diary[k].trim()) S.diary[k]=b.diary[k];
+  });
+  Object.keys(b.diaryTs||{}).forEach(function(k){
+    if(!S.diaryTs[k] || (+b.diaryTs[k]||0) > (+S.diaryTs[k]||0)) S.diaryTs[k]=b.diaryTs[k];
+  });
+  S.quizBestV = Math.max(+S.quizBestV||0, +b.quizBestV||0);
+  S.quizBestL = Math.max(+S.quizBestL||0, +b.quizBestL||0);
+  Object.keys(b.quizHist||{}).forEach(function(k){
+    if(!Array.isArray(S.quizHist[k])) S.quizHist[k]=[];
+    (b.quizHist[k]||[]).forEach(function(e){
+      if(!e || typeof e!=='object') return;
+      if(!S.quizHist[k].some(function(x){ return x && x.ts===e.ts && x.score===e.score; })) S.quizHist[k].push(e);
+    });
+    S.quizHist[k].sort(function(x,y){ return (+x.ts||0)-(+y.ts||0); });
+  });
+  Object.keys(b.quizWrong||{}).forEach(function(k){
+    if(!Array.isArray(S.quizWrong[k])) S.quizWrong[k]=[];
+    (b.quizWrong[k]||[]).forEach(function(e){
+      if(!e || !isStr(e.w)) return;
+      if(!S.quizWrong[k].some(function(x){ return x && x.w===e.w; })) S.quizWrong[k].push(e);
+    });
+  });
+  Object.keys(b.wrongFreq||{}).forEach(function(w){ S.wrongFreq[w]=Math.max(+S.wrongFreq[w]||0, +b.wrongFreq[w]||0); });
+  (b.exams||[]).forEach(function(e){
+    if(!e || typeof e!=='object') return;
+    const sig=[e.date,e.name,e.total].join('|');
+    if(!S.exams.some(function(x){ return x && [x.date,x.name,x.total].join('|')===sig; })) S.exams.push(e);
+  });
+  S.exams.sort(function(x,y){ return String(x.date||'').localeCompare(String(y.date||'')); });
+  Object.keys(b.listen||{}).forEach(function(id){
+    const c=b.listen[id]; if(!c || typeof c!=='object' || !LT_BY_ID[id]) return;
+    const cur=S.listen[id];
+    if(!cur || typeof cur!=='object'){
+      S.listen[id]={ la:+c.la||0, lb:+c.lb||0, lc:+c.lc||0, score:+c.score||0, ts:+c.ts||0, history:Array.isArray(c.history)?c.history.slice():[] };
+      return;
+    }
+    if(!Array.isArray(cur.history)) cur.history=[];
+    (c.history||[]).forEach(function(e){
+      if(!e || typeof e!=='object') return;
+      if(!cur.history.some(function(x){ return x && x.ts===e.ts; })) cur.history.push(e);
+    });
+    cur.history.sort(function(x,y){ return (+x.ts||0)-(+y.ts||0); });
+    if((+c.ts||0) > (+cur.ts||0)){ cur.la=+c.la||0; cur.lb=+c.lb||0; cur.lc=+c.lc||0; cur.score=+c.score||0; cur.ts=+c.ts||0; }
+  });
+  Object.keys(b.write||{}).forEach(function(pid){
+    const c=b.write[pid]; if(!c || typeof c!=='object') return;
+    if(!S.write[pid] || typeof S.write[pid]!=='object') S.write[pid]={ history:[] };
+    if(!Array.isArray(S.write[pid].history)) S.write[pid].history=[];
+    (c.history||[]).forEach(function(e){
+      if(!e || typeof e!=='object') return;
+      if(!S.write[pid].history.some(function(x){ return x && x.ts===e.ts; })) S.write[pid].history.push(e);
+    });
+    S.write[pid].history.sort(function(x,y){ return (+x.ts||0)-(+y.ts||0); });
+  });
+  Object.keys(b.writeDraft||{}).forEach(function(k){
+    if(!isStr(S.writeDraft[k]) || !S.writeDraft[k].trim()) S.writeDraft[k]=b.writeDraft[k];
+  });
+  if(b.listenCur && !S.listenCur) S.listenCur=b.listenCur;
+  if(b.writeCur && !S.writeCur) S.writeCur=b.writeCur;
+}
+function bkParse(txt){
+  const j = JSON.parse(txt);
+  const d = (j && j.data && typeof j.data==='object' && !Array.isArray(j.data)) ? j.data
+          : ((j && typeof j==='object' && !Array.isArray(j)) ? j : null);
+  if(!d) throw new Error('文件里没有可识别的数据');
+  const looksOurs = j.app==='cet4-study' || ['checkins','diary','listen','exams','write','known','quizHist'].some(function(k){ return k in d; });
+  if(!looksOurs) throw new Error('这不像本应用的备份文件');
+  return d;
+}
+function bkRerender(){
+  const safe=function(fn){ try{ fn(); }catch(_){} };
+  safe(renderCountdown);
+  safe(renderStatsView);
+  safe(renderMonthCal);
+  safe(renderCheckinPanel);
+  safe(renderExam);
+  safe(renderLtList);
+  safe(ltRenderDone);
+  safe(renderWrite);
+  safe(renderQuizHome);
+  safe(bkRenderStat);
+  const cur=$('ltYear'), paper=$('ltPaper');
+  if(cur && paper && S.listenCur && LT_BY_ID[S.listenCur]){
+    cur.value = LT_BY_ID[S.listenCur].y;
+    safe(function(){ ltFillPaper(cur.value); });
+    paper.value = S.listenCur;
+  }
+}
+function bkApply(data, mode){
+  if(mode === 'over'){ S = bkNormalize(data); }
+  else { bkMergeData(data); normalizeState(S); }
+  save();
+  bkRerender();
+  return bkSummary();
+}
+function bkConfirmOverwrite(){
+  try{
+    if(typeof window.confirm === 'function'){
+      return !!window.confirm('覆盖恢复会用备份文件完全替换当前全部数据（现有记录将被删除），确定继续？');
+    }
+  }catch(_){}
+  return false;
+}
+let bkMode = 'merge';
+function bkInit(){
+  if(!$('btnBkExport')) return;
+  bkRenderStat();
+  $('btnBkExport').addEventListener('click', function(){
+    try{ const c=bkDownload(); toast('✓ 已导出：打卡 '+c.days+' 天 · 日记 '+c.diaries+' 篇 · 模考 '+c.exams+' 条'); }
+    catch(e){ toast('导出失败：' + e.message); }
+  });
+  $('btnBkMerge').addEventListener('click', function(){ bkMode='merge'; $('bkFile').value=''; $('bkFile').click(); });
+  $('btnBkOver').addEventListener('click', function(){ bkMode='over'; $('bkFile').value=''; $('bkFile').click(); });
+  $('bkFile').addEventListener('change', function(ev){
+    const f = ev.target.files && ev.target.files[0]; if(!f) return;
+    if(bkMode === 'over' && !bkConfirmOverwrite()){ ev.target.value=''; return; }
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const data = bkParse(String(reader.result));
+        const c = bkApply(data, bkMode);
+        toast(bkMode==='over'
+          ? '✓ 已覆盖恢复：打卡 '+c.days+' 天 · 日记 '+c.diaries+' 篇'
+          : '✓ 已合并：现共打卡 '+c.days+' 天 · 日记 '+c.diaries+' 篇 · 写作 '+c.writes+' 篇');
+      }catch(e){ toast('导入失败：' + e.message); }
+      ev.target.value = '';
+    };
+    reader.readAsText(f);
+  });
+}
+
 /* ---------- 初始化 ---------- */
 function ltInit(){
   if(!LT_MANIFEST.length){ $('ltTitle').textContent = '未检测到听力资源（listening 清单为空）'; return; }
@@ -2259,12 +2337,891 @@ $('btnImport').addEventListener('click',()=>{
   }
   save(); msg.textContent=`✓ 成功导入 ${added} 条新词（去重后），已加入「我的词库」板块`;
   $('importText').value='';
-  renderChips();
+  toast('已加入「我的词库」');
 });
 $('btnClearCustom').addEventListener('click',()=>{
-  S.custom=[]; S.customKnown={}; save(); $('importMsg').textContent='已清空自定义词库'; renderChips();
+  S.custom=[]; S.customKnown={}; save(); $('importMsg').textContent='已清空自定义词库';
 });
 $('examDate').addEventListener('change',e=>{ if(e.target.value){ S.settings.examDate=e.target.value; save(); $('examDateTxt').textContent=e.target.value; renderCountdown(); } });
+
+/* ================= 写作专项（十年真题库 + AI 模拟出题 + 智能评分 + 追加记录） ================= */
+const WR_BANK = (typeof [{"id":"cet4_2025_06_1","year":"2025年6月","set":"第1套","type":"Writing","title":"大学中文为必修课","directions":"Suppose your university is seeking students' opinions on the necessity of making College Chinese a compulsory course. You are now to write an essay to express your view.","requirement":"假设你的大学正在征求学生关于将大学中文作为必修课的必要性的意见。字数：120-180字。"},{"id":"cet4_2025_06_2","year":"2025年6月","set":"第2套","type":"Writing","title":"AI技术协助学习","directions":"Suppose your university is conducting a survey to collect students' opinions on the appropriate use of AI technology in assisting learning.","requirement":"假设你的大学在进行一项调查，收集学生对使用AI技术协助学习的意见。字数：120-180字。"},{"id":"cet4_2025_06_3","year":"2025年6月","set":"第3套","type":"Writing","title":"跨文化交际能力","directions":"Suppose your university is organizing a forum on the development of students' cross-cultural communication abilities.","requirement":"假设你的大学在组织跨文化交际能力论坛。字数：120-180字。"},{"id":"cet4_2024_12_1","year":"2024年12月","set":"第1套","type":"Writing","title":"中国快递服务行业发展","directions":"Suppose the business school of your university is seeking students' opinions on the express delivery service industry in China.","requirement":"假设商学院在调查中国快递服务行业发展及其对生活的影响。字数：120-180字。"},{"id":"cet4_2024_12_2","year":"2024年12月","set":"第2套","type":"Writing","title":"丰富学生传统文化知识","directions":"Suppose the university newspaper is inviting submissions on how to enrich students' knowledge of traditional Chinese culture.","requirement":"假设大学报纸邀请提交关于丰富传统文化知识的文章。字数：120-180字。"},{"id":"cet4_2024_12_3","year":"2024年12月","set":"第3套","type":"Writing","title":"为绿色校园做贡献","directions":"Suppose the university newspaper is inviting submissions on how students can contribute to a green campus.","requirement":"假设大学报纸邀请提交关于为绿色校园做贡献的文章。字数：120-180字。"},{"id":"cet4_2024_06_1","year":"2024年6月","set":"第1套","type":"Writing","title":"图书馆是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university libraries should be open to the public.","requirement":"假设大学就图书馆是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_2","year":"2024年6月","set":"第2套","type":"Writing","title":"大学体育设施是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university sports facilities should be open to the public.","requirement":"假设大学就体育设施是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_3","year":"2024年6月","set":"第3套","type":"Writing","title":"大学食堂是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university canteens should be open to the public.","requirement":"假设大学就食堂是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2023_12_1","year":"2023年12月","set":"第1套","type":"Writing","title":"印象最深的校园活动","directions":"Suppose the university newspaper is inviting submissions on a campus event that has impressed them most.","requirement":"假设大学报纸邀请提交印象最深的校园活动文章。字数：120-180字。"},{"id":"cet4_2023_12_2","year":"2023年12月","set":"第2套","type":"Writing","title":"家乡最近的发展","directions":"Suppose the university newspaper is inviting submissions on what in their university impresses them most / hometown development.","requirement":"假设大学报纸邀请提交关于家乡最近发展的文章。字数：120-180字。"},{"id":"cet4_2023_12_3","year":"2023年12月","set":"第3套","type":"Writing","title":"大学生社区服务","directions":"Suppose the student union is organizing an online discussion on college students doing community service.","requirement":"假设学生会组织关于大学生社区服务的在线讨论。字数：120-180字。"},{"id":"cet4_2023_06_1","year":"2023年6月","set":"第1套","type":"Writing","title":"网课的优缺点与改进","directions":"Suppose your university is conducting a survey to collect students' opinions of online classes.","requirement":"假设大学调查网课的优缺点及改进。字数：120-180字。"},{"id":"cet4_2023_06_2","year":"2023年6月","set":"第2套","type":"Writing","title":"保持温暖友好的人际关系","directions":"Suppose the student union is organizing an online discussion on interpersonal relationships.","requirement":"假设学生会组织关于人际关系的讨论，写如何与同学保持友好关系。字数：120-180字。"},{"id":"cet4_2023_06_3","year":"2023年6月","set":"第3套","type":"Writing","title":"知名学者讲座报告","directions":"Write a report summarizing a lecture delivered by a famous scholar.","requirement":"写一篇关于知名学者讲座的总结报告。字数：120-180字。"},{"id":"cet4_2022_12_1","year":"2022年12月","set":"第1套","type":"Writing","title":"体育锻炼在大学成功中的作用","directions":"Write an essay on the role of physical exercise in achieving success at college.","requirement":"写一篇关于体育锻炼在大学成功中作用的文章。字数：120-180字。"},{"id":"cet4_2022_12_2","year":"2022年12月","set":"第2套","type":"Writing","title":"养成健康生活方式的重要性","directions":"Write an essay on the importance of developing a healthy lifestyle among college students.","requirement":"写一篇关于大学生养成健康生活方式重要性的文章。字数：120-180字。"},{"id":"cet4_2022_12_3","year":"2022年12月","set":"第3套","type":"Writing","title":"培养大学生社交技能的必要性","directions":"Write an essay on the necessity of developing social skills for college students.","requirement":"写一篇关于培养大学生社交技能必要性的文章。字数：120-180字。"},{"id":"cet4_2022_09_1","year":"2022年9月","set":"第1套","type":"Writing","title":"支教申请信","directions":"Write an application letter to the university to explain why you want to teach kids in remote rural areas.","requirement":"写一封申请信，解释为什么想去偏远农村支教。字数：120-180字。"},{"id":"cet4_2022_09_2","year":"2022年9月","set":"第2套","type":"Writing","title":"教师节庆祝活动报告","directions":"Write a report to the university newspaper on the celebration activities organized by your class.","requirement":"写一篇关于班级庆祝教师节活动的报道。字数：120-180字。"},{"id":"cet4_2022_09_3","year":"2022年9月","set":"第3套","type":"Writing","title":"邀请往届毕业生分享工作经验","directions":"Write an invitation letter to the invited speakers on behalf of your class.","requirement":"写一封邀请函，邀请学长学姐回校分享工作经验。字数：120-180字。"},{"id":"cet4_2022_06_1","year":"2022年6月","set":"第1套","type":"Writing","title":"图书馆服务改进提案","directions":"Write a proposal to your school library for improving its service.","requirement":"给学校图书馆写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2022_06_2","year":"2022年6月","set":"第2套","type":"Writing","title":"丰富课外活动提案","directions":"Write a proposal to your student union for enriching students' extracurricular activities.","requirement":"给学生会写一份丰富学生课外活动的提案。字数：120-180字。"},{"id":"cet4_2022_06_3","year":"2022年6月","set":"第3套","type":"Writing","title":"学校诊所服务改进提案","directions":"Write a proposal to your school clinic for improving its service.","requirement":"给学校诊所写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2021_12_1","year":"2021年12月","set":"第1套","type":"Writing","title":"新生适应项目提案","directions":"Write a proposal to help freshmen adapt to the new environment and academic studies.","requirement":"写一份帮助新生适应大学环境的提案。字数：120-180字。"},{"id":"cet4_2021_12_2","year":"2021年12月","set":"第2套","type":"Writing","title":"校园演讲比赛策划提案","directions":"Write a proposal for organizing a speech contest.","requirement":"写一份举办校园演讲比赛的策划提案。字数：120-180字。"},{"id":"cet4_2021_12_3","year":"2021年12月","set":"第3套","type":"Writing","title":"校园二手书收集项目报告","directions":"Write a report about collecting used books on campus.","requirement":"写一份关于校园二手书收集项目的报告。字数：120-180字。"},{"id":"cet4_2021_06_1","year":"2021年6月","set":"第1套","type":"Writing","title":"人们是否沉迷于技术","directions":"Write an essay titled 'Are people becoming addicted to technology?'.","requirement":"写一篇题为《人们是否沉迷于技术？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_2","year":"2021年6月","set":"第2套","type":"Writing","title":"技术让人变懒惰吗","directions":"Write an essay titled 'Is technology making people lazy?'.","requirement":"写一篇题为《技术让人变懒惰吗？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_3","year":"2021年6月","set":"第3套","type":"Writing","title":"暴力视频游戏导致暴力吗","directions":"Write an essay titled 'Do violent video games lead to violence?'.","requirement":"写一篇题为《暴力视频游戏会导致暴力吗？》的文章。字数：120-180字。"},{"id":"cet4_2020_12_1","year":"2020年12月","set":"第1套","type":"Writing","title":"教育方式的变化","directions":"Write an essay on the topic Changes in the Way of Education.","requirement":"写一篇关于教育方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_2","year":"2020年12月","set":"第2套","type":"Writing","title":"交通方式的变化","directions":"Write an essay on the topic Changes in the Way of Transportation.","requirement":"写一篇关于交通方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_3","year":"2020年12月","set":"第3套","type":"Writing","title":"交流方式的变化","directions":"Write an essay on the topic Changes in the Way of Communication.","requirement":"写一篇关于交流方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_09_1","year":"2020年9月","set":"第1套","type":"Writing","title":"在线图书馆","directions":"Write an essay on online libraries starting with 'Online libraries are becoming increasingly popular'.","requirement":"写一篇关于在线图书馆的文章。字数：120-180字。"},{"id":"cet4_2020_09_2","year":"2020年9月","set":"第2套","type":"Writing","title":"课堂使用PPT","directions":"Write an essay on the use of PowerPoint (PPT) in class.","requirement":"写一篇关于课堂使用PPT的文章。字数：120-180字。"},{"id":"cet4_2020_09_3","year":"2020年9月","set":"第3套","type":"Writing","title":"在线词典","directions":"Write an essay on online dictionaries.","requirement":"写一篇关于在线词典的文章。字数：120-180字。"},{"id":"cet4_2019_12_1","year":"2019年12月","set":"第1套","type":"Writing","title":"向外国朋友推荐城市","directions":"Write a letter to a foreign friend who wants to teach English in China. Please recommend a city.","requirement":"写信给想在中国教英语的外国朋友推荐城市。字数：120-180字。"},{"id":"cet4_2019_12_2","year":"2019年12月","set":"第2套","type":"Writing","title":"推荐学习中文的地方","directions":"Write a letter to a foreign friend who wants to learn Chinese. Please recommend a place.","requirement":"写信给想学中文的外国朋友推荐地方。字数：120-180字。"},{"id":"cet4_2019_12_3","year":"2019年12月","set":"第3套","type":"Writing","title":"推荐中国大学","directions":"Write a letter to a foreign friend who wants to study in China. Please recommend a university.","requirement":"写信给想来中国留学的外国朋友推荐大学。字数：120-180字。"},{"id":"cet4_2019_06_1","year":"2019年6月","set":"第1套","type":"Writing","title":"志愿者帮助社区老人活动报道","directions":"Write a news report on a volunteer activity to assist elderly people.","requirement":"写一篇关于志愿者帮助社区老人的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_2","year":"2019年6月","set":"第2套","type":"Writing","title":"参观当地农场新闻报道","directions":"Write a news report on a visit to a local farm.","requirement":"写一篇关于参观当地农场的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_3","year":"2019年6月","set":"第3套","type":"Writing","title":"参观希望小学新闻报道","directions":"Write a news report on a visit to a Hope elementary school.","requirement":"写一篇关于参观希望小学的新闻报道。字数：120-180字。"},{"id":"cet4_2018_12_1","year":"2018年12月","set":"第1套","type":"Writing","title":"大城市生活的挑战","directions":"Write a short essay on the challenges of living in a big city.","requirement":"写一篇关于大城市生活挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_2","year":"2018年12月","set":"第2套","type":"Writing","title":"出国留学挑战","directions":"Write a short essay on the challenges of studying abroad.","requirement":"写一篇关于出国留学挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_3","year":"2018年12月","set":"第3套","type":"Writing","title":"毕业后职业生涯挑战","directions":"Write a short essay on the challenges of starting a career after graduation.","requirement":"写一篇关于毕业后职业生涯挑战的短文。字数：120-180字。"},{"id":"cet4_2018_06_1","year":"2018年6月","set":"第1套","type":"Writing","title":"阅读能力的重要性与培养","directions":"Write a short essay on the importance of reading ability and how to develop it.","requirement":"写一篇关于阅读能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_2","year":"2018年6月","set":"第2套","type":"Writing","title":"写作能力的重要性与培养","directions":"Write a short essay on the importance of writing ability and how to develop it.","requirement":"写一篇关于写作能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_3","year":"2018年6月","set":"第3套","type":"Writing","title":"口语能力的重要性与培养","directions":"Write a short essay on the importance of speaking ability and how to develop it.","requirement":"写一篇关于口语能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2017_12_1","year":"2017年12月","set":"第1套","type":"Writing","title":"如何处理父母与孩子关系","directions":"Write a short essay on how to best handle the relationship between parents and children.","requirement":"写一篇如何处理父母与孩子关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_2","year":"2017年12月","set":"第2套","type":"Writing","title":"如何处理老师和学生关系","directions":"Write a short essay on how to best handle the relationship between teachers and students.","requirement":"写一篇如何处理老师和学生关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_3","year":"2017年12月","set":"第3套","type":"Writing","title":"如何处理医生和病人关系","directions":"Write a short essay on how to best handle the relationship between doctors and patients.","requirement":"写一篇如何处理医生和病人关系的短文。字数：120-180字。"},{"id":"cet4_2017_06_1","year":"2017年6月","set":"第1套","type":"Writing","title":"校园网站出售自行车广告","directions":"Write an advertisement on your campus website to sell a bicycle.","requirement":"在校园网上写一则出售自行车的广告。字数：120-180字。"},{"id":"cet4_2017_06_2","year":"2017年6月","set":"第2套","type":"Writing","title":"校园网站出售旧教科书广告","directions":"Write an advertisement on your campus website to sell course books.","requirement":"在校园网上写一则出售旧教科书的广告。字数：120-180字。"},{"id":"cet4_2017_06_3","year":"2017年6月","set":"第3套","type":"Writing","title":"校园网站出售旧电脑广告","directions":"Write an advertisement on your campus website to sell a computer.","requirement":"在校园网上写一则出售旧电脑的广告。字数：120-180字。"},{"id":"cet4_2016_12_1","year":"2016年12月","set":"第1套","type":"Writing","title":"研究生 vs 考公/就业 vs 创业","directions":"Suppose you have two options upon graduation: graduate school or a job... Write an essay to explain reasons.","requirement":"毕业后选择考研还是工作/创业，写文章解释原因。字数：120-180字。"},{"id":"cet4_2016_12_2","year":"2016年12月","set":"第2套","type":"Writing","title":"国企 vs 合资企业选择","directions":"Choose between a state-owned business and a joint venture. Explain reasons.","requirement":"在国企和合资企业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_12_3","year":"2016年12月","set":"第3套","type":"Writing","title":"就业 vs 创业选择","directions":"Choose between finding a job and starting a business. Explain reasons.","requirement":"在找工作和创业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_06_1","year":"2016年6月","set":"第1套","type":"Writing","title":"给困难时帮助你的朋友写感谢信","directions":"Write a letter to express your thanks to one of your friends who helped you most.","requirement":"写一封感谢信给在你困难时给予你最多帮助的朋友。字数：120-180字。"},{"id":"cet4_2016_06_2","year":"2016年6月","set":"第2套","type":"Writing","title":"给进入大学时帮助你的老师写感谢信","directions":"Write a letter of thanks to a school teacher upon entering college.","requirement":"写信给在进入大学时帮助过你的老师表达感谢。字数：120-180字。"},{"id":"cet4_2016_06_3","year":"2016年6月","set":"第3套","type":"Writing","title":"给在成就中支持你的父母写感谢信","directions":"Write a letter to express thanks to parents upon making memorable achievement.","requirement":"在取得令人难忘的成就时向父母或家庭成员表示感谢。字数：120-180字。"}] !== 'undefined' && Array.isArray([{"id":"cet4_2025_06_1","year":"2025年6月","set":"第1套","type":"Writing","title":"大学中文为必修课","directions":"Suppose your university is seeking students' opinions on the necessity of making College Chinese a compulsory course. You are now to write an essay to express your view.","requirement":"假设你的大学正在征求学生关于将大学中文作为必修课的必要性的意见。字数：120-180字。"},{"id":"cet4_2025_06_2","year":"2025年6月","set":"第2套","type":"Writing","title":"AI技术协助学习","directions":"Suppose your university is conducting a survey to collect students' opinions on the appropriate use of AI technology in assisting learning.","requirement":"假设你的大学在进行一项调查，收集学生对使用AI技术协助学习的意见。字数：120-180字。"},{"id":"cet4_2025_06_3","year":"2025年6月","set":"第3套","type":"Writing","title":"跨文化交际能力","directions":"Suppose your university is organizing a forum on the development of students' cross-cultural communication abilities.","requirement":"假设你的大学在组织跨文化交际能力论坛。字数：120-180字。"},{"id":"cet4_2024_12_1","year":"2024年12月","set":"第1套","type":"Writing","title":"中国快递服务行业发展","directions":"Suppose the business school of your university is seeking students' opinions on the express delivery service industry in China.","requirement":"假设商学院在调查中国快递服务行业发展及其对生活的影响。字数：120-180字。"},{"id":"cet4_2024_12_2","year":"2024年12月","set":"第2套","type":"Writing","title":"丰富学生传统文化知识","directions":"Suppose the university newspaper is inviting submissions on how to enrich students' knowledge of traditional Chinese culture.","requirement":"假设大学报纸邀请提交关于丰富传统文化知识的文章。字数：120-180字。"},{"id":"cet4_2024_12_3","year":"2024年12月","set":"第3套","type":"Writing","title":"为绿色校园做贡献","directions":"Suppose the university newspaper is inviting submissions on how students can contribute to a green campus.","requirement":"假设大学报纸邀请提交关于为绿色校园做贡献的文章。字数：120-180字。"},{"id":"cet4_2024_06_1","year":"2024年6月","set":"第1套","type":"Writing","title":"图书馆是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university libraries should be open to the public.","requirement":"假设大学就图书馆是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_2","year":"2024年6月","set":"第2套","type":"Writing","title":"大学体育设施是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university sports facilities should be open to the public.","requirement":"假设大学就体育设施是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_3","year":"2024年6月","set":"第3套","type":"Writing","title":"大学食堂是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university canteens should be open to the public.","requirement":"假设大学就食堂是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2023_12_1","year":"2023年12月","set":"第1套","type":"Writing","title":"印象最深的校园活动","directions":"Suppose the university newspaper is inviting submissions on a campus event that has impressed them most.","requirement":"假设大学报纸邀请提交印象最深的校园活动文章。字数：120-180字。"},{"id":"cet4_2023_12_2","year":"2023年12月","set":"第2套","type":"Writing","title":"家乡最近的发展","directions":"Suppose the university newspaper is inviting submissions on what in their university impresses them most / hometown development.","requirement":"假设大学报纸邀请提交关于家乡最近发展的文章。字数：120-180字。"},{"id":"cet4_2023_12_3","year":"2023年12月","set":"第3套","type":"Writing","title":"大学生社区服务","directions":"Suppose the student union is organizing an online discussion on college students doing community service.","requirement":"假设学生会组织关于大学生社区服务的在线讨论。字数：120-180字。"},{"id":"cet4_2023_06_1","year":"2023年6月","set":"第1套","type":"Writing","title":"网课的优缺点与改进","directions":"Suppose your university is conducting a survey to collect students' opinions of online classes.","requirement":"假设大学调查网课的优缺点及改进。字数：120-180字。"},{"id":"cet4_2023_06_2","year":"2023年6月","set":"第2套","type":"Writing","title":"保持温暖友好的人际关系","directions":"Suppose the student union is organizing an online discussion on interpersonal relationships.","requirement":"假设学生会组织关于人际关系的讨论，写如何与同学保持友好关系。字数：120-180字。"},{"id":"cet4_2023_06_3","year":"2023年6月","set":"第3套","type":"Writing","title":"知名学者讲座报告","directions":"Write a report summarizing a lecture delivered by a famous scholar.","requirement":"写一篇关于知名学者讲座的总结报告。字数：120-180字。"},{"id":"cet4_2022_12_1","year":"2022年12月","set":"第1套","type":"Writing","title":"体育锻炼在大学成功中的作用","directions":"Write an essay on the role of physical exercise in achieving success at college.","requirement":"写一篇关于体育锻炼在大学成功中作用的文章。字数：120-180字。"},{"id":"cet4_2022_12_2","year":"2022年12月","set":"第2套","type":"Writing","title":"养成健康生活方式的重要性","directions":"Write an essay on the importance of developing a healthy lifestyle among college students.","requirement":"写一篇关于大学生养成健康生活方式重要性的文章。字数：120-180字。"},{"id":"cet4_2022_12_3","year":"2022年12月","set":"第3套","type":"Writing","title":"培养大学生社交技能的必要性","directions":"Write an essay on the necessity of developing social skills for college students.","requirement":"写一篇关于培养大学生社交技能必要性的文章。字数：120-180字。"},{"id":"cet4_2022_09_1","year":"2022年9月","set":"第1套","type":"Writing","title":"支教申请信","directions":"Write an application letter to the university to explain why you want to teach kids in remote rural areas.","requirement":"写一封申请信，解释为什么想去偏远农村支教。字数：120-180字。"},{"id":"cet4_2022_09_2","year":"2022年9月","set":"第2套","type":"Writing","title":"教师节庆祝活动报告","directions":"Write a report to the university newspaper on the celebration activities organized by your class.","requirement":"写一篇关于班级庆祝教师节活动的报道。字数：120-180字。"},{"id":"cet4_2022_09_3","year":"2022年9月","set":"第3套","type":"Writing","title":"邀请往届毕业生分享工作经验","directions":"Write an invitation letter to the invited speakers on behalf of your class.","requirement":"写一封邀请函，邀请学长学姐回校分享工作经验。字数：120-180字。"},{"id":"cet4_2022_06_1","year":"2022年6月","set":"第1套","type":"Writing","title":"图书馆服务改进提案","directions":"Write a proposal to your school library for improving its service.","requirement":"给学校图书馆写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2022_06_2","year":"2022年6月","set":"第2套","type":"Writing","title":"丰富课外活动提案","directions":"Write a proposal to your student union for enriching students' extracurricular activities.","requirement":"给学生会写一份丰富学生课外活动的提案。字数：120-180字。"},{"id":"cet4_2022_06_3","year":"2022年6月","set":"第3套","type":"Writing","title":"学校诊所服务改进提案","directions":"Write a proposal to your school clinic for improving its service.","requirement":"给学校诊所写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2021_12_1","year":"2021年12月","set":"第1套","type":"Writing","title":"新生适应项目提案","directions":"Write a proposal to help freshmen adapt to the new environment and academic studies.","requirement":"写一份帮助新生适应大学环境的提案。字数：120-180字。"},{"id":"cet4_2021_12_2","year":"2021年12月","set":"第2套","type":"Writing","title":"校园演讲比赛策划提案","directions":"Write a proposal for organizing a speech contest.","requirement":"写一份举办校园演讲比赛的策划提案。字数：120-180字。"},{"id":"cet4_2021_12_3","year":"2021年12月","set":"第3套","type":"Writing","title":"校园二手书收集项目报告","directions":"Write a report about collecting used books on campus.","requirement":"写一份关于校园二手书收集项目的报告。字数：120-180字。"},{"id":"cet4_2021_06_1","year":"2021年6月","set":"第1套","type":"Writing","title":"人们是否沉迷于技术","directions":"Write an essay titled 'Are people becoming addicted to technology?'.","requirement":"写一篇题为《人们是否沉迷于技术？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_2","year":"2021年6月","set":"第2套","type":"Writing","title":"技术让人变懒惰吗","directions":"Write an essay titled 'Is technology making people lazy?'.","requirement":"写一篇题为《技术让人变懒惰吗？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_3","year":"2021年6月","set":"第3套","type":"Writing","title":"暴力视频游戏导致暴力吗","directions":"Write an essay titled 'Do violent video games lead to violence?'.","requirement":"写一篇题为《暴力视频游戏会导致暴力吗？》的文章。字数：120-180字。"},{"id":"cet4_2020_12_1","year":"2020年12月","set":"第1套","type":"Writing","title":"教育方式的变化","directions":"Write an essay on the topic Changes in the Way of Education.","requirement":"写一篇关于教育方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_2","year":"2020年12月","set":"第2套","type":"Writing","title":"交通方式的变化","directions":"Write an essay on the topic Changes in the Way of Transportation.","requirement":"写一篇关于交通方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_3","year":"2020年12月","set":"第3套","type":"Writing","title":"交流方式的变化","directions":"Write an essay on the topic Changes in the Way of Communication.","requirement":"写一篇关于交流方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_09_1","year":"2020年9月","set":"第1套","type":"Writing","title":"在线图书馆","directions":"Write an essay on online libraries starting with 'Online libraries are becoming increasingly popular'.","requirement":"写一篇关于在线图书馆的文章。字数：120-180字。"},{"id":"cet4_2020_09_2","year":"2020年9月","set":"第2套","type":"Writing","title":"课堂使用PPT","directions":"Write an essay on the use of PowerPoint (PPT) in class.","requirement":"写一篇关于课堂使用PPT的文章。字数：120-180字。"},{"id":"cet4_2020_09_3","year":"2020年9月","set":"第3套","type":"Writing","title":"在线词典","directions":"Write an essay on online dictionaries.","requirement":"写一篇关于在线词典的文章。字数：120-180字。"},{"id":"cet4_2019_12_1","year":"2019年12月","set":"第1套","type":"Writing","title":"向外国朋友推荐城市","directions":"Write a letter to a foreign friend who wants to teach English in China. Please recommend a city.","requirement":"写信给想在中国教英语的外国朋友推荐城市。字数：120-180字。"},{"id":"cet4_2019_12_2","year":"2019年12月","set":"第2套","type":"Writing","title":"推荐学习中文的地方","directions":"Write a letter to a foreign friend who wants to learn Chinese. Please recommend a place.","requirement":"写信给想学中文的外国朋友推荐地方。字数：120-180字。"},{"id":"cet4_2019_12_3","year":"2019年12月","set":"第3套","type":"Writing","title":"推荐中国大学","directions":"Write a letter to a foreign friend who wants to study in China. Please recommend a university.","requirement":"写信给想来中国留学的外国朋友推荐大学。字数：120-180字。"},{"id":"cet4_2019_06_1","year":"2019年6月","set":"第1套","type":"Writing","title":"志愿者帮助社区老人活动报道","directions":"Write a news report on a volunteer activity to assist elderly people.","requirement":"写一篇关于志愿者帮助社区老人的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_2","year":"2019年6月","set":"第2套","type":"Writing","title":"参观当地农场新闻报道","directions":"Write a news report on a visit to a local farm.","requirement":"写一篇关于参观当地农场的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_3","year":"2019年6月","set":"第3套","type":"Writing","title":"参观希望小学新闻报道","directions":"Write a news report on a visit to a Hope elementary school.","requirement":"写一篇关于参观希望小学的新闻报道。字数：120-180字。"},{"id":"cet4_2018_12_1","year":"2018年12月","set":"第1套","type":"Writing","title":"大城市生活的挑战","directions":"Write a short essay on the challenges of living in a big city.","requirement":"写一篇关于大城市生活挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_2","year":"2018年12月","set":"第2套","type":"Writing","title":"出国留学挑战","directions":"Write a short essay on the challenges of studying abroad.","requirement":"写一篇关于出国留学挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_3","year":"2018年12月","set":"第3套","type":"Writing","title":"毕业后职业生涯挑战","directions":"Write a short essay on the challenges of starting a career after graduation.","requirement":"写一篇关于毕业后职业生涯挑战的短文。字数：120-180字。"},{"id":"cet4_2018_06_1","year":"2018年6月","set":"第1套","type":"Writing","title":"阅读能力的重要性与培养","directions":"Write a short essay on the importance of reading ability and how to develop it.","requirement":"写一篇关于阅读能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_2","year":"2018年6月","set":"第2套","type":"Writing","title":"写作能力的重要性与培养","directions":"Write a short essay on the importance of writing ability and how to develop it.","requirement":"写一篇关于写作能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_3","year":"2018年6月","set":"第3套","type":"Writing","title":"口语能力的重要性与培养","directions":"Write a short essay on the importance of speaking ability and how to develop it.","requirement":"写一篇关于口语能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2017_12_1","year":"2017年12月","set":"第1套","type":"Writing","title":"如何处理父母与孩子关系","directions":"Write a short essay on how to best handle the relationship between parents and children.","requirement":"写一篇如何处理父母与孩子关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_2","year":"2017年12月","set":"第2套","type":"Writing","title":"如何处理老师和学生关系","directions":"Write a short essay on how to best handle the relationship between teachers and students.","requirement":"写一篇如何处理老师和学生关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_3","year":"2017年12月","set":"第3套","type":"Writing","title":"如何处理医生和病人关系","directions":"Write a short essay on how to best handle the relationship between doctors and patients.","requirement":"写一篇如何处理医生和病人关系的短文。字数：120-180字。"},{"id":"cet4_2017_06_1","year":"2017年6月","set":"第1套","type":"Writing","title":"校园网站出售自行车广告","directions":"Write an advertisement on your campus website to sell a bicycle.","requirement":"在校园网上写一则出售自行车的广告。字数：120-180字。"},{"id":"cet4_2017_06_2","year":"2017年6月","set":"第2套","type":"Writing","title":"校园网站出售旧教科书广告","directions":"Write an advertisement on your campus website to sell course books.","requirement":"在校园网上写一则出售旧教科书的广告。字数：120-180字。"},{"id":"cet4_2017_06_3","year":"2017年6月","set":"第3套","type":"Writing","title":"校园网站出售旧电脑广告","directions":"Write an advertisement on your campus website to sell a computer.","requirement":"在校园网上写一则出售旧电脑的广告。字数：120-180字。"},{"id":"cet4_2016_12_1","year":"2016年12月","set":"第1套","type":"Writing","title":"研究生 vs 考公/就业 vs 创业","directions":"Suppose you have two options upon graduation: graduate school or a job... Write an essay to explain reasons.","requirement":"毕业后选择考研还是工作/创业，写文章解释原因。字数：120-180字。"},{"id":"cet4_2016_12_2","year":"2016年12月","set":"第2套","type":"Writing","title":"国企 vs 合资企业选择","directions":"Choose between a state-owned business and a joint venture. Explain reasons.","requirement":"在国企和合资企业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_12_3","year":"2016年12月","set":"第3套","type":"Writing","title":"就业 vs 创业选择","directions":"Choose between finding a job and starting a business. Explain reasons.","requirement":"在找工作和创业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_06_1","year":"2016年6月","set":"第1套","type":"Writing","title":"给困难时帮助你的朋友写感谢信","directions":"Write a letter to express your thanks to one of your friends who helped you most.","requirement":"写一封感谢信给在你困难时给予你最多帮助的朋友。字数：120-180字。"},{"id":"cet4_2016_06_2","year":"2016年6月","set":"第2套","type":"Writing","title":"给进入大学时帮助你的老师写感谢信","directions":"Write a letter of thanks to a school teacher upon entering college.","requirement":"写信给在进入大学时帮助过你的老师表达感谢。字数：120-180字。"},{"id":"cet4_2016_06_3","year":"2016年6月","set":"第3套","type":"Writing","title":"给在成就中支持你的父母写感谢信","directions":"Write a letter to express thanks to parents upon making memorable achievement.","requirement":"在取得令人难忘的成就时向父母或家庭成员表示感谢。字数：120-180字。"}])) ? [{"id":"cet4_2025_06_1","year":"2025年6月","set":"第1套","type":"Writing","title":"大学中文为必修课","directions":"Suppose your university is seeking students' opinions on the necessity of making College Chinese a compulsory course. You are now to write an essay to express your view.","requirement":"假设你的大学正在征求学生关于将大学中文作为必修课的必要性的意见。字数：120-180字。"},{"id":"cet4_2025_06_2","year":"2025年6月","set":"第2套","type":"Writing","title":"AI技术协助学习","directions":"Suppose your university is conducting a survey to collect students' opinions on the appropriate use of AI technology in assisting learning.","requirement":"假设你的大学在进行一项调查，收集学生对使用AI技术协助学习的意见。字数：120-180字。"},{"id":"cet4_2025_06_3","year":"2025年6月","set":"第3套","type":"Writing","title":"跨文化交际能力","directions":"Suppose your university is organizing a forum on the development of students' cross-cultural communication abilities.","requirement":"假设你的大学在组织跨文化交际能力论坛。字数：120-180字。"},{"id":"cet4_2024_12_1","year":"2024年12月","set":"第1套","type":"Writing","title":"中国快递服务行业发展","directions":"Suppose the business school of your university is seeking students' opinions on the express delivery service industry in China.","requirement":"假设商学院在调查中国快递服务行业发展及其对生活的影响。字数：120-180字。"},{"id":"cet4_2024_12_2","year":"2024年12月","set":"第2套","type":"Writing","title":"丰富学生传统文化知识","directions":"Suppose the university newspaper is inviting submissions on how to enrich students' knowledge of traditional Chinese culture.","requirement":"假设大学报纸邀请提交关于丰富传统文化知识的文章。字数：120-180字。"},{"id":"cet4_2024_12_3","year":"2024年12月","set":"第3套","type":"Writing","title":"为绿色校园做贡献","directions":"Suppose the university newspaper is inviting submissions on how students can contribute to a green campus.","requirement":"假设大学报纸邀请提交关于为绿色校园做贡献的文章。字数：120-180字。"},{"id":"cet4_2024_06_1","year":"2024年6月","set":"第1套","type":"Writing","title":"图书馆是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university libraries should be open to the public.","requirement":"假设大学就图书馆是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_2","year":"2024年6月","set":"第2套","type":"Writing","title":"大学体育设施是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university sports facilities should be open to the public.","requirement":"假设大学就体育设施是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2024_06_3","year":"2024年6月","set":"第3套","type":"Writing","title":"大学食堂是否向公众开放","directions":"Suppose your university is seeking students' opinions on whether university canteens should be open to the public.","requirement":"假设大学就食堂是否对公众开放征求意见。字数：120-180字。"},{"id":"cet4_2023_12_1","year":"2023年12月","set":"第1套","type":"Writing","title":"印象最深的校园活动","directions":"Suppose the university newspaper is inviting submissions on a campus event that has impressed them most.","requirement":"假设大学报纸邀请提交印象最深的校园活动文章。字数：120-180字。"},{"id":"cet4_2023_12_2","year":"2023年12月","set":"第2套","type":"Writing","title":"家乡最近的发展","directions":"Suppose the university newspaper is inviting submissions on what in their university impresses them most / hometown development.","requirement":"假设大学报纸邀请提交关于家乡最近发展的文章。字数：120-180字。"},{"id":"cet4_2023_12_3","year":"2023年12月","set":"第3套","type":"Writing","title":"大学生社区服务","directions":"Suppose the student union is organizing an online discussion on college students doing community service.","requirement":"假设学生会组织关于大学生社区服务的在线讨论。字数：120-180字。"},{"id":"cet4_2023_06_1","year":"2023年6月","set":"第1套","type":"Writing","title":"网课的优缺点与改进","directions":"Suppose your university is conducting a survey to collect students' opinions of online classes.","requirement":"假设大学调查网课的优缺点及改进。字数：120-180字。"},{"id":"cet4_2023_06_2","year":"2023年6月","set":"第2套","type":"Writing","title":"保持温暖友好的人际关系","directions":"Suppose the student union is organizing an online discussion on interpersonal relationships.","requirement":"假设学生会组织关于人际关系的讨论，写如何与同学保持友好关系。字数：120-180字。"},{"id":"cet4_2023_06_3","year":"2023年6月","set":"第3套","type":"Writing","title":"知名学者讲座报告","directions":"Write a report summarizing a lecture delivered by a famous scholar.","requirement":"写一篇关于知名学者讲座的总结报告。字数：120-180字。"},{"id":"cet4_2022_12_1","year":"2022年12月","set":"第1套","type":"Writing","title":"体育锻炼在大学成功中的作用","directions":"Write an essay on the role of physical exercise in achieving success at college.","requirement":"写一篇关于体育锻炼在大学成功中作用的文章。字数：120-180字。"},{"id":"cet4_2022_12_2","year":"2022年12月","set":"第2套","type":"Writing","title":"养成健康生活方式的重要性","directions":"Write an essay on the importance of developing a healthy lifestyle among college students.","requirement":"写一篇关于大学生养成健康生活方式重要性的文章。字数：120-180字。"},{"id":"cet4_2022_12_3","year":"2022年12月","set":"第3套","type":"Writing","title":"培养大学生社交技能的必要性","directions":"Write an essay on the necessity of developing social skills for college students.","requirement":"写一篇关于培养大学生社交技能必要性的文章。字数：120-180字。"},{"id":"cet4_2022_09_1","year":"2022年9月","set":"第1套","type":"Writing","title":"支教申请信","directions":"Write an application letter to the university to explain why you want to teach kids in remote rural areas.","requirement":"写一封申请信，解释为什么想去偏远农村支教。字数：120-180字。"},{"id":"cet4_2022_09_2","year":"2022年9月","set":"第2套","type":"Writing","title":"教师节庆祝活动报告","directions":"Write a report to the university newspaper on the celebration activities organized by your class.","requirement":"写一篇关于班级庆祝教师节活动的报道。字数：120-180字。"},{"id":"cet4_2022_09_3","year":"2022年9月","set":"第3套","type":"Writing","title":"邀请往届毕业生分享工作经验","directions":"Write an invitation letter to the invited speakers on behalf of your class.","requirement":"写一封邀请函，邀请学长学姐回校分享工作经验。字数：120-180字。"},{"id":"cet4_2022_06_1","year":"2022年6月","set":"第1套","type":"Writing","title":"图书馆服务改进提案","directions":"Write a proposal to your school library for improving its service.","requirement":"给学校图书馆写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2022_06_2","year":"2022年6月","set":"第2套","type":"Writing","title":"丰富课外活动提案","directions":"Write a proposal to your student union for enriching students' extracurricular activities.","requirement":"给学生会写一份丰富学生课外活动的提案。字数：120-180字。"},{"id":"cet4_2022_06_3","year":"2022年6月","set":"第3套","type":"Writing","title":"学校诊所服务改进提案","directions":"Write a proposal to your school clinic for improving its service.","requirement":"给学校诊所写一份改善服务的提案。字数：120-180字。"},{"id":"cet4_2021_12_1","year":"2021年12月","set":"第1套","type":"Writing","title":"新生适应项目提案","directions":"Write a proposal to help freshmen adapt to the new environment and academic studies.","requirement":"写一份帮助新生适应大学环境的提案。字数：120-180字。"},{"id":"cet4_2021_12_2","year":"2021年12月","set":"第2套","type":"Writing","title":"校园演讲比赛策划提案","directions":"Write a proposal for organizing a speech contest.","requirement":"写一份举办校园演讲比赛的策划提案。字数：120-180字。"},{"id":"cet4_2021_12_3","year":"2021年12月","set":"第3套","type":"Writing","title":"校园二手书收集项目报告","directions":"Write a report about collecting used books on campus.","requirement":"写一份关于校园二手书收集项目的报告。字数：120-180字。"},{"id":"cet4_2021_06_1","year":"2021年6月","set":"第1套","type":"Writing","title":"人们是否沉迷于技术","directions":"Write an essay titled 'Are people becoming addicted to technology?'.","requirement":"写一篇题为《人们是否沉迷于技术？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_2","year":"2021年6月","set":"第2套","type":"Writing","title":"技术让人变懒惰吗","directions":"Write an essay titled 'Is technology making people lazy?'.","requirement":"写一篇题为《技术让人变懒惰吗？》的文章。字数：120-180字。"},{"id":"cet4_2021_06_3","year":"2021年6月","set":"第3套","type":"Writing","title":"暴力视频游戏导致暴力吗","directions":"Write an essay titled 'Do violent video games lead to violence?'.","requirement":"写一篇题为《暴力视频游戏会导致暴力吗？》的文章。字数：120-180字。"},{"id":"cet4_2020_12_1","year":"2020年12月","set":"第1套","type":"Writing","title":"教育方式的变化","directions":"Write an essay on the topic Changes in the Way of Education.","requirement":"写一篇关于教育方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_2","year":"2020年12月","set":"第2套","type":"Writing","title":"交通方式的变化","directions":"Write an essay on the topic Changes in the Way of Transportation.","requirement":"写一篇关于交通方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_12_3","year":"2020年12月","set":"第3套","type":"Writing","title":"交流方式的变化","directions":"Write an essay on the topic Changes in the Way of Communication.","requirement":"写一篇关于交流方式变化的文章。字数：120-180字。"},{"id":"cet4_2020_09_1","year":"2020年9月","set":"第1套","type":"Writing","title":"在线图书馆","directions":"Write an essay on online libraries starting with 'Online libraries are becoming increasingly popular'.","requirement":"写一篇关于在线图书馆的文章。字数：120-180字。"},{"id":"cet4_2020_09_2","year":"2020年9月","set":"第2套","type":"Writing","title":"课堂使用PPT","directions":"Write an essay on the use of PowerPoint (PPT) in class.","requirement":"写一篇关于课堂使用PPT的文章。字数：120-180字。"},{"id":"cet4_2020_09_3","year":"2020年9月","set":"第3套","type":"Writing","title":"在线词典","directions":"Write an essay on online dictionaries.","requirement":"写一篇关于在线词典的文章。字数：120-180字。"},{"id":"cet4_2019_12_1","year":"2019年12月","set":"第1套","type":"Writing","title":"向外国朋友推荐城市","directions":"Write a letter to a foreign friend who wants to teach English in China. Please recommend a city.","requirement":"写信给想在中国教英语的外国朋友推荐城市。字数：120-180字。"},{"id":"cet4_2019_12_2","year":"2019年12月","set":"第2套","type":"Writing","title":"推荐学习中文的地方","directions":"Write a letter to a foreign friend who wants to learn Chinese. Please recommend a place.","requirement":"写信给想学中文的外国朋友推荐地方。字数：120-180字。"},{"id":"cet4_2019_12_3","year":"2019年12月","set":"第3套","type":"Writing","title":"推荐中国大学","directions":"Write a letter to a foreign friend who wants to study in China. Please recommend a university.","requirement":"写信给想来中国留学的外国朋友推荐大学。字数：120-180字。"},{"id":"cet4_2019_06_1","year":"2019年6月","set":"第1套","type":"Writing","title":"志愿者帮助社区老人活动报道","directions":"Write a news report on a volunteer activity to assist elderly people.","requirement":"写一篇关于志愿者帮助社区老人的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_2","year":"2019年6月","set":"第2套","type":"Writing","title":"参观当地农场新闻报道","directions":"Write a news report on a visit to a local farm.","requirement":"写一篇关于参观当地农场的新闻报道。字数：120-180字。"},{"id":"cet4_2019_06_3","year":"2019年6月","set":"第3套","type":"Writing","title":"参观希望小学新闻报道","directions":"Write a news report on a visit to a Hope elementary school.","requirement":"写一篇关于参观希望小学的新闻报道。字数：120-180字。"},{"id":"cet4_2018_12_1","year":"2018年12月","set":"第1套","type":"Writing","title":"大城市生活的挑战","directions":"Write a short essay on the challenges of living in a big city.","requirement":"写一篇关于大城市生活挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_2","year":"2018年12月","set":"第2套","type":"Writing","title":"出国留学挑战","directions":"Write a short essay on the challenges of studying abroad.","requirement":"写一篇关于出国留学挑战的短文。字数：120-180字。"},{"id":"cet4_2018_12_3","year":"2018年12月","set":"第3套","type":"Writing","title":"毕业后职业生涯挑战","directions":"Write a short essay on the challenges of starting a career after graduation.","requirement":"写一篇关于毕业后职业生涯挑战的短文。字数：120-180字。"},{"id":"cet4_2018_06_1","year":"2018年6月","set":"第1套","type":"Writing","title":"阅读能力的重要性与培养","directions":"Write a short essay on the importance of reading ability and how to develop it.","requirement":"写一篇关于阅读能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_2","year":"2018年6月","set":"第2套","type":"Writing","title":"写作能力的重要性与培养","directions":"Write a short essay on the importance of writing ability and how to develop it.","requirement":"写一篇关于写作能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2018_06_3","year":"2018年6月","set":"第3套","type":"Writing","title":"口语能力的重要性与培养","directions":"Write a short essay on the importance of speaking ability and how to develop it.","requirement":"写一篇关于口语能力重要性及如何培养的短文。字数：120-180字。"},{"id":"cet4_2017_12_1","year":"2017年12月","set":"第1套","type":"Writing","title":"如何处理父母与孩子关系","directions":"Write a short essay on how to best handle the relationship between parents and children.","requirement":"写一篇如何处理父母与孩子关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_2","year":"2017年12月","set":"第2套","type":"Writing","title":"如何处理老师和学生关系","directions":"Write a short essay on how to best handle the relationship between teachers and students.","requirement":"写一篇如何处理老师和学生关系的短文。字数：120-180字。"},{"id":"cet4_2017_12_3","year":"2017年12月","set":"第3套","type":"Writing","title":"如何处理医生和病人关系","directions":"Write a short essay on how to best handle the relationship between doctors and patients.","requirement":"写一篇如何处理医生和病人关系的短文。字数：120-180字。"},{"id":"cet4_2017_06_1","year":"2017年6月","set":"第1套","type":"Writing","title":"校园网站出售自行车广告","directions":"Write an advertisement on your campus website to sell a bicycle.","requirement":"在校园网上写一则出售自行车的广告。字数：120-180字。"},{"id":"cet4_2017_06_2","year":"2017年6月","set":"第2套","type":"Writing","title":"校园网站出售旧教科书广告","directions":"Write an advertisement on your campus website to sell course books.","requirement":"在校园网上写一则出售旧教科书的广告。字数：120-180字。"},{"id":"cet4_2017_06_3","year":"2017年6月","set":"第3套","type":"Writing","title":"校园网站出售旧电脑广告","directions":"Write an advertisement on your campus website to sell a computer.","requirement":"在校园网上写一则出售旧电脑的广告。字数：120-180字。"},{"id":"cet4_2016_12_1","year":"2016年12月","set":"第1套","type":"Writing","title":"研究生 vs 考公/就业 vs 创业","directions":"Suppose you have two options upon graduation: graduate school or a job... Write an essay to explain reasons.","requirement":"毕业后选择考研还是工作/创业，写文章解释原因。字数：120-180字。"},{"id":"cet4_2016_12_2","year":"2016年12月","set":"第2套","type":"Writing","title":"国企 vs 合资企业选择","directions":"Choose between a state-owned business and a joint venture. Explain reasons.","requirement":"在国企和合资企业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_12_3","year":"2016年12月","set":"第3套","type":"Writing","title":"就业 vs 创业选择","directions":"Choose between finding a job and starting a business. Explain reasons.","requirement":"在找工作和创业之间做出选择并解释原因。字数：120-180字。"},{"id":"cet4_2016_06_1","year":"2016年6月","set":"第1套","type":"Writing","title":"给困难时帮助你的朋友写感谢信","directions":"Write a letter to express your thanks to one of your friends who helped you most.","requirement":"写一封感谢信给在你困难时给予你最多帮助的朋友。字数：120-180字。"},{"id":"cet4_2016_06_2","year":"2016年6月","set":"第2套","type":"Writing","title":"给进入大学时帮助你的老师写感谢信","directions":"Write a letter of thanks to a school teacher upon entering college.","requirement":"写信给在进入大学时帮助过你的老师表达感谢。字数：120-180字。"},{"id":"cet4_2016_06_3","year":"2016年6月","set":"第3套","type":"Writing","title":"给在成就中支持你的父母写感谢信","directions":"Write a letter to express thanks to parents upon making memorable achievement.","requirement":"在取得令人难忘的成就时向父母或家庭成员表示感谢。字数：120-180字。"}] : [];
+const WR_BY_ID = {};
+WR_BANK.forEach(function(p){ if(p && p.id) WR_BY_ID[p.id] = p; });
+const WR_MIN = 120, WR_MAX = 180, WR_FULL = 106.5;
+
+let wrMode = 'bank';      // bank | ai
+let wrPrompt = null;      // 当前题目对象
+let wrAiSeed = '';        // 当前 AI 题目 id
+
+/* ---------- 基础工具 ---------- */
+function wrWords(t){
+  const m = String(t || '').match(/[A-Za-z][A-Za-z'\-]*|\d+/g);
+  return m ? m.length : 0;
+}
+function wrSentences(t){
+  const out = [], m = String(t || '').match(/[^.!?\n]+[.!?]*/g) || [];
+  m.forEach(function(x){ const s = x.trim(); if(s) out.push(s); });
+  return out;
+}
+function wrKindOf(p){
+  const t = ((p && p.title) || '') + ' ' + ((p && p.directions) || '');
+  if(/letter|写信|感谢信|申请信|邀请函|推荐/.test(t)) return '书信';
+  if(/proposal|提案/.test(t)) return '提案';
+  if(/report|报道|报告/.test(t)) return '报告';
+  if(/advertisement|广告/.test(t)) return '广告';
+  return '议论文';
+}
+function wrTagOf(p){
+  if(!p) return '[—]';
+  if(p.year && p.set) return '[' + p.year + ' ' + p.set + ']';
+  return '[AI 模拟题]';
+}
+
+/* ---------- 双模切换 ---------- */
+function wrSetMode(m){
+  wrMode = m;
+  const on = 'wr-mode rounded-xl py-2 mono text-[11px] font-bold transition wr-mode-on';
+  const off = 'wr-mode rounded-xl py-2 mono text-[11px] font-bold transition';
+  $('wrModeBank').className = (m === 'bank') ? on : off;
+  $('wrModeAi').className = (m === 'ai') ? on : off;
+  $('wrBankPane').classList.toggle('hidden', m !== 'bank');
+  $('wrAiPane').classList.toggle('hidden', m !== 'ai');
+  if(m === 'bank'){
+    const id = $('wrSet').value || S.writeCur;
+    if(id && WR_BY_ID[id]) wrLoadBank(id);
+    else wrLoadBank(WR_BANK.length ? WR_BANK[0].id : '');
+  } else if(!wrPrompt || wrPrompt.id.indexOf('ai-') !== 0){
+    wrGenAi();
+  }
+}
+
+/* ---------- 真题库选择器 ---------- */
+function wrFillYear(){
+  const years = [];
+  WR_BANK.forEach(function(p){ if(years.indexOf(p.year) < 0) years.push(p.year); });
+  const sel = $('wrYear'); sel.innerHTML = '';
+  years.forEach(function(y){   /* JSON 本身新→旧，保持原序 */
+    const op = document.createElement('option'); op.value = y; op.textContent = y; sel.appendChild(op);
+  });
+}
+function wrFillSet(year){
+  const sel = $('wrSet'); sel.innerHTML = '';
+  WR_BANK.filter(function(p){ return p.year === year; }).forEach(function(p){
+    const op = document.createElement('option');
+    op.value = p.id;
+    op.textContent = p.set + ' · ' + p.title;
+    sel.appendChild(op);
+  });
+}
+function wrLoadBank(id){
+  const p = WR_BY_ID[id]; if(!p) return;
+  wrPrompt = p;
+  wrAiSeed = '';
+  S.writeCur = id;
+  wrPaintPrompt();
+  wrRestoreDraft();
+  wrRenderHist();
+  save();
+}
+
+/* ---------- AI 模拟出题（本地题库智能组合） ---------- */
+const WR_AI_TOPICS = [
+  { zh: '大学生如何合理使用手机', en: 'how college students can use smartphones in a reasonable way', type: 'essay' },
+  { zh: '线上学习能否替代课堂', en: 'whether online learning can replace traditional classrooms', type: 'essay' },
+  { zh: '大学生是否应该做兼职', en: 'whether college students should take part-time jobs', type: 'essay' },
+  { zh: '体育锻炼对大学生的重要性', en: 'the importance of physical exercise for college students', type: 'essay' },
+  { zh: '人工智能对就业的影响', en: 'the influence of artificial intelligence on employment', type: 'essay' },
+  { zh: '共享单车带来的便利与问题', en: 'the benefits and problems of shared bikes', type: 'essay' },
+  { zh: '大学生如何管理时间', en: 'how college students can manage their time effectively', type: 'essay' },
+  { zh: '阅读习惯的培养', en: 'how to develop the habit of reading', type: 'essay' },
+  { zh: '校园垃圾分类', en: 'the importance of garbage sorting on campus', type: 'essay' },
+  { zh: '短视频对年轻人的影响', en: 'the influence of short videos on young people', type: 'essay' },
+  { zh: '推荐一座适合旅游的中国城市', en: 'give your recommendation of a Chinese city worth visiting', type: 'letter' },
+  { zh: '邀请外教参加班级活动', en: 'invite a foreign teacher to your class activity', type: 'letter' },
+  { zh: '给室友写一封道歉信', en: 'apologize to your roommate for a misunderstanding', type: 'letter' },
+  { zh: '向朋友介绍你的大学', en: 'introduce your university to a friend', type: 'letter' },
+  { zh: '申请加入志愿者协会', en: 'apply to join the volunteer association of your university', type: 'letter' },
+  { zh: '校园读书节活动报道', en: 'a reading festival held on your campus', type: 'report' },
+  { zh: '一次支教志愿活动报道', en: 'a volunteer teaching activity you took part in', type: 'report' },
+  { zh: '校园运动会报道', en: 'the annual sports meeting of your university', type: 'report' },
+  { zh: '图书馆座位紧张问题的提案', en: 'the shortage of seats in the library', type: 'proposal' },
+  { zh: '改善食堂排队问题的提案', en: 'improving the queuing problem in the canteen', type: 'proposal' },
+  { zh: '增设校园夜间自习室的提案', en: 'setting up more study rooms open at night', type: 'proposal' },
+  { zh: '出售二手自行车', en: 'sell your used bicycle', type: 'ad' },
+  { zh: '出售考研复习资料', en: 'sell your used textbooks and notes', type: 'ad' },
+  { zh: '招募英语角成员', en: 'recruit members for the campus English corner', type: 'ad' }
+];
+const WR_AI_FRAME = {
+  essay: function(t){
+    return {
+      directions: 'Write an essay on ' + t.en + '. You should state your opinion clearly and support it with reasons or examples.',
+      requirement: '以「' + t.zh + '」为题写一篇短文，说明你的观点并给出 2 个理由。字数：120-180 词。'
+    };
+  },
+  letter: function(t){
+    return {
+      directions: 'Suppose you are a college student. Write a letter to ' + (/(teacher|roommate|friend)/.test(t.en) ? 'the person concerned' : 'your friend') + ' to ' + t.en + '.',
+      requirement: '按要求写一封书信，说明来意并给出具体理由，注意书信格式。字数：120-180 词。'
+    };
+  },
+  report: function(t){
+    return {
+      directions: 'Suppose you have just taken part in ' + t.en + '. Write a report for the campus newspaper to describe it.',
+      requirement: '为校报写一篇活动报道，交代时间、地点、参与情况和意义。字数：120-180 词。'
+    };
+  },
+  proposal: function(t){
+    return {
+      directions: 'Write a proposal to the university about ' + t.en + '. Give your suggestions and explain the expected benefits.',
+      requirement: '写一份提案，指出问题并提出 2-3 条可行建议。字数：120-180 词。'
+    };
+  },
+  ad: function(t){
+    return {
+      directions: 'Write an advertisement on the campus website to ' + t.en + '. Include the key information and your contact.',
+      requirement: '写一则校园广告，包含物品/活动信息、价格或时间、联系方式。字数：120-180 词。'
+    };
+  }
+};
+function wrGenAi(){
+  const want = $('wrAiType').value;
+  let pool = WR_AI_TOPICS;
+  if(want) pool = WR_AI_TOPICS.filter(function(t){ return t.type === want; });
+  if(!pool.length) pool = WR_AI_TOPICS;
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  const frame = WR_AI_FRAME[t.type](t);
+  const id = 'ai-' + t.type + '-' + t.zh.length + '-' + Math.random().toString(36).slice(2, 7);
+  wrPrompt = {
+    id: id, year: 'AI 模拟', set: '随机命题', type: 'Writing',
+    title: t.zh, directions: frame.directions, requirement: frame.requirement
+  };
+  wrAiSeed = id;
+  S.writeCur = id;
+  wrPaintPrompt();
+  wrRestoreDraft();
+  wrRenderHist();
+  save();
+}
+
+/* ---------- 渲染题目 ---------- */
+function wrPaintPrompt(){
+  const p = wrPrompt; if(!p) return;
+  $('wrTag').textContent = wrTagOf(p);
+  $('wrKind').textContent = wrKindOf(p);
+  $('wrTitle').textContent = p.title || '—';
+  $('wrDir').textContent = p.directions || '';
+  $('wrReq').textContent = p.requirement || '';
+}
+
+/* ---------- 草稿（换题不丢字） ---------- */
+function wrRestoreDraft(){
+  const d = (S.writeDraft && S.writeDraft[wrPrompt.id]) || '';
+  $('wrText').value = d;
+  wrUpdateCount();
+  $('wrResult').classList.add('hidden');
+}
+function wrSaveDraft(){
+  if(!wrPrompt) return;
+  if(!S.writeDraft || typeof S.writeDraft !== 'object') S.writeDraft = {};
+  S.writeDraft[wrPrompt.id] = $('wrText').value;
+  save();
+}
+
+/* ---------- 实时字数 + 双向红线 ---------- */
+function wrUpdateCount(){
+  const n = wrWords($('wrText').value);
+  const bar = $('wrBar'), cnt = $('wrCount'), warn = $('wrWarn');
+  const pct = Math.max(0, Math.min(100, n / WR_MAX * 100));
+  bar.style.width = pct + '%';
+  cnt.textContent = n + ' 词';
+  if(n === 0){
+    cnt.className = 'mono text-[11px] font-bold text-slate-400';
+    warn.textContent = '目标 120-180 词';
+    warn.className = 'mono text-[10px] text-slate-500 text-right';
+    bar.style.background = 'linear-gradient(90deg,#0891b2,#22d3ee)';
+    return;
+  }
+  if(n < WR_MIN){
+    const gap = WR_MIN - n;
+    cnt.className = 'mono text-[11px] font-bold text-rose-300';
+    warn.textContent = (gap <= 15 ? '⚠️ 接近下限，还差 ' + gap + ' 词' : '🔴 不足下限，还差 ' + gap + ' 词');
+    warn.className = 'mono text-[10px] text-rose-300 text-right font-bold';
+    bar.style.background = 'linear-gradient(90deg,#f43f5e,#fb7185)';
+    return;
+  }
+  if(n > WR_MAX){
+    cnt.className = 'mono text-[11px] font-bold text-rose-300';
+    warn.textContent = '🔴 超出上限 ' + (n - WR_MAX) + ' 词，会被扣分';
+    warn.className = 'mono text-[10px] text-rose-300 text-right font-bold';
+    bar.style.background = 'linear-gradient(90deg,#f43f5e,#fb7185)';
+    return;
+  }
+  const edge = (n <= 128 || n >= 172);
+  cnt.className = 'mono text-[11px] font-bold ' + (edge ? 'text-amber-300' : 'text-emerald-300');
+  warn.textContent = edge ? '✅ 在区间内，已靠近红线' : '✅ 字数在安全区间';
+  warn.className = 'mono text-[10px] text-right ' + (edge ? 'text-amber-300' : 'text-emerald-300');
+  bar.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
+}
+
+/* 高频虚词（判断题目关键词时排除） */
+const WR_STOP = new Set(('the a an of to in on for and or but with as is are was were be been being this that these those it its they their you your we our he she his her not no do does did have has had can could should would will may might must more most also from by at into about than then so such if when while which who whom what how there here one two first second third many much some any all both each other up out over again very too just only own same now new make makes made use used').split(' '));
+/* 高级词汇库 */
+const WR_ADV = ['vital','crucial','essential','significant','considerable','particularly','furthermore','moreover','consequently','nevertheless','therefore','accordingly','beneficial','inevitable','contribute','enhance','facilitate','promote','cultivate','demonstrate','illustrate','acknowledge','tremendous','remarkable','indispensable','sustainable','accessibility','perspective','initiative','efficient','effective','appropriate','responsibility','opportunity','challenge','motivation','cooperation','communication','environment','development','influence','tendency','phenomenon','priority','strategy','approach','witness','embrace','pivotal','rewarding','detrimental','advocate','allocate','implement','acknowledges','nevertheless','consequently'];
+/* 逻辑过渡词库 */
+const WR_CONN = ['firstly','first of all','secondly','thirdly','finally','moreover','furthermore','besides','in addition','what is more','however','nevertheless','on the contrary','therefore','thus','consequently','as a result','in conclusion','to sum up','in short','for example','for instance','such as','on the one hand','on the other hand','in my opinion','as far as i am concerned','in a word','above all','meanwhile','similarly','in contrast','accordingly','hence','taking all'];
+
+/* ---------- CET-4 写作五档评分引擎（官方 15 分制 · 四维加权诊断） ---------- */
+
+/* 官方五档标准 */
+const WR_BANDS = [
+  { min:13, max:15, name:'优秀档', color:'#34d399',
+    desc:'切题。表达思想清楚，文字通顺，句式结构多样，无重大语言错误，具备较强的高级词汇与句型运用能力。' },
+  { min:10, max:12, name:'良好档', color:'#22d3ee',
+    desc:'切题。表达思想清楚，文字连贯，无重大语言错误，但句式和词汇相对常规。' },
+  { min:7,  max:9,  name:'及格档', color:'#fbbf24',
+    desc:'基本切题。有些许语言错误（时态、单复数、主谓一致等），但基本不影响语义理解。' },
+  { min:4,  max:6,  name:'不及格档', color:'#fb923c',
+    desc:'条理不清，思路混乱，语言错误多且严重（中式英语、基础语法崩塌），部分句子无法读通。' },
+  { min:0,  max:3,  name:'低分档', color:'#fb7185',
+    desc:'条理不清，严重离题，或字数严重不足、通篇只有零星单词。' }
+];
+const WR_W = [
+  { k:'切题度',          en:'Task Achievement',          w:30, c:'#22d3ee' },
+  { k:'词汇与句式',      en:'Lexical & Syntactic Variety', w:25, c:'#a78bfa' },
+  { k:'语法准确性',      en:'Grammatical Accuracy',      w:25, c:'#34d399' },
+  { k:'篇章连贯性',      en:'Coherence & Cohesion',      w:20, c:'#fbbf24' }
+];
+
+/* 常见拼写错误 */
+const WR_SPELL = {
+  becuase:'because', beacuse:'because', recieve:'receive', recieved:'received',
+  enviroment:'environment', envirnment:'environment', goverment:'government',
+  knowlege:'knowledge', acheive:'achieve', sucess:'success', diffcult:'difficult',
+  dificult:'difficult', importent:'important', benifit:'benefit', advatage:'advantage',
+  oppotunity:'opportunity', comunication:'communication', technolgy:'technology',
+  responsability:'responsibility', thier:'their', wich:'which', definately:'definitely',
+  seperate:'separate', occured:'occurred', begining:'beginning', writting:'writing',
+  studing:'studying', listenning:'listening', develope:'develop', alot:'a lot of',
+  untill:'until', wether:'whether', arguement:'argument', knowledgable:'knowledgeable',
+  pratice:'practice', succesful:'successful', useing:'using', makeing:'making',
+  choosen:'chosen', wroten:'written', spended:'spent', discribe:'describe'
+};
+
+/* 中式英语 / 搭配错误 */
+const WR_CETI = [
+  { re:/\baccording to me\b/i, to:'in my view', why:'英文无此搭配' },
+  { re:/\bI very (like|love|enjoy)\b/i, to:'I really like', why:'very 不能直接修饰动词' },
+  { re:/\bvery much (important|useful|good|necessary|helpful)\b/i, to:'extremely important', why:'very much 不修饰形容词' },
+  { re:/\bthere have\b/i, to:'there are', why:'there be 句型不能接 have' },
+  { re:/\bhow to say\b/i, to:'how to put it', why:'直译中文' },
+  { re:/\bopen the light\b/i, to:'turn on the light', why:'固定搭配' },
+  { re:/\bclose the light\b/i, to:'turn off the light', why:'固定搭配' },
+  { re:/\bpeople all know\b/i, to:'it is widely known that', why:'直译中文' },
+  { re:/\bno matter (what|how|where)\b[^.]{0,40}\bbut\b/i, to:'no matter what, …', why:'no matter 后不再接 but' },
+  { re:/\bcan not\b/i, to:'cannot', why:'规范写法' },
+  { re:/\beveryone should to\b/i, to:'everyone should', why:'情态动词后接动词原形' }
+];
+
+/* 提分替换（低级 → 高级） */
+const WR_UP = [
+  { re:/\bis very important (to|for)\b/i, to:'plays a pivotal role in', why:'be + 形容词 → 高级动词短语' },
+  { re:/\bare very important\b/i, to:'are of vital importance', why:'名词化表达更书面' },
+  { re:/\bvery important\b/i, to:'of vital importance', why:'形容词 → 名词化' },
+  { re:/\bmore and more (people|students)\b/i, to:'an increasing number of $1', why:'数量表达升级' },
+  { re:/\ba lot of\b/i, to:'a considerable number of', why:'口语量词 → 书面量词' },
+  { re:/\blots of\b/i, to:'plenty of', why:'口语量词 → 书面量词' },
+  { re:/\bget (better|more|many)\b/i, to:'obtain', why:'万能动词 → 精准动词' },
+  { re:/\bhelp (us|people|students|them)\b/i, to:'facilitate', why:'help → facilitate' },
+  { re:/\bI think (that )?/i, to:'From my perspective, ', why:'口语化开头' },
+  { re:/\bIn my opinion\b/i, to:'From where I stand', why:'可换一种说法避免撞句' },
+  { re:/\bwith the development of (the )?society\b/i, to:'along with the rapid advancement of society', why:'烂大街句式，阅卷老师已疲惫' },
+  { re:/\bthink\b/i, to:'hold the view that', why:'think → hold the view that' },
+  { re:/\bvery good\b/i, to:'highly beneficial', why:'避免 very + 基础形容词' },
+  { re:/\bgood\b/i, to:'rewarding', why:'good 过于笼统' },
+  { re:/\bbad\b/i, to:'detrimental', why:'bad 过于笼统' },
+  { re:/\bbig\b/i, to:'considerable', why:'big → considerable' },
+  { re:/\bbecause\b/i, to:'owing to the fact that', why:'因果表达升级（注意字数）' },
+  { re:/\bso\b(?! that)/i, to:'consequently', why:'口语连接 → 书面连接' },
+  { re:/\bbut\b/i, to:'nevertheless', why:'口语连接 → 书面连接' },
+  { re:/\balso\b/i, to:'in addition', why:'口语连接 → 书面连接' },
+  { re:/\bmany (students|people|problems|reasons)\b/i, to:'a considerable number of $1', why:'数量表达升级' },
+  { re:/\bNowadays\b/i, to:'In contemporary society', why:'开头用词升级' },
+  { re:/\bwe should\b/i, to:'it is advisable that we should', why:'建议句更委婉书面' },
+  { re:/\bplay an important role in\b/i, to:'play a pivotal role in', why:'important → pivotal' }
+];
+
+/* 高分句型模板（按题型，插入主题词） */
+const WR_TPL = {
+  '议论文': function(t){ return [
+    '① 现象引入：In recent years, ' + t + ' has aroused widespread concern among college students.',
+    '② 亮明观点：From my perspective, it plays a pivotal role in our academic life and personal growth.',
+    '③ 递进论证：To begin with, … What is more, … Most importantly, …',
+    '④ 让步转折：Admittedly, …; nevertheless, the benefits far outweigh the drawbacks.',
+    '⑤ 倒装收尾：Only by doing so can we embrace a more promising future.'
+  ]; },
+  '书信': function(t){ return [
+    '① 写信目的：I am writing to express my sincere gratitude for / to apply for …',
+    '② 展开细节：To be specific, … which has left a deep impression on me.',
+    '③ 委婉请求：I would appreciate it if you could take my request into consideration.',
+    '④ 期待回复：I am looking forward to your early reply at your earliest convenience.',
+    '⑤ 客套收尾：Thank you for your time and consideration.'
+  ]; },
+  '报告': function(t){ return [
+    '① 引出调查：A recent survey conducted among 500 students reveals that …',
+    '② 数据陈述：To be specific, nearly 60% of the respondents admit that …',
+    '③ 原因分析：This phenomenon can be attributed to two major factors.',
+    '④ 影响评估：If left unchecked, it would exert a negative influence on …',
+    '⑤ 结论建议：In light of the findings above, it is high time that we took action.'
+  ]; },
+  '提案': function(t){ return [
+    '① 提出议题：I would like to propose that … be carried out on campus.',
+    '② 说明理由：The reasons are twofold. For one thing, …; for another, …',
+    '③ 具体方案：It is advisable that the university set up … to …',
+    '④ 预期效果：This initiative would undoubtedly benefit both students and staff.',
+    '⑤ 恳请采纳：I would be grateful if my proposal could be taken into consideration.'
+  ]; },
+  '广告': function(t){ return [
+    '① 吸引注意：Are you still troubled by …? Here comes the perfect solution.',
+    '② 产品介绍：Our newly launched … is designed to …',
+    '③ 突出卖点：What distinguishes it from others is that …',
+    '④ 号召行动：Do not miss this golden opportunity — sign up now!',
+    '⑤ 联系方式：For further information, please contact us at …'
+  ]; }
+};
+
+/* 三单动词变形 */
+const WR_V3 = { have:'has', do:'does', go:'goes', be:'is' };
+function wrVerb3(v){
+  const lv = String(v || '').toLowerCase();
+  if(WR_V3[lv]) return WR_V3[lv];
+  if(/(ch|sh|ss|x|o)$/.test(lv)) return lv + 'es';
+  if(/[^aeiou]y$/.test(lv)) return lv.slice(0, -1) + 'ies';
+  return lv + 's';
+}
+const WR_ABBR = [["don't",'do not'],["doesn't",'does not'],["can't",'cannot'],["won't",'will not'],
+  ["isn't",'is not'],["aren't",'are not'],["didn't",'did not'],["shouldn't",'should not'],
+  ["couldn't",'could not'],["it's",'it is'],["I'm",'I am'],["I've",'I have'],
+  ["we're",'we are'],["they're",'they are'],["there's",'there is']];
+
+/* 单句挑错：返回 [{type,cat,bad,fix,demo,why}]，cat: G=语法/拼写/标点，S=表达/结构 */
+function wrCheckSentence(s, i, total){
+  const out = [];
+  const words = s.match(/[A-Za-z][A-Za-z'\-]*/g) || [];
+  const wc = words.length;
+  const low = s.toLowerCase();
+  const add = function(type, cat, bad, fix, demo, why){
+    if(out.some(function(x){ return x.type === type && x.bad === bad; })) return;
+    out.push({ type: type, cat: cat, bad: bad, fix: fix, demo: demo || '', why: why || '' });
+  };
+  let m;
+
+  /* 大小写 */
+  if(/^[a-z]/.test(s)){
+    const up = s.charAt(0).toUpperCase() + s.slice(1);
+    add('大小写', 'G', s.charAt(0), s.charAt(0).toUpperCase(), up, '句首单词必须大写');
+  }
+  /* 句末标点 */
+  if(!/[.!?…]["')\]]?\s*$/.test(s)) add('标点', 'G', '句末缺标点', '补上 . 或 ?', s + '.', '每句都要有结束标点');
+  /* 全角标点 */
+  const fullP = s.match(/[，。；：！？、；“”‘’（）]/);
+  if(fullP) add('标点', 'G', fullP[0], '英文半角', s.replace(fullP[0], ','), '英文写作禁用中文标点');
+
+  /* 冠词 a / an */
+  m = s.match(/\b([Aa])\s+([aeiouAEIOU][A-Za-z'\-]*)/);
+  if(m && !/^[A-Z]{2,}$/.test(m[2]) && !/^(univ|uniq|unif|union|unit|united|univers|use|usef|usual|user|eu|one|once|ubiq)/i.test(m[2])){
+    const rep = (m[1] === 'A' ? 'An ' : 'an ') + m[2];
+    add('冠词', 'G', m[0], rep, s.replace(m[0], rep), '元音音素开头用 an');
+  }
+  m = s.match(/\b([Aa])n\s+([bcdfgjklmnpqrstvwxyzBCDFGJKLMNPQRSTVWXYZ][A-Za-z'\-]*)/);
+  if(m && !/^[A-Z]{2,}$/.test(m[2]) && !/^(hour|honest|honor|honour|heir)/i.test(m[2])){
+    const rep = (m[1] === 'A' ? 'A ' : 'a ') + m[2];
+    add('冠词', 'G', m[0], rep, s.replace(m[0], rep), '辅音音素开头用 a');
+  }
+
+  /* 主谓一致：三单 */
+  m = s.match(/\b(he|she|it|this|that|everyone|everybody|nobody|someone|each|nothing)\s+(have|do|go|make|take|say|think|know|want|need|like|look|seem|play|study|work|live|come|get|give|help|become|show|mean|consider)\b/i);
+  if(m){
+    const fixed = m[1] + ' ' + wrVerb3(m[2]);
+    add('主谓一致', 'G', m[0], fixed, s.replace(m[0], fixed), '第三人称单数谓语要加 -s');
+  }
+  /* 主谓一致：复数用单数谓语 */
+  m = s.match(/\b(people|students|teachers|children|parents|we|they|you|adults|teenagers|readers|friends|things)\s+(is|was|has|does)\b/i);
+  if(m){
+    const map = { is:'are', was:'were', has:'have', does:'do' };
+    const fixed = m[1] + ' ' + map[m[2].toLowerCase()];
+    add('主谓一致', 'G', m[0], fixed, s.replace(m[0], fixed), '复数主语配复数谓语');
+  }
+  /* there be */
+  m = s.match(/\bthere\s+(is|was)\s+(many|much|several|a lot of|lots of|some|two|three|a number of)\b/i);
+  if(m){
+    const fixed = 'there ' + (m[1].toLowerCase() === 'is' ? 'are' : 'were') + ' ' + m[2];
+    add('there be', 'G', m[0], fixed, s.replace(m[0], fixed), 'there be 就近一致');
+  }
+  /* 单复数 */
+  m = s.match(/\b(a|an|one|each|every)\s+(students|problems|reasons|things|books|friends|teachers|children|people|ways|examples|benefits|advantages|words|jobs|choices|factors)\b/i);
+  if(m){
+    const sg = m[2].replace(/ies$/, 'y').replace(/(ss|ch|sh|x)es$/, '$1').replace(/s$/, '');
+    add('单复数', 'G', m[0], m[1] + ' ' + sg, s.replace(m[0], m[1] + ' ' + sg), 'a/an + 可数名词单数');
+  }
+  m = s.match(/\b(many|several|a few|two|three|four)\s+(student|problem|reason|thing|book|friend|teacher|way|example|benefit|advantage|word|job|choice|year|factor)\b/i);
+  if(m){
+    const pl = /[^aeiou]y$/.test(m[2]) ? m[2].slice(0, -1) + 'ies' : m[2] + 's';
+    add('单复数', 'G', m[0], m[1] + ' ' + pl, s.replace(m[0], m[1] + ' ' + pl), '复数限定词后接复数名词');
+  }
+  /* 时态 */
+  if(/\b(yesterday|last\s+(?:year|week|month|summer)|ago|in\s+(?:19|20)\d\d)\b/i.test(s)
+     && /\b(is|are|am|do|does|have|has|go|goes|make|makes|think|thinks|believe|believes|say|says|need|needs)\b/i.test(s)){
+    add('时态', 'G', '过去时间 + 现在时', '统一改为过去式（was / did / had / went）', '', '时态必须前后一致');
+  }
+  /* 拼写 */
+  Object.keys(WR_SPELL).forEach(function(bad){
+    const re = new RegExp('\\b' + bad + '\\b', 'i');
+    if(re.test(s)){
+      const mm = s.match(re);
+      add('拼写', 'G', mm[0], WR_SPELL[bad], s.replace(re, WR_SPELL[bad]), '拼写错误，考试直接扣分');
+    }
+  });
+  /* 中式英语 */
+  WR_CETI.forEach(function(c){
+    if(c.re.test(s)){
+      const mm = s.match(c.re);
+      add('中式英语', 'G', mm[0], c.to, s.replace(c.re, c.to), c.why);
+    }
+  });
+  /* 缩写 */
+  WR_ABBR.forEach(function(p){
+    const re = new RegExp('\\b' + p[0].replace("'", "'") + '\\b', 'i');
+    if(re.test(s)) add('正式度', 'G', p[0], p[1], s.replace(re, p[1]), '正式写作避免缩写');
+  });
+  /* 口语化用词 */
+  const informal = [['good','beneficial / rewarding'],['bad','detrimental'],['very','exceedingly / highly'],
+    ['thing','factor / aspect'],['things','aspects / factors'],['nice','favorable'],['big','considerable'],
+    ['a lot of','a considerable number of'],['lots of','plenty of'],['stuff','materials'],['kids','children'],['guys','people']];
+  for(let k = 0; k < informal.length; k++){
+    const re = new RegExp('\\b' + informal[k][0].replace(/ /g, '\\s+') + '\\b', 'i');
+    if(re.test(s)){ add('用词', 'S', informal[k][0], informal[k][1], '', '口语化，书面写作建议替换'); break; }
+  }
+  /* 句长 */
+  if(wc > 42) add('句长', 'S', wc + ' 词', '拆成 2~3 个短句', '', '长句失控容易语法崩塌');
+  else if(wc > 0 && wc < 6 && total > 3) add('句长', 'S', wc + ' 词', '并入相邻句', '', '碎片句影响连贯');
+  /* 衔接 */
+  if(i > 0 && wc >= 15 && !WR_CONN.some(function(c){ return low.indexOf(c) >= 0; })
+     && !/^(this|these|it|they|such|which|that|another)\b/i.test(s)){
+    add('衔接', 'S', '无过渡词', '加 However / What is more / As a result', '', '段落内部也需要逻辑信号');
+  }
+  /* 重复用词 */
+  const rep = s.match(/\b([A-Za-z]{3,})\s+\1\b/i);
+  if(rep) add('重复', 'S', rep[0], rep[1], s.replace(rep[0], rep[1]), '同词重复');
+
+  return out;
+}
+
+/* ---------- 主评分 ---------- */
+function wrGrade(text, prompt){
+  const raw = String(text || '');
+  const tokens = raw.match(/[A-Za-z][A-Za-z'\-]*/g) || [];
+  const lower = tokens.map(function(w){ return w.toLowerCase(); });
+  const n = wrWords(raw);
+  const sents = wrSentences(raw);
+  const paras = raw.split(/\n+/).filter(function(x){ return x.trim().length > 0; });
+  const parasN = paras.length;
+  const uniq = new Set(lower).size;
+  const ttr = n ? uniq / n : 0;
+
+  /* 题目关键词 */
+  const km = ((((prompt && prompt.title) || '') + ' ' + ((prompt && prompt.directions) || '')).toLowerCase().match(/[a-z]{4,}/g) || []);
+  const keyWords = km.filter(function(w){ return !WR_STOP.has(w); });
+  const hits = keyWords.filter(function(w){ return lower.indexOf(w) >= 0; });
+  const cover = keyWords.length ? hits.length / keyWords.length : 0;
+
+  const connHits = WR_CONN.filter(function(c){ return raw.toLowerCase().indexOf(c) >= 0; });
+  const advHits = WR_ADV.filter(function(w){ return lower.indexOf(w) >= 0; });
+  const basicWords = ['good', 'bad', 'very', 'thing', 'things', 'nice', 'big', 'a lot of', 'stuff', 'kids'];
+  let basicHit = 0;
+  basicWords.forEach(function(b){ basicHit += (raw.toLowerCase().match(new RegExp('\\b' + b.replace(/ /g, '\\s+') + '\\b', 'g')) || []).length; });
+
+  /* 逐句诊断 */
+  const sIssues = sents.map(function(s, i){ return wrCheckSentence(s, i, sents.length); });
+  let gErr = 0, sStyle = 0;
+  sIssues.forEach(function(list){ list.forEach(function(x){ if(x.cat === 'G') gErr++; else sStyle++; }); });
+
+  /* 1. 切题度 0-100 */
+  let task = 0;
+  let lenBand;
+  if(n >= WR_MIN && n <= WR_MAX){ task += 50; lenBand = '在 120-180 词区间'; }
+  else if(n >= 100){ task += 40; lenBand = '略少（100-119 词）'; }
+  else if(n >= 80){ task += 30; lenBand = '偏少（80-99 词）'; }
+  else if(n >= 60){ task += 20; lenBand = '明显不足（60-79 词）'; }
+  else if(n >= 30){ task += 10; lenBand = '严重不足（30-59 词）'; }
+  else { task += 4; lenBand = '不足 30 词'; }
+  task += Math.round(cover * 32);
+  task += parasN >= 3 ? 14 : (parasN === 2 ? 10 : 6);
+  const offTopic = n >= 60 && cover < 0.12;
+  if(offTopic) task = Math.round(task * 0.55);
+  task = Math.max(0, Math.min(100, task));
+
+  /* 2. 词汇与句式 0-100 */
+  let lex = 34;
+  lex += ttr >= 0.62 ? 18 : ttr >= 0.55 ? 14 : ttr >= 0.47 ? 9 : 4;
+  lex += Math.min(20, advHits.length * 3);
+  const COMPLEX = /\b(which|that|who|whom|whose|because|although|though|while|whereas|unless|since|as long as|even if|so that|in order to|rather than|given that)\b/i;
+  const cx = sents.filter(function(s){ return COMPLEX.test(s); }).length;
+  lex += Math.min(16, cx * 4);
+  const INVERT = /(^|\.\s*)(only by|never before|seldom|hardly|not only|scarcely)\b|\bit is\s+[a-z]+\s+that\b/i;
+  const iv = sents.filter(function(s){ return INVERT.test(s); }).length;
+  lex += Math.min(8, iv * 4);
+  const PART = sents.filter(function(s){
+    return /^(Having|Being|Faced|Confronted|Considering|Compared|Judging|Given|Taking|Facing)\b/.test(s)
+      || /,\s*(which|making|leading|resulting|bringing|enabling)\b/i.test(s);
+  }).length;
+  lex += Math.min(8, PART * 3);
+  lex -= Math.min(18, basicHit * 3);
+  if(n && ttr < 0.40) lex -= 6;
+  lex = Math.max(5, Math.min(100, Math.round(lex)));
+
+  /* 3. 语法准确性 0-100 */
+  let gram = 100 - gErr * 11 - sStyle * 1.5;
+  gram = Math.max(5, Math.min(100, Math.round(gram)));
+
+  /* 4. 篇章连贯性 0-100 */
+  let coh = 28;
+  coh += Math.min(34, connHits.length * 6);
+  coh += parasN >= 3 ? 16 : (parasN === 2 ? 10 : 4);
+  const hasConc = /\b(in conclusion|to sum up|in short|all in all|in a word|therefore|thus|taking all)\b/i.test(raw);
+  if(hasConc) coh += 9;
+  const firstSent = (sents[0] || '').toLowerCase();
+  if(keyWords.some(function(w){ return firstSent.indexOf(w) >= 0; })) coh += 7;
+  const refs = (raw.match(/\b(this|these|it|they|such|their|its|which)\b/gi) || []).length;
+  coh += Math.min(6, refs);
+  coh = Math.max(5, Math.min(100, Math.round(coh)));
+
+  /* 加权合成 → 15 分制 */
+  const composite = Math.round(task * 0.30 + lex * 0.25 + gram * 0.25 + coh * 0.20);
+  let s15 = Math.round(composite / 100 * 15 * 2) / 2;
+  s15 = Math.max(0.5, Math.min(15, s15));
+
+  /* 官方阅卷式硬性封顶 */
+  const caps = [];
+  if(n < 40){ s15 = Math.min(s15, 3); caps.push('字数严重不足（' + n + ' 词），按官方标准最高 3 分'); }
+  else if(n < 60){ s15 = Math.min(s15, 5); caps.push('字数明显不足（' + n + ' 词），最高 5 分'); }
+  if(offTopic){ s15 = Math.min(s15, 6); caps.push('与题目关键词重合度仅 ' + Math.round(cover * 100) + '%，有离题风险，最高 6 分'); }
+  if(gErr >= 8){ s15 = Math.min(s15, 9); caps.push('语言错误 ' + gErr + ' 处（偏多），无法进入良好档'); }
+  s15 = Math.round(s15 * 2) / 2;
+
+  let band = WR_BANDS[WR_BANDS.length - 1];
+  for(let i = 0; i < WR_BANDS.length; i++){ if(s15 >= WR_BANDS[i].min){ band = WR_BANDS[i]; break; } }
+
+  const pct = Math.round(s15 / 15 * 1000) / 10;
+  const score106 = Math.round(s15 / 15 * WR_FULL * 10) / 10;
+
+  /* 四维诊断 */
+  const dims = [
+    { k:WR_W[0].k, en:WR_W[0].en, w:WR_W[0].w, c:WR_W[0].c, v:task,
+      note:'字数 ' + n + ' 词（' + lenBand + '）· 题目关键词覆盖 ' + Math.round(cover * 100) + '% · ' + parasN + ' 段' },
+    { k:WR_W[1].k, en:WR_W[1].en, w:WR_W[1].w, c:WR_W[1].c, v:lex,
+      note:'不同词占比 ' + Math.round(ttr * 100) + '% · 高级词 ' + advHits.length + ' 个 · 复合句 ' + cx + ' 句 · 分词/倒装 ' + (PART + iv) + ' 处' },
+    { k:WR_W[2].k, en:WR_W[2].en, w:WR_W[2].w, c:WR_W[2].c, v:gram,
+      note:'语法/拼写/标点错误 ' + gErr + ' 处 · 表达类问题 ' + sStyle + ' 处' },
+    { k:WR_W[3].k, en:WR_W[3].en, w:WR_W[3].w, c:WR_W[3].c, v:coh,
+      note:'过渡词 ' + connHits.length + ' 个 · ' + parasN + ' 段 · ' + (hasConc ? '有结论信号' : '缺结论句') }
+  ];
+
+  /* 逐句结果 */
+  const sentences = sents.map(function(s, i){
+    const words = (s.match(/[A-Za-z][A-Za-z'\-]*/g) || []).length;
+    const iss = sIssues[i] || [];
+    const g = iss.filter(function(x){ return x.cat === 'G'; }).length;
+    return {
+      i: i + 1, words: words,
+      text: s.length > 120 ? s.slice(0, 120) + '…' : s,
+      issues: iss.slice(0, 3), more: Math.max(0, iss.length - 3),
+      tone: g ? 'bad' : (iss.length ? 'warn' : 'ok')
+    };
+  });
+
+  /* 提分金句（基于用户原句的实际替换） */
+  const upgrades = [];
+  WR_UP.forEach(function(u){
+    const src = sents.filter(function(s){ return u.re.test(s); })[0] || '';
+    if(!src) return;
+    const mm = src.match(u.re);
+    if(!mm) return;
+    const dst = src.replace(u.re, u.to);
+    if(upgrades.some(function(x){ return x.dst === dst; })) return;
+    upgrades.push({ from: mm[0], to: u.to.replace(/\$1/g, mm[1] || ''), why: u.why, src: src, dst: dst });
+  });
+
+  /* 高分句型模板 */
+  const kind = wrKindOf(prompt);
+  const topic = (keyWords[0] || 'this topic');
+  const tpl = (WR_TPL[kind] || WR_TPL['议论文'])(topic);
+
+  /* 提分建议：按最弱维度排序 */
+  const sug = [];
+  caps.forEach(function(c){ sug.push('⚠️ ' + c); });
+  if(n < WR_MIN && n >= 40) sug.push('字数不足：还差 ' + (WR_MIN - n) + ' 词。补 1 个具体例子（时间/人物/数据）最省力，也能直接拉高切题度。');
+  if(n > WR_MAX) sug.push('字数超标 ' + (n - WR_MAX) + ' 词：删掉重复论证或空泛形容词，考试中超字数同样影响档位。');
+  if(parasN < 3) sug.push('段落结构：固定 3 段最稳 —— 第一段亮观点，第二段 2 个理由，第三段总结。');
+  if(connHits.length < 3) sug.push('逻辑衔接薄弱：至少用 3 个过渡词（Firstly / What is more / As a result / In conclusion）。');
+  if(!hasConc) sug.push('结尾缺总结信号：用 In conclusion / Taking all the factors into account 收尾，阅卷老师一眼能看出结构完整。');
+  if(gErr > 0) sug.push('语法硬伤 ' + gErr + ' 处：优先改主谓一致、时态、单复数、冠词这四类，它们最影响"无重大语言错误"的判定。');
+  if(ttr < 0.52 && n > 60) sug.push('重复用词偏多（不同词占比 ' + Math.round(ttr * 100) + '%）：换同义表达，如 important → vital / crucial。');
+  if(advHits.length < 2 && n > 60) sug.push('高级表达偏少：加入 play a pivotal role in / contribute to / attach importance to。');
+  if(!sug.length) sug.push('整体完成度不错：下一轮挑战更复杂的从句与更具体的例证，冲 13 分档。');
+
+  return {
+    n: n, sents: sents.length, total: s15, s15: s15, pct: pct, score106: score106,
+    band: band, dims: dims, sentences: sentences,
+    upgrades: upgrades.slice(0, 6), tpl: tpl, tplKind: kind,
+    sug: sug, caps: caps,
+    meta: { paras: parasN, conn: connHits.length, adv: advHits.length, ttr: Math.round(ttr * 100), cover: Math.round(cover * 100), gErr: gErr, sStyle: sStyle, cx: cx }
+  };
+}
+
+/* ---------- 渲染评分结果 ---------- */
+function wrEsc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function wrRenderResult(r){
+  const box = $('wrResult');
+  const bc = r.band.color;
+  let html = '';
+
+  /* 综合得分 + 档位 */
+  html += '<div class="rounded-xl bg-black/35 border border-white/10 p-3">';
+  html += '<div class="flex items-end justify-between">';
+  html += '<div><div class="text-[10px] text-slate-500">综合得分（CET-4 官方 15 分制）</div>';
+  html += '<div class="flex items-end gap-1.5"><b class="mono text-3xl" style="color:' + bc + '">' + r.s15.toFixed(1) + '</b>';
+  html += '<span class="text-[11px] text-slate-500 mb-1">/ 15</span></div>';
+  html += '<div class="mono text-[10px] text-slate-400 mt-0.5">折算 ' + r.pct.toFixed(1) + ' / 100 · ' + r.score106.toFixed(1) + ' / 106.5</div></div>';
+  html += '<div class="text-right"><div class="mono text-[11px] px-2 py-1 rounded-full font-bold" style="color:' + bc + ';background:' + bc + '1f;border:1px solid ' + bc + '40">' + r.band.name + '（' + r.s15 + '/15）</div>';
+  html += '<div class="mono text-[10px] text-slate-500 mt-1">' + r.n + ' 词 · ' + r.sents + ' 句 · ' + r.meta.paras + ' 段</div></div>';
+  html += '</div>';
+  html += '<div class="text-[10px] leading-relaxed mt-2 pt-2 border-t border-white/10" style="color:' + bc + '">' + wrEsc(r.band.desc) + '</div>';
+  if(r.caps.length){
+    html += '<div class="mt-2 rounded-lg px-2 py-1.5 text-[9px] leading-relaxed" style="background:rgba(251,146,60,.10);border:1px solid rgba(251,146,60,.3);color:#fdba74">';
+    r.caps.forEach(function(c){ html += '· ' + wrEsc(c) + '<br>'; });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  /* 四维诊断 */
+  html += '<div class="mt-2.5 rounded-xl bg-black/30 border border-white/10 p-3">';
+  html += '<div class="flex items-center justify-between"><span class="text-[11px] font-bold text-cyan-300">📐 四维精准诊断</span>';
+  html += '<span class="mono text-[9px] text-slate-500">加权 30/25/25/20</span></div>';
+  r.dims.forEach(function(d){
+    html += '<div class="mt-2">';
+    html += '<div class="flex justify-between text-[10px]"><span class="text-slate-300 font-bold">' + d.k + ' <span class="text-slate-600 font-normal">' + d.w + '%</span></span>';
+    html += '<span class="mono" style="color:' + d.c + '">' + d.v + '</span></div>';
+    html += '<div class="h-1.5 rounded-full bg-white/10 mt-1 overflow-hidden"><div style="width:' + d.v + '%;height:100%;background:' + d.c + '"></div></div>';
+    html += '<div class="text-[9px] text-slate-500 mt-0.5 leading-snug">' + wrEsc(d.note) + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  /* 句句精细诊断 */
+  const badN = r.meta.gErr;
+  html += '<div class="mt-2.5 rounded-xl bg-black/30 border border-white/10 p-3">';
+  html += '<div class="flex items-center justify-between"><span class="text-[11px] font-bold text-cyan-300">🔍 句句精细诊断</span>';
+  html += '<span class="mono text-[9px]" style="color:' + (badN ? '#fb7185' : '#34d399') + '">' + (badN ? '语法错误 ' + badN + ' 处' : '无语法硬伤') + '</span></div>';
+  html += '<div class="mt-1.5 space-y-1.5">';
+  r.sentences.slice(0, 14).forEach(function(c){
+    const color = c.tone === 'bad' ? '#fb7185' : c.tone === 'warn' ? '#fbbf24' : '#64748b';
+    html += '<div class="rounded-lg bg-white/[.03] border border-white/5 px-2 py-1.5">';
+    html += '<div class="flex items-start gap-1.5"><span class="mono text-[9px] shrink-0 mt-0.5" style="color:' + color + '">S' + c.i + '·' + c.words + 'w</span>';
+    html += '<div class="min-w-0 flex-1"><div class="text-[10px] text-slate-400 leading-snug break-words">' + wrEsc(c.text) + '</div>';
+    if(!c.issues.length){
+      html += '<div class="text-[9px] mt-0.5 text-emerald-400/70">✓ 表达完整，无语法错误</div>';
+    }else{
+      c.issues.forEach(function(x){
+        const ic = x.cat === 'G' ? '#fb7185' : '#fbbf24';
+        html += '<div class="mt-1 rounded-md px-1.5 py-1" style="background:rgba(255,255,255,.03)">';
+        html += '<div class="flex items-center gap-1 flex-wrap"><span class="mono text-[8px] px-1 rounded" style="color:' + ic + ';background:' + ic + '1f">' + wrEsc(x.type) + '</span>';
+        html += '<span class="text-[9px] text-rose-300/90 line-through break-all">' + wrEsc(x.bad) + '</span>';
+        html += '<span class="text-[9px] text-slate-500">→</span>';
+        html += '<span class="text-[9px] text-emerald-300/90 break-all">' + wrEsc(x.fix) + '</span></div>';
+        if(x.demo) html += '<div class="text-[9px] text-slate-400 leading-snug mt-0.5 break-words">示范：' + wrEsc(x.demo) + '</div>';
+        if(x.why) html += '<div class="text-[8px] text-slate-600 leading-snug">' + wrEsc(x.why) + '</div>';
+        html += '</div>';
+      });
+      if(c.more) html += '<div class="text-[8px] text-slate-600 mt-0.5">另有 ' + c.more + ' 处小问题</div>';
+    }
+    html += '</div></div></div>';
+  });
+  html += '</div>';
+  if(r.sentences.length > 14) html += '<div class="text-[9px] text-slate-600 mt-1.5">… 其余 ' + (r.sentences.length - 14) + ' 句未逐条列出</div>';
+  html += '</div>';
+
+  /* 提分金句 + 范文升级 */
+  html += '<div class="mt-2.5 rounded-xl bg-black/30 border border-white/10 p-3">';
+  html += '<div class="text-[11px] font-bold text-amber-300">✨ 提分金句 / 高分范文升级</div>';
+  if(r.upgrades.length){
+    html += '<div class="mt-1.5 space-y-1.5">';
+    r.upgrades.forEach(function(u){
+      html += '<div class="rounded-lg px-2 py-1.5" style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18)">';
+      html += '<div class="text-[9px] text-slate-400"><span class="text-rose-300/80 line-through">' + wrEsc(u.from) + '</span> → <b class="text-amber-300">' + wrEsc(u.to) + '</b></div>';
+      html += '<div class="text-[9px] text-slate-300 leading-snug mt-0.5 break-words">升级示范：' + wrEsc(u.dst) + '</div>';
+      html += '<div class="text-[8px] text-slate-600 mt-0.5">' + wrEsc(u.why) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }else{
+    html += '<div class="text-[9px] text-slate-500 mt-1.5">未检测到可替换的低级表达，用词已经比较书面 👍 下面是针对本题型的加分句型。</div>';
+  }
+  html += '<div class="mt-2 text-[10px] font-bold text-indigo-300">🏆 ' + wrEsc(r.tplKind) + ' 高分句型模板</div>';
+  html += '<div class="mt-1 space-y-0.5">';
+  r.tpl.forEach(function(t){
+    html += '<div class="text-[9px] text-slate-300 leading-relaxed">' + wrEsc(t) + '</div>';
+  });
+  html += '</div>';
+  html += '</div>';
+
+  /* 提分建议 */
+  html += '<div class="mt-2.5 rounded-xl bg-black/30 border border-white/10 p-3">';
+  html += '<div class="text-[11px] font-bold text-amber-300">💡 提分建议（按优先级）</div>';
+  html += '<ol class="mt-1.5 space-y-1 text-[10px] text-slate-300 leading-relaxed list-decimal pl-4">';
+  r.sug.slice(0, 5).forEach(function(t){ html += '<li>' + wrEsc(t) + '</li>'; });
+  html += '</ol></div>';
+  html += '<div class="mono text-[9px] text-slate-600 mt-1.5">本地规则引擎 · 参照 CET-4 官方五档标准与四维加权，结果仅作日常自测参考</div>';
+
+  box.innerHTML = html;
+  box.classList.remove('hidden');
+}
+
+/* ---------- 追加式记录（绝不覆盖） ---------- */
+function wrAppend(r){
+  if(!wrPrompt) return;
+  if(!S.write || typeof S.write !== 'object') S.write = {};
+  const id = wrPrompt.id;
+  const rec = S.write[id] || (S.write[id] = { history: [] });
+  if(!Array.isArray(rec.history)) rec.history = [];
+  rec.history.push({
+    ts: Date.now(),
+    title: wrPrompt.title || '',
+    tag: wrTagOf(wrPrompt),
+    n: r.n, s15: r.s15, band: r.band.name, pct: r.pct, score106: r.score106,
+    gErr: r.meta.gErr, cover: r.meta.cover,
+    dims: r.dims.map(function(d){ return [d.k, d.v]; }),
+    sug: r.sug.slice(0, 3),
+    text: $('wrText').value
+  });
+  /* 写作打卡自动点亮当日日历 */
+  const k = today();
+  if(!S.checkins[k] || typeof S.checkins[k] !== 'object') S.checkins[k] = {};
+  S.checkins[k].writing = 1;
+  save();
+}
+function wrHistOf(id){
+  const rec = (S.write || {})[id];
+  return (rec && Array.isArray(rec.history)) ? rec.history : [];
+}
+function wrRenderHist(){
+  const box = $('wrHist');
+  if(!box) return;
+  const list = wrPrompt ? wrHistOf(wrPrompt.id).slice().reverse() : [];
+  $('wrTimes').textContent = '本篇 ' + list.length + ' 次';
+  const done = Object.keys(S.write || {}).filter(function(k){ return wrHistOf(k).length > 0; }).length;
+  $('wrDone').textContent = '已练 ' + done + ' 道';
+  if(!list.length){
+    box.innerHTML = '<div class="text-[10px] text-slate-600 text-center py-2">还没有记录，写完点「智能评分」就会自动存一条</div>';
+    return;
+  }
+  let html = '';
+  list.forEach(function(h, i){
+    const d = new Date(h.ts);
+    const when = (d.getMonth() + 1) + '-' + d.getDate() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    /* 兼容旧记录（106.5 分制） */
+    const s15 = (typeof h.s15 === 'number') ? h.s15 : (h.score ? Math.round(h.score / WR_FULL * 15 * 2) / 2 : 0);
+    const bd = h.band || (WR_BANDS.filter(function(b){ return s15 >= b.min; })[0] || WR_BANDS[WR_BANDS.length - 1]).name;
+    const color = (WR_BANDS.filter(function(b){ return s15 >= b.min; })[0] || WR_BANDS[WR_BANDS.length - 1]).color;
+    html += '<div class="rounded-xl bg-black/30 border border-white/10 overflow-hidden">';
+    html += '<button class="wr-hist-head w-full flex items-center justify-between px-2.5 py-2 active:bg-white/5 transition text-left" data-i="' + i + '">';
+    html += '<span class="mono text-[10px] text-slate-400">第 ' + (list.length - i) + ' 次 · ' + when + '</span>';
+    html += '<span class="flex items-center gap-2"><span class="mono text-[9px] text-slate-500">' + bd + '</span>';
+    html += '<b class="mono text-[12px]" style="color:' + color + '">' + s15.toFixed(1) + '</b><span class="text-[9px] text-slate-600">▾</span></span></button>';
+    html += '<div class="hidden wr-hist-body px-2.5 pb-2.5" data-body="' + i + '">';
+    html += '<div class="text-[10px] text-slate-500 mb-1">' + wrEsc(h.tag || '') + ' · ' + wrEsc(h.title || '') + '</div>';
+    html += '<div class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto rounded-lg bg-black/30 p-2">' + wrEsc(h.text || '') + '</div>';
+    html += '<div class="mono text-[9px] text-slate-500 mt-1.5">' + h.n + ' 词 · 语法错误 ' + (typeof h.gErr === 'number' ? h.gErr : '—') + ' 处</div>';
+    if(h.dims && h.dims.length){
+      html += '<div class="mono text-[9px] text-slate-500 mt-0.5">' + h.dims.map(function(x){ return x[0] + ' ' + x[1]; }).join(' · ') + '</div>';
+    }
+    if(h.sug && h.sug.length){
+      html += '<ul class="mt-1 space-y-0.5 text-[9px] text-amber-300/80 list-disc pl-3 leading-relaxed">';
+      h.sug.forEach(function(t){ html += '<li>' + wrEsc(t) + '</li>'; });
+      html += '</ul>';
+    }
+    html += '</div></div>';
+  });
+  box.innerHTML = html;
+  box.querySelectorAll('.wr-hist-head').forEach(function(b){
+    b.addEventListener('click', function(){
+      const body = box.querySelector('[data-body="' + b.dataset.i + '"]');
+      if(body) body.classList.toggle('hidden');
+    });
+  });
+}
+
+/* ---------- 事件绑定 ---------- */
+$('wrModeBank').addEventListener('click', function(){ wrSetMode('bank'); });
+$('wrModeAi').addEventListener('click', function(){ wrSetMode('ai'); });
+$('wrYear').addEventListener('change', function(){
+  wrFillSet($('wrYear').value);
+  const id = $('wrSet').value;
+  if(id) wrLoadBank(id);
+});
+$('wrSet').addEventListener('change', function(){ if($('wrSet').value) wrLoadBank($('wrSet').value); });
+$('wrAiType').addEventListener('change', function(){ wrGenAi(); });
+$('wrAiGen').addEventListener('click', function(){ wrGenAi(); });
+$('wrText').addEventListener('input', function(){ wrUpdateCount(); wrSaveDraft(); });
+$('wrClear').addEventListener('click', function(){
+  $('wrText').value = '';
+  $('wrResult').classList.add('hidden');
+  wrUpdateCount(); wrSaveDraft();
+});
+$('wrScore').addEventListener('click', function(){
+  const txt = $('wrText').value.trim();
+  if(wrWords(txt) < 20){ toast('至少写 20 词再评分哦'); return; }
+  const r = wrGrade(txt, wrPrompt);
+  wrRenderResult(r);
+  wrAppend(r);
+  wrRenderHist();
+  const n = wrWords(txt);
+  if(n < WR_MIN) toast('🔴 还差 ' + (WR_MIN - n) + ' 词，已记录');
+  else if(n > WR_MAX) toast('🔴 超出 ' + (n - WR_MAX) + ' 词，已记录');
+  else toast('✓ 已评分并追加保存（第 ' + wrHistOf(wrPrompt.id).length + ' 次）');
+  $('wrResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+/* ---------- 初始化 ---------- */
+function renderWrite(){
+  if(!wrPrompt){
+    const last = S.writeCur && WR_BY_ID[S.writeCur] ? S.writeCur : (WR_BANK.length ? WR_BANK[0].id : '');
+    if(WR_BANK.length){ wrFillYear(); wrFillSet(WR_BY_ID[last] ? WR_BY_ID[last].year : $('wrYear').value); }
+    if(last && WR_BY_ID[last]){ $('wrYear').value = WR_BY_ID[last].year; wrFillSet(WR_BY_ID[last].year); $('wrSet').value = last; wrLoadBank(last); }
+    else { wrSetMode('bank'); }
+  } else {
+    wrRenderHist();
+  }
+}
+function wrInit(){
+  if(!WR_BANK.length){ return; }
+  wrFillYear();
+  const firstYear = $('wrYear').value;
+  wrFillSet(firstYear);
+  const last = (S.writeCur && WR_BY_ID[S.writeCur]) ? S.writeCur : WR_BANK[0].id;
+  if(WR_BY_ID[last]){
+    $('wrYear').value = WR_BY_ID[last].year;
+    wrFillSet(WR_BY_ID[last].year);
+    $('wrSet').value = last;
+    wrLoadBank(last);
+  }
+  wrSetMode('bank');
+  wrRenderHist();
+}
 
 /* ================= Toast ================= */
 function toast(t){
@@ -2275,51 +3232,36 @@ function toast(t){
 }
 
 /* ================= 视图切换 ================= */
-function syncDeckChips(view){
-  /* 词库切换条只在「学习」页显示，其余页面隐藏保持清爽 */
-  const box=$('deckChips');
-  if(box) box.style.display = view==='learn' ? 'flex' : 'none';
-}
-document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  ['learn','stats','quiz','exam','listen','settings'].forEach(v=>$('view-'+v).classList.toggle('hidden', v!==b.dataset.view));
-  syncDeckChips(b.dataset.view);
-  if(b.dataset.view==='stats') renderStatsView();
-  if(b.dataset.view==='quiz') renderQuizHome();
-  if(b.dataset.view==='exam') renderExam();
+/* 五个顶层板块：日历 → 快答 → 模考 → 听力 → 写作；导入/设置走右上角齿轮 */
+const VIEWS = ['stats','quiz','exam','listen','write','settings'];
+function setView(v){
+  VIEWS.forEach(function(x){ const el=$('view-'+x); if(el) el.classList.toggle('hidden', x!==v); });
+  document.querySelectorAll('.navbtn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===v); });
+  if(v==='write') renderWrite();
+  if(v==='settings') bkRenderStat();
+  if(v==='stats') renderStatsView();
+  if(v==='quiz') renderQuizHome();
+  if(v==='exam') renderExam();
   window.scrollTo(0,0);
-}));
-
-/* ================= 板块切换 ================= */
-function renderChips(){
-  const box=$('deckChips'); box.innerHTML='';
-  decks().forEach(d=>{
-    const btn=document.createElement('button');
-    const on=d.id===curDeck;
-    btn.className=`shrink-0 px-3.5 py-1.5 rounded-full text-xs border active:scale-95 transition ${on?'chip-active':'glass text-slate-300 border-white/10'}`;
-    const pct=Math.min(100,Math.round(Object.keys(d.known).length/Math.max(1,d.list.length)*100));
-    btn.innerHTML=`${d.name} <span class="${on?'opacity-90 font-bold':'opacity-60'}">${pct}%</span>`;
-    btn.addEventListener('click',()=>{ curDeck=d.id; buildQueue(); showCard(); renderStatsBar(); renderChips(); });
-    box.appendChild(btn);
-  });
 }
+document.querySelectorAll('.navbtn').forEach(function(b){
+  b.addEventListener('click', function(){ setView(b.dataset.view); });
+});
+$('btnGear').addEventListener('click', function(){ setView('settings'); });
 
 /* ================= 设置 ================= */
-$('autoSpeak').checked=S.settings.autoSpeak;
-$('goalInput').value=S.settings.goal;
 $('examDate').value=S.settings.examDate;
 $('examDateTxt').textContent=S.settings.examDate;
-$('autoSpeak').addEventListener('change',e=>{ S.settings.autoSpeak=e.target.checked; save(); });
-$('goalInput').addEventListener('change',e=>{ S.settings.goal=Math.max(5,Math.min(200,+e.target.value||30)); e.target.value=S.settings.goal; save(); buildQueue(); showCard(); renderStatsBar(); });
+
 
 /* ================= 学习时长计时 ================= */
 setInterval(()=>{ if(document.visibilityState==='visible'){ T().t+=5; save(); } },5000);
 
 /* ================= 启动 ================= */
 const bootEl=document.getElementById('boot'); if(bootEl) bootEl.remove();
-renderChips(); buildQueue(); showCard(); renderStatsBar(); renderCountdown(); renderQuizHome();
+renderCountdown(); renderQuizHome();
 if($('exDate') && !$('exDate').value) $('exDate').value = today();
-examLive(); renderGuide(); ltInit();
+examLive(); renderGuide(); ltInit(); wrInit(); bkInit();
 /* 存储降级提示：沙箱/无痕环境下数据只在本次会话有效 */
 (function storageNotice(){
   if(STORE.ok) return;

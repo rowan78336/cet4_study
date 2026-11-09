@@ -455,7 +455,7 @@
           <h3 class="font-bold text-white text-sm">✍️ 写作专项训练</h3>
           <span id="wrDone" class="mono text-[10px] text-slate-500">已练 0 道</span>
         </div>
-        <div class="mono text-[9px] text-slate-600 mb-2.5">CET-4 官方五档评分（15 分制）· 120-180 词 · 四维加权诊断 · 本地引擎不联网</div>
+        <div class="mono text-[9px] text-slate-600 mb-2.5">CET-4 官方五档评分（15 分制）· 120-180 词 · 四维加权诊断 · 改句建议 P0 语法自检</div>
 
         <!-- 双模切换 -->
         <div class="grid grid-cols-2 gap-2">
@@ -510,7 +510,7 @@
 
         <div class="grid grid-cols-2 gap-2 mt-3">
           <button id="wrScore" class="py-2.5 rounded-xl text-xs font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 6px 18px rgba(34,211,238,.28)">🤖 智能评分</button>
-          <button id="wrClear" class="glass rounded-xl py-2.5 text-xs text-slate-300 font-bold active:scale-95 transition">清空重写</button>
+          <button id="wrClear" class="glass rounded-xl py-2.5 text-xs font-bold text-amber-300 active:scale-95 transition" style="border-color:rgba(251,191,36,.35)">🧹 一键清空</button>
         </div>
 
         <!-- 评分结果 -->
@@ -529,20 +529,6 @@
 
     <!-- ============ 设置/导入视图 ============ -->
     <section id="view-settings" class="hidden">
-      <div class="glass rounded-2xl p-4">
-        <h3 class="font-bold text-white mb-2">📥 自定义词库导入</h3>
-        <p class="text-[11px] text-slate-400 leading-relaxed mb-3">
-          支持三种格式，每行一条：<br>
-          ① <code class="text-cyan-300">单词<Tab或空格>释义</code>　② <code class="text-cyan-300">单词 | 释义</code><br>
-          ③ 直接粘贴 JSON 数组 <code class="text-cyan-300">[{"w":"hello","d":"int. 你好"}]</code>
-        </p>
-        <textarea id="importText" rows="6" placeholder="abandon vt. 放弃，抛弃" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50"></textarea>
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <button id="btnImport" class="py-3 rounded-xl font-bold text-sm text-white active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">导入词库</button>
-          <button id="btnClearCustom" class="py-3 rounded-xl font-bold text-sm text-rose-300 glass active:scale-95 transition">清空自定义</button>
-        </div>
-        <div id="importMsg" class="text-xs mt-2 text-cyan-300"></div>
-      </div>
       <div class="glass rounded-2xl p-4 mt-3">
         <div class="flex items-start justify-between gap-2">
           <div>
@@ -1079,63 +1065,103 @@ function renderDiaryList(){
   });
 }
 
-/* ================= AI 智能复盘（免 Key 本地规则引擎） ================= */
+/* ================= AI 智能复盘（免 Key 本地规则引擎 · CET-4 四题型导向） ================= */
+function aiDateKey(ts){ try{ return fmt(new Date(ts)); }catch(_){ return ''; } }
 function aiAnalyze(){
   const d=selectedDate||today();
-  const s=S.stats[d]||{n:0,r:0,t:0};
   const ck=S.checkins[d]||{};
   const diary=isStr(S.diary[d])? S.diary[d] : '';
-  const goal=S.settings.goal;
-  const wordCnt=(s.n||0)+(s.r||0);
   const done=CK_MODULES.filter(([id])=>ck[id]).map(([,l])=>l);
   const missed=CK_MODULES.filter(([id])=>!ck[id]).map(([,l])=>l);
-  const qh=Array.isArray(S.quizHist[d])? S.quizHist[d] : [];
   const assess=[], advice=[];
-  if(wordCnt===0 && !done.length && !diary.trim() && !qh.length){
+
+  /* 当日听力专项成绩 */
+  let ltCnt=0, ltScore=0;
+  Object.keys(S.listen||{}).forEach(function(id){
+    (S.listen[id].history||[]).forEach(function(h){
+      if(aiDateKey(h.ts)===d && isFinite(h.score)){ ltCnt++; ltScore+=h.score; }
+    });
+  });
+  /* 当日写作练习 */
+  let wrCnt=0, wrScore=0;
+  Object.keys(S.write||{}).forEach(function(pid){
+    (S.write[pid].history||[]).forEach(function(h){
+      if(aiDateKey(h.ts)===d && isFinite(h.s15)){ wrCnt++; wrScore+=h.s15; }
+    });
+  });
+  /* 当日模考 */
+  const ex=(S.exams||[]).filter(function(e){ return e && e.date===d; });
+  /* 当日快答 */
+  const qh=Array.isArray(S.quizHist[d])? S.quizHist[d] : [];
+  const qw=Array.isArray(S.quizWrong[d])? S.quizWrong[d] : [];
+  const empty=!done.length && !diary.trim() && !ltCnt && !wrCnt && !ex.length && !qh.length;
+
+  if(empty){
     assess.push('这一天还没有学习记录。');
-    advice.push('哪怕只背 5 个词也是向前一步 🚶 — 先完成每日新词目标（'+goal+' 个），再挑 1 个薄弱模块打 15 分钟卡。');
+    advice.push('先挑 1 个题型完成 15 分钟练习并打卡 🚶 听力精听、阅读真题、写作一篇或翻译一段都算数。');
   }else{
-    if((s.n||0)>=goal) assess.push('✅ 新词目标达成（'+s.n+'/'+goal+'），节奏很稳。');
-    else if(s.n>0) assess.push('今日新词 '+s.n+'/'+goal+' 个，还差 '+(goal-s.n)+' 个。');
-    else if(s.r>0) assess.push('今天只做了复习（'+s.r+' 次），没有推新词。');
-    if(done.length) assess.push('已完成打卡：'+done.join('、')+'。');
-    if(wordCnt>0) assess.push('学习记录合计 '+wordCnt+' 次，用时约 '+Math.round((s.t||0)/60)+' 分钟。');
-    if(s.n>0 && s.n<goal) advice.push('剩余新词分 2 轮完成，每轮后来一局「60秒快答」自测，记住率会明显提升。');
-    if((s.r||0)>=20) advice.push('复习量较大（'+s.r+' 次）：错题池在滚动是好事，但别让新词停滞。');
-    if(missed.length) advice.push('今天还没碰：'+missed.join('、')+'。四级各题型雨露均沾，挑最弱的一个补 15 分钟。');
+    /* 打卡总览 */
+    if(done.length) assess.push('✅ 已完成打卡（'+done.length+'/4）：'+done.join('、')+'。');
+    else assess.push('当日四项打卡均未点亮。');
+    if(missed.length) assess.push('⬜ 未练习：'+missed.join('、')+'。');
+
+    /* 听力 */
+    if(ltCnt){
+      const avg=(ltScore/ltCnt).toFixed(1);
+      assess.push('🎧 听力专项 '+ltCnt+' 次，平均 '+avg+' / 249.5 分。');
+      const pct=ltScore/ltCnt/249.5;
+      if(pct>=0.8) advice.push('听力正确率很稳（'+avg+' 分），可以开 1.25 倍速磨耳朵，考场上会更从容。');
+      else if(pct>=0.6) advice.push('听力中等（'+avg+' 分）：把错得最多的那套重听一遍，逐句跟读出错的对话段，比刷新题更提分。');
+      else advice.push('听力偏弱（'+avg+' 分）：先精听 1 套真题——听一句懂一句再对原文，坚持 3 天会有明显变化。');
+    }
+
+    /* 写作 */
+    if(wrCnt){
+      const avg=(wrScore/wrCnt).toFixed(1);
+      assess.push('✍️ 写作 '+wrCnt+' 篇，平均 '+avg+' / 15 分。');
+      if(wrScore/wrCnt>=10) advice.push('写作进入良好档：保持结构（观点→论证→总结），再积累 2-3 个高级替换表达冲优秀档。');
+      else if(wrScore/wrCnt>=7) advice.push('写作及格档（'+avg+' 分）：重点补句式多样性——每篇强制用 1 个从句 + 1 个倒装/强调句。');
+      else advice.push('写作未到及格线（'+avg+' 分）：先解决语法硬伤（主谓一致、时态、句首大写），再套用高分句型模板重写一遍对比看。');
+    }
+
+    /* 模考 */
+    if(ex.length){
+      const last=ex[ex.length-1];
+      assess.push('📊 模考「'+(last.name||'')+'」总分 '+last.total+' / 710。');
+      const L=+last.L||0, R=+last.R||0;
+      if(L<200 && R>=200) advice.push('模考里听力（'+L+'）明显弱于阅读（'+R+'）：接下来两天优先听力专项，用真题精听补。');
+      else if(R<200 && L>=200) advice.push('模考里阅读（'+R+'）偏弱：限时做 2 篇仔细阅读，错题回原文定位出题句。');
+      else advice.push('模考分项比较均衡（听 '+L+' / 读 '+R+'），下一步练整卷限时，锻炼答题节奏。');
+    }
+
+    /* 快答（词汇基础） */
+    if(qh.length){
+      const tot=qh.reduce((a,x)=>a+((x.right||0)+(x.wrong||0)),0);
+      const rgt=qh.reduce((a,x)=>a+(x.right||0),0);
+      const acc=tot? Math.round(rgt/tot*100):0;
+      const best=Math.max.apply(null, qh.map(x=>x.score||0));
+      assess.push('⚡ 快答 '+qh.length+' 局（最佳 '+best+' 分），正确率 '+acc+'%。');
+      if(acc<60) advice.push('快答正确率偏低（'+acc+'%）：先去快答页回顾今日错题，把基础词的释义辨析弄准再战。');
+    }
+
+    /* 日记情绪联动 */
     if(isStr(diary) && diary.trim()){
       assess.push('📓 日记已记录（'+diary.trim().length+' 字）。');
       const neg=/错|难|崩|累|烦|忘|不懂|听不懂|不会|焦虑/.test(diary);
       const pos=/掌握|顺利|记住|开心|进步|搞定|完成|清晰/.test(diary);
-      if(neg&&pos) advice.push('日记里既有顺利也有卡壳——把卡壳点加进错题池（学习模式点「记错了」即可），周末集中复盘。');
-      else if(neg) advice.push('最近卡壳感偏多？把每日新词降到 20 个，先清错题池，信心会慢慢回来，别急。');
+      if(neg&&pos) advice.push('日记里既有顺利也有卡壳——把卡壳的那个题型明天再练一次，只练它，练到顺为止。');
+      else if(neg) advice.push('最近卡壳感偏多？降低强度：每天只攻 1 个题型 15 分钟，稳住节奏信心会回来，别急 🚶');
       else if(pos) advice.push('状态在线，保持节奏。不积跬步，无以至千里 🚶');
-    }else if(wordCnt>0||done.length){
-      advice.push('补两句当日日记，下次 AI 复盘会更懂你。');
+    }else if(!empty){
+      advice.push('补两句当日日记，AI 复盘会更懂你的卡点。');
     }
-    /* 快答挑战数据联动 */
-    if(qh.length){
-      const tot=qh.reduce((a,x)=>a+((x.right||0)+(x.wrong||0)),0);
-      const rgt=qh.reduce((a,x)=>a+(x.right||0),0);
-      const acc= tot? Math.round(rgt/tot*100) : 0;
-      const best=Math.max.apply(null, qh.map(x=>x.score||0));
-      assess.push('⚡ 快答挑战 '+qh.length+' 局（最佳 '+best+' 分），答题 '+tot+' 题，正确率 '+acc+'%。');
-      if(acc>=85) advice.push('快答正确率很高（'+acc+'%），可以适当加大每日新词量，或挑战听音模式冲更高分。');
-      else if(acc>=60) advice.push('快答正确率中等（'+acc+'%），多刷错题池和词组搭配，辨析会更扎实。');
-      else advice.push('快答正确率偏低（'+acc+'%），建议先用学习模式把新词过熟，再来挑战。');
-    }
-    /* 今日快答错题本 */
-    const qw=Array.isArray(S.quizWrong[d])? S.quizWrong[d] : [];
-    if(qw.length){
-      assess.push('📕 快答今日错题 '+qw.length+' 个：'+qw.slice(0,6).map(x=>x.w).join('、')+(qw.length>6?' 等':'')+'。');
-      advice.push('去「快答」页打开今日错题回顾，把这几个词在学习模式里点「记错了」送回复习池，明天再战。');
-    }
+
+    if(missed.length) advice.push('今天还没碰：'+missed.join('、')+'。四个题型雨露均沾，挑最弱的补 15 分钟。');
   }
-  /* 错误频次统计：跨天累计的高频错词 */
-  const wf=Object.entries(S.wrongFreq||{}).filter(([w,c])=>isStr(w)&&w.trim()&&c>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  if(wf.length) assess.push('🔁 高频错词：'+wf.map(([w,c])=>w+'（错 '+c+' 次）').join('、')+'。建议重点击破。');
-  assess.push('🏆 累计坚持 '+calcTotalDays()+' 天，已掌握 '+totalKnown()+' 词。');
-  if(wordCnt>0||done.length||diary.trim()) advice.push('睡前 10 分钟把今天的错词再过一遍，记忆效率最高。');
+
+  assess.push('🏆 累计坚持 '+calcTotalDays()+' 天。');
+  if(!empty) advice.push('睡前 10 分钟把今天的听力错句或写作错句再过一遍，记忆效率最高。');
+
   const li=a=>a.map(x=>'<div class="flex gap-2 mt-1.5"><span class="text-slate-500 shrink-0">·</span><span>'+x+'</span></div>').join('');
   $('aiDate').textContent='('+d+')';
   $('aiBody').innerHTML=
@@ -1143,9 +1169,9 @@ function aiAnalyze(){
       '<div class="text-xs font-bold text-indigo-300 mb-1">📊 状态评估</div><div class="text-[13px] text-slate-200">'+li(assess)+'</div>'+
     '</div>'+
     '<div class="rounded-2xl p-3.5 mt-3" style="background:rgba(16,185,129,.10);border:1px solid rgba(52,211,153,.3)">'+
-      '<div class="text-xs font-bold text-emerald-300 mb-1">🎯 提分建议</div><div class="text-[13px] text-slate-200">'+li(advice.length?advice:['今天先休息，明天按目标继续。'])+'</div>'+
+      '<div class="text-xs font-bold text-emerald-300 mb-1">🎯 提分建议</div><div class="text-[13px] text-slate-200">'+li(advice.length?advice:['今天先休息，明天按计划继续。'])+'</div>'+
     '</div>'+
-    '<div class="text-[10px] text-slate-500 mt-3 text-center">基于本地学习数据生成 · 数据仅存在你的手机里</div>';
+    '<div class="text-[10px] text-slate-500 mt-3 text-center">基于本地学习数据生成 · 聚焦 CET-4 听力 / 阅读 / 写作 / 翻译 · 数据仅存在你的手机里</div>';
   $('aiModal').classList.remove('hidden');
 }
 $('btnAI').addEventListener('click',aiAnalyze);
@@ -2307,41 +2333,6 @@ function ltInit(){
 $('ltYear').addEventListener('change', function(){ ltFillPaper($('ltYear').value); ltLoad($('ltPaper').value, false); });
 $('ltPaper').addEventListener('change', function(){ ltLoad($('ltPaper').value, false); });
 
-/* ================= 导入 ================= */
-$('btnImport').addEventListener('click',()=>{
-  const txt=$('importText').value.trim(); const msg=$('importMsg');
-  if(!txt){ msg.textContent='请先粘贴内容'; return; }
-  let items=[];
-  try{
-    if(txt.startsWith('[')){
-      const j=JSON.parse(txt);
-      items=j.map(x=>({ w:x.w||x.word||x.en, d:x.d||x.def||x.meaning||'' })).filter(x=>x.w);
-    }
-  }catch(e){}
-  if(!items.length){
-    for(const line of txt.split('\n')){
-      const l=line.trim(); if(!l) continue;
-      let m=l.match(/^(.+?)\s*[|｜]\s*(.+)$/);
-      if(m){ items.push({w:m[1].trim(),d:m[2].trim()}); continue; }
-      m=l.match(/^(.+?)(?:\t|\s{1,})(.+)$/);
-      if(m) items.push({w:m[1].trim(),d:m[2].trim()});
-    }
-  }
-  if(!items.length){ msg.textContent='未解析到有效词条，请检查格式'; return; }
-  const exist=new Set(S.custom.map(x=>x.w));
-  let added=0;
-  for(const it of items){
-    if(!it || !isStr(it.w) || !it.w.trim()) continue; // 防御：跳过无效词条
-    const w = it.w.trim();
-    if(!exist.has(w)){ S.custom.push({w:w, d:isStr(it.d)? it.d.trim() : ''}); exist.add(w); added++; }
-  }
-  save(); msg.textContent=`✓ 成功导入 ${added} 条新词（去重后），已加入「我的词库」板块`;
-  $('importText').value='';
-  toast('已加入「我的词库」');
-});
-$('btnClearCustom').addEventListener('click',()=>{
-  S.custom=[]; S.customKnown={}; save(); $('importMsg').textContent='已清空自定义词库';
-});
 $('examDate').addEventListener('change',e=>{ if(e.target.value){ S.settings.examDate=e.target.value; save(); $('examDateTxt').textContent=e.target.value; renderCountdown(); } });
 
 /* ================= 写作专项（十年真题库 + AI 模拟出题 + 智能评分 + 追加记录） ================= */
@@ -2570,6 +2561,23 @@ const WR_STOP = new Set(('the a an of to in on for and or but with as is are was
 const WR_ADV = ['vital','crucial','essential','significant','considerable','particularly','furthermore','moreover','consequently','nevertheless','therefore','accordingly','beneficial','inevitable','contribute','enhance','facilitate','promote','cultivate','demonstrate','illustrate','acknowledge','tremendous','remarkable','indispensable','sustainable','accessibility','perspective','initiative','efficient','effective','appropriate','responsibility','opportunity','challenge','motivation','cooperation','communication','environment','development','influence','tendency','phenomenon','priority','strategy','approach','witness','embrace','pivotal','rewarding','detrimental','advocate','allocate','implement','acknowledges','nevertheless','consequently'];
 /* 逻辑过渡词库 */
 const WR_CONN = ['firstly','first of all','secondly','thirdly','finally','moreover','furthermore','besides','in addition','what is more','however','nevertheless','on the contrary','therefore','thus','consequently','as a result','in conclusion','to sum up','in short','for example','for instance','such as','on the one hand','on the other hand','in my opinion','as far as i am concerned','in a word','above all','meanwhile','similarly','in contrast','accordingly','hence','taking all'];
+/* 题目元词（提取主题词时排除，避免把 importance/opinion 这类空词当主题） */
+const WR_TOPIC_STOP = new Set('importance significance value role roles influence impact effect effects necessity possibility advantages disadvantages benefits opinions opinion views view attitude attitudes ways means reason reasons purpose aims idea ideas topic theme issue issues matter write essay essays composition state states explain explains describe support supports following given suppose give examples take takes took students student college university campus learn learning study studying'.split(' '));
+/* 从题目关键词序列提取主题词：跳过元词后取连续的实义词（最多 3 个），如
+   "The Importance of Developing a Healthy Lifestyle" → developing healthy lifestyle */
+function wrTopicOf(km){
+  const arr = Array.isArray(km) ? km : [];
+  for(let i = 0; i < arr.length; i++){
+    if(WR_TOPIC_STOP.has(arr[i]) || WR_STOP.has(arr[i])) continue;
+    const run = [arr[i]];
+    for(let j = i + 1; j < arr.length && j < i + 3; j++){
+      if(WR_TOPIC_STOP.has(arr[j]) || WR_STOP.has(arr[j])) break;
+      run.push(arr[j]);
+    }
+    return run.join(' ');
+  }
+  return 'this practice';
+}
 
 /* ---------- CET-4 写作五档评分引擎（官方 15 分制 · 四维加权诊断） ---------- */
 
@@ -2623,28 +2631,37 @@ const WR_CETI = [
   { re:/\beveryone should to\b/i, to:'everyone should', why:'情态动词后接动词原形' }
 ];
 
-/* 提分替换（低级 → 高级） */
+/* P0：动词原形表（替换前检查后接词性，防止动词叠用） */
+const WR_VERB_BASE = new Set('do go make take get give help become show mean consider say think know want need like look seem play study work live come learn teach bring buy choose find keep leave meet put sit stand lose win send build achieve gain grow succeed protect save share read write speak see hear feel stay start finish improve develop increase reduce provide offer enable allow facilitate promote'.split(' '));
+/* 提分替换（低级 → 高级）· 每条可选 guard 上下文校验，输出前统一过 P0 语法自检 */
 const WR_UP = [
-  { re:/\bis very important (to|for)\b/i, to:'plays a pivotal role in', why:'be + 形容词 → 高级动词短语' },
-  { re:/\bare very important\b/i, to:'are of vital importance', why:'名词化表达更书面' },
-  { re:/\bvery important\b/i, to:'of vital importance', why:'形容词 → 名词化' },
+  { re:/\bis very important\b/i, to:'is of great importance', why:'be + 形容词 → 名词化表达' },
+  { re:/\bare very important\b/i, to:'are of great importance', why:'名词化表达更书面' },
   { re:/\bmore and more (people|students)\b/i, to:'an increasing number of $1', why:'数量表达升级' },
-  { re:/\ba lot of\b/i, to:'a considerable number of', why:'口语量词 → 书面量词' },
+  { re:/\ba lot of\b/i, to:'a considerable number of', why:'口语量词 → 书面量词（仅限可数名词前）',
+    guard:function(s,m){ return /^(people|students|things|problems|books|friends|reasons|ways|examples|benefits|choices|factors|teachers|children|jobs|words|ideas|questions)\b/i.test(s.slice(m.index + m[0].length).trim()); } },
   { re:/\blots of\b/i, to:'plenty of', why:'口语量词 → 书面量词' },
-  { re:/\bget (better|more|many)\b/i, to:'obtain', why:'万能动词 → 精准动词' },
-  { re:/\bhelp (us|people|students|them)\b/i, to:'facilitate', why:'help → facilitate' },
-  { re:/\bI think (that )?/i, to:'From my perspective, ', why:'口语化开头' },
+  { re:/\bget better\b/i, to:'achieve better', why:'万能动词 → 精准动词' },
+  { re:/\bget more\b/i, to:'acquire more', why:'万能动词 → 精准动词' },
+  { re:/\bhelp (us|people|students|them)\b/i, to:'facilitate', why:'help → facilitate（仅后接名词时替换，避免 facilitate + 动词原形的叠用错误）',
+    guard:function(s,m){ const w = (s.slice(m.index + m[0].length).trim().toLowerCase().match(/^[a-z]+/) || [''])[0]; return !WR_VERB_BASE.has(w); } },
+  { re:/^I think (that )?/i, to:'From my perspective, ', why:'口语化开头' },
   { re:/\bIn my opinion\b/i, to:'From where I stand', why:'可换一种说法避免撞句' },
   { re:/\bwith the development of (the )?society\b/i, to:'along with the rapid advancement of society', why:'烂大街句式，阅卷老师已疲惫' },
-  { re:/\bthink\b/i, to:'hold the view that', why:'think → hold the view that' },
+  { re:/\bthink\b/i, to:'hold the view that', why:'think → hold the view that（仅主语后单独作谓语时替换）',
+    guard:function(s,m){ const pre = (s.slice(0, m.index).trim().toLowerCase().match(/[a-z]+$/) || [''])[0]; return !/^(do|does|did|what|how|you)$/.test(pre) && !/^(about|of|over|so|twice|big|back|deeply|highly)\b/i.test(s.slice(m.index + m[0].length).trim()); } },
   { re:/\bvery good\b/i, to:'highly beneficial', why:'避免 very + 基础形容词' },
-  { re:/\bgood\b/i, to:'rewarding', why:'good 过于笼统' },
-  { re:/\bbad\b/i, to:'detrimental', why:'bad 过于笼统' },
+  { re:/\bgood\b/i, to:'rewarding', why:'good 过于笼统（good at / good morning 等固定搭配不替换）',
+    guard:function(s,m){ return !/^(at|for|morning|afternoon|evening|night|luck|day|grace|ness)\b/i.test(s.slice(m.index + m[0].length).trim()); } },
+  { re:/\bbad\b/i, to:'detrimental', why:'bad 过于笼统（feel bad 等系表搭配不替换）',
+    guard:function(s,m){ const pre = (s.slice(0, m.index).trim().toLowerCase().match(/[a-z]+$/) || [''])[0]; return !/^(feel|feels|felt|not)$/.test(pre); } },
   { re:/\bbig\b/i, to:'considerable', why:'big → considerable' },
-  { re:/\bbecause\b/i, to:'owing to the fact that', why:'因果表达升级（注意字数）' },
-  { re:/\bso\b(?! that)/i, to:'consequently', why:'口语连接 → 书面连接' },
-  { re:/\bbut\b/i, to:'nevertheless', why:'口语连接 → 书面连接' },
-  { re:/\balso\b/i, to:'in addition', why:'口语连接 → 书面连接' },
+  { re:/\bbecause\b/i, to:'owing to the fact that', why:'因果表达升级（because of 不替换，避免介词重复）',
+    guard:function(s,m){ return !/^of\b/i.test(s.slice(m.index + m[0].length).trim()); } },
+  { re:/^So,?\s+/i, to:'Therefore, ', why:'句首口语连接 → 书面连接（句中的 so 不动，避免误伤 so many / so that）' },
+  { re:/,\s*but\b(?! also)/i, to:', however,', why:'口语连接 → 书面连接（not only…but also 不替换）' },
+  { re:/^But,?\s+/i, to:'However, ', why:'句首口语连接 → 书面连接' },
+  { re:/^Also,?\s+/i, to:'In addition, ', why:'仅句首 Also 替换，句中 also 保持不动' },
   { re:/\bmany (students|people|problems|reasons)\b/i, to:'a considerable number of $1', why:'数量表达升级' },
   { re:/\bNowadays\b/i, to:'In contemporary society', why:'开头用词升级' },
   { re:/\bwe should\b/i, to:'it is advisable that we should', why:'建议句更委婉书面' },
@@ -2704,14 +2721,70 @@ const WR_ABBR = [["don't",'do not'],["doesn't",'does not'],["can't",'cannot'],["
   ["couldn't",'could not'],["it's",'it is'],["I'm",'I am'],["I've",'I have'],
   ["we're",'we are'],["they're",'they are'],["there's",'there is']];
 
-/* 单句挑错：返回 [{type,cat,bad,fix,demo,why}]，cat: G=语法/拼写/标点，S=表达/结构 */
-function wrCheckSentence(s, i, total){
+/* ---------- P0：语法自检闭环（任何替换建议输出前统一验证，杜绝“改出”新错误） ---------- */
+const WR_ING_EXC = new Set(['something','anything','nothing','everything','morning','evening','spring','training','clothing','being','having']);
+function wrP0Bad(s){
+  if(!s) return false;
+  const t = String(s).replace(/\s+/g, ' ');
+  let m;
+  /* 情态动词后接 to do（如 will to go） */
+  if(/\b(can|could|should|will|would|must|may|might|shall)\s+to\s+[a-z]+/i.test(t)) return true;
+  /* 情态动词后接 V-ing（如 should studying） */
+  m = t.match(/\b(can|could|should|will|would|must|may|might)\s+([a-z]+)\b/i);
+  if(m && /ing$/.test(m[2]) && !WR_ING_EXC.has(m[2].toLowerCase())) return true;
+  /* 介词后直接跟原形动词（如 in develop / for improve） */
+  if(/\b(in|for|about|of)\s+(develop|improve|achieve|provide|facilitate|enable|increase|reduce|promote|protect|obtain|finish)\b/i.test(t)) return true;
+  /* be 动词后直接接原形动词（如 is facilitate / are help） */
+  if(/\b(is|are|was|were|am)\s+(facilitate|promote|enhance|cultivate|demonstrate|implement|advocate|achieve|enable|allow|provide|offer|increase|reduce|improve|develop|protect|maintain|obtain|help|make|take|give|get|become|find|know|show|play|study|work|live|need|want|use|build)\b/i.test(t)) return true;
+  /* 及物动词后直接跟过去式动词（如 facilitate built） */
+  if(/\b(facilitate|facilitates|promote|promotes|help|helps|enable|enables|allow|allows)\s+(built|made|did|went|got|took|gave|spent|brought|thought|wrote|chose|became|felt|found|kept|left|ran|saw|told|understood|achieved|developed|improved|increased|reduced|provided|created|showed|meant)\b/i.test(t)) return true;
+  /* 冠词后接 “of + 名词化” 错位（如 a of vital importance way） */
+  if(/\b(a|an|the)\s+of\s+(vital|great|considerable)\s+[a-z]/i.test(t)) return true;
+  return false;
+}
+
+/* ---------- P1：动词搭配辅助（doing / to do 接续换算） ---------- */
+const WR_DBL = new Set(['run','sit','get','put','cut','stop','plan','begin','swim','win','hit','fit','set','let','shop','drop','jog','tap','rob','stir','chat','pat','nod']);
+function wrGerund(v){
+  const lv = String(v || '').toLowerCase();
+  if(WR_DBL.has(lv)) return lv + lv.slice(-1) + 'ing';
+  if(/e$/.test(lv) && !/ee$/.test(lv) && lv.length > 2) return lv.slice(0, -1) + 'ing';
+  return lv + 'ing';
+}
+const WR_ING_BASE = { making:'make', taking:'take', having:'have', giving:'give', living:'live', coming:'come', writing:'write', using:'use', becoming:'become', choosing:'choose', driving:'drive', riding:'ride', rising:'rise', saving:'save', moving:'move', achieving:'achieve', believing:'believe', receiving:'receive', leaving:'leave', shining:'shine', smiling:'smile', deciding:'decide', practicing:'practice', baking:'bake' };
+function wrIngBase(w){
+  const lv = String(w || '').toLowerCase();
+  if(WR_ING_BASE[lv]) return WR_ING_BASE[lv];
+  if(/[bcdfgklmnprstvz][aeiou][bcdfgklmnprstvz]ing$/.test(lv) && WR_DBL.has(lv.slice(0, -3))) return lv.slice(0, -3);
+  return lv.slice(0, -3);
+}
+
+/* ---------- P2：句间逻辑分类器（先判关系再给衔接词，杜绝机械推荐） ---------- */
+const WR_NEG_N = /\b(problem|problems|drawback|drawbacks|disadvantage|disadvantages|cost|costs|risk|risks|danger|dangers|harm|challenge|challenges|difficulty|difficulties|weakness|weaknesses|negative|pressure|burden|threat|threats)\b/i;
+const WR_POS_N = /\b(benefit|benefits|advantage|advantages|positive|merit|merits|strength|strengths|value|helpful|useful|opportunity|opportunities|reward|rewards|gain|gains)\b/i;
+function wrLogicClass(prev, cur){
+  const cl = String(cur || '').toLowerCase();
+  if(/\b(for example|for instance|such as|as an example|a case in point)\b/.test(cl)) return 'example';
+  if(/\b(however|nevertheless|on the contrary|in contrast|by contrast|on the other hand|whereas|while|although|though|despite|in spite of|yet)\b/.test(cl)) return 'contrast';
+  if(/\b(because|due to|owing to|so that|therefore|thus|consequently|as a result|leads? to|results? in|causes?|brings? about)\b/.test(cl)) return 'cause';
+  if(/^\s*(this|that|these|those|such|it|they)\b/i.test(cur)) return 'spec';
+  if(WR_NEG_N.test(cur) && WR_POS_N.test(prev)) return 'contrast';
+  if(WR_POS_N.test(cur) && WR_NEG_N.test(prev)) return 'contrast';
+  if(/^\s*(another|second|secondly|third|thirdly|also|besides|furthermore|moreover|in addition|what is more|first|firstly|to begin with)\b/i.test(cur)) return 'progression';
+  return 'none';
+}
+const WR_REL_CN = { example:'举例', cause:'因果', contrast:'转折', progression:'递进', spec:'总分' };
+const WR_REL_REC = { example:'For instance', cause:'Therefore / As a result', contrast:'However / Nevertheless', progression:'What is more / In addition' };
+
+/* 单句挑错：返回 [{type,cat,bad,fix,demo,why}]，cat: G=语法/拼写/标点，S=表达/结构；prev=上一句（用于 P2 句间逻辑判断） */
+function wrCheckSentence(s, i, total, prev){
   const out = [];
   const words = s.match(/[A-Za-z][A-Za-z'\-]*/g) || [];
   const wc = words.length;
   const low = s.toLowerCase();
   const add = function(type, cat, bad, fix, demo, why){
     if(out.some(function(x){ return x.type === type && x.bad === bad; })) return;
+    if(demo && wrP0Bad(demo)) demo = '';   /* P0：示范句若被验证出语法问题，只给改法不给示范 */
     out.push({ type: type, cat: cat, bad: bad, fix: fix, demo: demo || '', why: why || '' });
   };
   let m;
@@ -2769,6 +2842,45 @@ function wrCheckSentence(s, i, total){
     const pl = /[^aeiou]y$/.test(m[2]) ? m[2].slice(0, -1) + 'ies' : m[2] + 's';
     add('单复数', 'G', m[0], m[1] + ' ' + pl, s.replace(m[0], m[1] + ' ' + pl), '复数限定词后接复数名词');
   }
+  /* ---------- P1：深层动词与句型搭配检测 ---------- */
+  /* 情态动词后误加 to */
+  m = s.match(/\b(can|could|should|will|would|must|may|might|shall)\s+to\s+([a-z]+)/i);
+  if(m){
+    const fixed = m[1] + ' ' + m[2];
+    add('动词搭配', 'G', m[0], fixed, s.replace(m[0], fixed), '情态动词后接动词原形，不加 to');
+  }
+  /* 情态动词后误接 V-ing */
+  m = s.match(/\b(can|could|should|will|would|must|may|might)\s+([a-z]+ing)\b/i);
+  if(m && !WR_ING_EXC.has(m[2].toLowerCase())){
+    const base = wrIngBase(m[2]);
+    if(base.length >= 2){
+      const fixed = m[1] + ' ' + base;
+      add('动词搭配', 'G', m[0], fixed, s.replace(m[0], fixed), '情态动词后接动词原形');
+    }
+  }
+  /* 只接 doing 的动词误接 to do（如 enjoy to learn / avoid to make） */
+  m = s.match(/\b(facilitate|facilitates|enjoy|enjoys|enjoyed|avoid|avoids|avoided|finish|finishes|finished|suggest|suggests|suggested|practice|practices|practiced|mind|minds|consider|considers|considered|admit|admits|imagine|risk|postpone|quit)\s+to\s+([a-z]+)\b/i);
+  if(m && m[2].toLowerCase() !== 'be'){
+    const g = wrGerund(m[2]);
+    const fixed = m[1] + ' ' + g;
+    if(!wrP0Bad(fixed)) add('动词搭配', 'G', m[0], fixed, s.replace(m[0], fixed), '该动词后接动名词 doing，不接 to do');
+  }
+  /* 只接 to do 的动词误接 doing（如 want going / hope hearing） */
+  m = s.match(/\b(want|wants|wanted|hopes?|hoped|plans?|planned|decides?|decided|refuses?|refused|learns?|learned|learnt|managed?|affords?|agrees?|agreed|offers?|offered|promises?|promised|wishes?|prepares?|prepared|fails?|failed)\s+([a-z]+ing)\b/i);
+  if(m && !WR_ING_EXC.has(m[2].toLowerCase())){
+    const base = wrIngBase(m[2]);
+    if(base.length >= 2){
+      const fixed = m[1] + ' to ' + base;
+      if(!wrP0Bad(fixed)) add('动词搭配', 'G', m[0], fixed, s.replace(m[0], fixed), '该动词后接 to do，不接 doing');
+    }
+  }
+  /* be 动词后直接接原形动词（如 is facilitate / are help） */
+  m = s.match(/\b(is|are|was|were|am)\s+(facilitate|promote|enhance|cultivate|demonstrate|implement|advocate|achieve|enable|allow|provide|offer|increase|reduce|improve|develop|protect|maintain|obtain|help|make|take|give|get|become|find|know|show|play|study|work|live|need|want|use|build)\b/i);
+  if(m){
+    const fixed = m[1] + ' ' + wrGerund(m[2]);
+    add('动词形态', 'G', m[0], fixed, s.replace(m[0], fixed), 'be 动词后不能直接接动词原形，要用 to do / doing / 名词');
+  }
+
   /* 时态 */
   if(/\b(yesterday|last\s+(?:year|week|month|summer)|ago|in\s+(?:19|20)\d\d)\b/i.test(s)
      && /\b(is|are|am|do|does|have|has|go|goes|make|makes|think|thinks|believe|believes|say|says|need|needs)\b/i.test(s)){
@@ -2805,10 +2917,16 @@ function wrCheckSentence(s, i, total){
   /* 句长 */
   if(wc > 42) add('句长', 'S', wc + ' 词', '拆成 2~3 个短句', '', '长句失控容易语法崩塌');
   else if(wc > 0 && wc < 6 && total > 3) add('句长', 'S', wc + ' 词', '并入相邻句', '', '碎片句影响连贯');
-  /* 衔接 */
-  if(i > 0 && wc >= 15 && !WR_CONN.some(function(c){ return low.indexOf(c) >= 0; })
-     && !/^(this|these|it|they|such|which|that|another)\b/i.test(s)){
-    add('衔接', 'S', '无过渡词', '加 However / What is more / As a result', '', '段落内部也需要逻辑信号');
+  /* 衔接（P2：先用逻辑分类器判断句间关系，确实存在逻辑断层才推荐，且按关系给对应衔接词） */
+  if(i > 0 && wc >= 15){
+    const hasConn = WR_CONN.some(function(c){ return low.indexOf(c) >= 0; });
+    const rel = wrLogicClass(prev || '', s);
+    if(!hasConn && rel === 'none'){
+      add('衔接', 'S', '句间缺逻辑信号', '按实际逻辑选：However（转折）/ Besides（递进）/ As a result（因果）', '', '两句之间既无指代也无过渡词，连贯性会被扣分');
+    } else if(!hasConn && rel !== 'none' && rel !== 'spec'){
+      /* spec：句子以 This / These 开头指代上句，衔接已存在，不再推荐 */
+      add('衔接', 'S', '隐含' + WR_REL_CN[rel] + '关系未点明', WR_REL_REC[rel] || '', '', '前后句实际是' + WR_REL_CN[rel] + '关系，用过渡词明示后逻辑更清晰');
+    }
   }
   /* 重复用词 */
   const rep = s.match(/\b([A-Za-z]{3,})\s+\1\b/i);
@@ -2830,8 +2948,7 @@ function wrGrade(text, prompt){
   const ttr = n ? uniq / n : 0;
 
   /* 题目关键词 */
-  const km = ((((prompt && prompt.title) || '') + ' ' + ((prompt && prompt.directions) || '')).toLowerCase().match(/[a-z]{4,}/g) || []);
-  const keyWords = km.filter(function(w){ return !WR_STOP.has(w); });
+  const km = ((((prompt && prompt.title) || '') + ' ' + ((prompt && prompt.directions) || '')).toLowerCase().match(/[a-z]{4,}/g) || []);  const keyWords = km.filter(function(w){ return !WR_STOP.has(w); });
   const hits = keyWords.filter(function(w){ return lower.indexOf(w) >= 0; });
   const cover = keyWords.length ? hits.length / keyWords.length : 0;
 
@@ -2841,8 +2958,8 @@ function wrGrade(text, prompt){
   let basicHit = 0;
   basicWords.forEach(function(b){ basicHit += (raw.toLowerCase().match(new RegExp('\\b' + b.replace(/ /g, '\\s+') + '\\b', 'g')) || []).length; });
 
-  /* 逐句诊断 */
-  const sIssues = sents.map(function(s, i){ return wrCheckSentence(s, i, sents.length); });
+  /* 逐句诊断（传入上一句供 P2 逻辑分类） */
+  const sIssues = sents.map(function(s, i){ return wrCheckSentence(s, i, sents.length, sents[i - 1] || ''); });
   let gErr = 0, sStyle = 0;
   sIssues.forEach(function(list){ list.forEach(function(x){ if(x.cat === 'G') gErr++; else sStyle++; }); });
 
@@ -2940,40 +3057,59 @@ function wrGrade(text, prompt){
     };
   });
 
-  /* 提分金句（基于用户原句的实际替换） */
+  /* 提分金句（基于用户原句的实际替换 · guard 上下文校验 + P0 语法自检，验证不过直接放弃） */
   const upgrades = [];
   WR_UP.forEach(function(u){
-    const src = sents.filter(function(s){ return u.re.test(s); })[0] || '';
+    const src = sents.filter(function(s){
+      const mm = s.match(u.re);
+      if(!mm) return false;
+      if(u.guard && !u.guard(s, mm)) return false;
+      return true;
+    })[0] || '';
     if(!src) return;
     const mm = src.match(u.re);
     if(!mm) return;
     const dst = src.replace(u.re, u.to);
     if(upgrades.some(function(x){ return x.dst === dst; })) return;
+    if(wrP0Bad(dst)) return;   /* P0 语法自检：替换后产生新错误 → 放弃该建议 */
     upgrades.push({ from: mm[0], to: u.to.replace(/\$1/g, mm[1] || ''), why: u.why, src: src, dst: dst });
   });
 
   /* 高分句型模板 */
   const kind = wrKindOf(prompt);
-  const topic = (keyWords[0] || 'this topic');
+  const topic = wrTopicOf(km);
   const tpl = (WR_TPL[kind] || WR_TPL['议论文'])(topic);
 
-  /* 提分建议：按最弱维度排序 */
+  /* 提分建议（P3 优先级：字数与结构 → 逻辑与衔接 → 深层语法 → 词汇升级） */
+  /* P3：三段式宏观结构校验 */
+  const THESIS = /\b(i (think|believe|argue|maintain|hold)|in my (opinion|view)|from my (perspective|point of view)|as far as i am concerned|it is .{2,50}(important|necessary|vital|essential|advisable)|we should)\b/i;
+  const EVIDENCE = /\b(\d{1,3}\s?%|\d{4}|for example|for instance|such as|according to|a survey|my own|when i was|research (shows|indicates)|studies (show|indicate)|take [a-z]{2,20} as an? example|personally|in my (own )?(case|experience))\b/i;
+  const CONCL = /\b(in conclusion|to (conclude|sum up)|in short|in a word|all in all|taking all|in summary|above all)\b/i;
+  const p1txt = paras[0] || '', p2txt = paras[1] || '', p3txt = paras[2] || '';
+  const structFlags = [];
+  if(parasN < 3) structFlags.push('段落结构：固定 3 段最稳 —— 首段亮观点，中段摆论据，末段做总结。');
+  if(parasN >= 1 && !THESIS.test(p1txt)) structFlags.push('首段没有明确的观点句（I think / From my perspective / It is vital to…），阅卷第一眼就是找观点。');
+  if(parasN >= 2 && n > 80 && !EVIDENCE.test(p2txt)) structFlags.push('主体段缺具体论据（数据 / 例子 / 个人经历），只有空泛概括会被判内容单薄。');
+  if(parasN >= 3 && !CONCL.test(p3txt)) structFlags.push('末段缺总结信号（In conclusion / To sum up），结尾仓促直接掉连贯分。');
+  else if(parasN >= 3 && (p3txt.match(/[A-Za-z]+/g) || []).length < 12) structFlags.push('结尾段太短，至少补一句重申观点 + 一句展望。');
+
   const sug = [];
-  caps.forEach(function(c){ sug.push('⚠️ ' + c); });
-  if(n < WR_MIN && n >= 40) sug.push('字数不足：还差 ' + (WR_MIN - n) + ' 词。补 1 个具体例子（时间/人物/数据）最省力，也能直接拉高切题度。');
-  if(n > WR_MAX) sug.push('字数超标 ' + (n - WR_MAX) + ' 词：删掉重复论证或空泛形容词，考试中超字数同样影响档位。');
-  if(parasN < 3) sug.push('段落结构：固定 3 段最稳 —— 第一段亮观点，第二段 2 个理由，第三段总结。');
-  if(connHits.length < 3) sug.push('逻辑衔接薄弱：至少用 3 个过渡词（Firstly / What is more / As a result / In conclusion）。');
-  if(!hasConc) sug.push('结尾缺总结信号：用 In conclusion / Taking all the factors into account 收尾，阅卷老师一眼能看出结构完整。');
-  if(gErr > 0) sug.push('语法硬伤 ' + gErr + ' 处：优先改主谓一致、时态、单复数、冠词这四类，它们最影响"无重大语言错误"的判定。');
-  if(ttr < 0.52 && n > 60) sug.push('重复用词偏多（不同词占比 ' + Math.round(ttr * 100) + '%）：换同义表达，如 important → vital / crucial。');
-  if(advHits.length < 2 && n > 60) sug.push('高级表达偏少：加入 play a pivotal role in / contribute to / attach importance to。');
-  if(!sug.length) sug.push('整体完成度不错：下一轮挑战更复杂的从句与更具体的例证，冲 13 分档。');
+  caps.forEach(function(c){ sug.push('【结构】⚠️ ' + c); });
+  if(n < WR_MIN && n >= 40) sug.push('【结构】字数不足：还差 ' + (WR_MIN - n) + ' 词。优先在主体段补 1 个具体例子（时间 / 人物 / 数据），同时拉高切题度。');
+  if(n > WR_MAX) sug.push('【结构】字数超标 ' + (n - WR_MAX) + ' 词：删掉重复论证或空泛形容词，考试中超字数同样影响档位。');
+  structFlags.forEach(function(f){ if(sug.indexOf('【结构】' + f) < 0) sug.push('【结构】' + f); });
+  if(connHits.length < 3) sug.push('【逻辑】衔接信号偏少（当前 ' + connHits.length + ' 个）：结合句间实际逻辑选用 —— 递进用 Besides / What is more，转折用 However，因果用 As a result，举例用 For instance，不要每句硬加。');
+  if(!hasConc && parasN < 3) sug.push('【逻辑】结尾缺总结信号：用 In conclusion / Taking all the factors into account 收尾，阅卷老师一眼能看出结构完整。');
+  if(gErr > 0) sug.push('【语法】语法硬伤 ' + gErr + ' 处：优先修动词搭配（情态动词后接原形、doing / to do 接续），再改主谓一致、时态、单复数、冠词。');
+  if(ttr < 0.52 && n > 60) sug.push('【词汇】重复用词偏多（不同词占比 ' + Math.round(ttr * 100) + '%）：换同义表达，如 important → vital / crucial。');
+  if(advHits.length < 2 && n > 60) sug.push('【词汇】高级表达偏少：加入 play a pivotal role in / contribute to / attach importance to。');
+  if(!sug.length) sug.push('【综合】整体完成度不错：下一轮挑战更复杂的从句与更具体的例证，冲 13 分档。');
 
   return {
     n: n, sents: sents.length, total: s15, s15: s15, pct: pct, score106: score106,
     band: band, dims: dims, sentences: sentences,
-    upgrades: upgrades.slice(0, 6), tpl: tpl, tplKind: kind,
+    upgrades: upgrades.slice(0, 6), tpl: tpl, tplKind: kind, topic: topic,
+    cat: (((prompt && prompt.title) || '') + ' ' + ((prompt && prompt.directions) || '')).toLowerCase(),
     sug: sug, caps: caps,
     meta: { paras: parasN, conn: connHits.length, adv: advHits.length, ttr: Math.round(ttr * 100), cover: Math.round(cover * 100), gErr: gErr, sStyle: sStyle, cx: cx }
   };
@@ -2987,6 +3123,7 @@ function wrEsc(s){
 }
 function wrRenderResult(r){
   const box = $('wrResult');
+  wrLastGrade = r;
   const bc = r.band.color;
   let html = '';
 
@@ -3083,12 +3220,205 @@ function wrRenderResult(r){
   html += '<div class="mt-2.5 rounded-xl bg-black/30 border border-white/10 p-3">';
   html += '<div class="text-[11px] font-bold text-amber-300">💡 提分建议（按优先级）</div>';
   html += '<ol class="mt-1.5 space-y-1 text-[10px] text-slate-300 leading-relaxed list-decimal pl-4">';
-  r.sug.slice(0, 5).forEach(function(t){ html += '<li>' + wrEsc(t) + '</li>'; });
-  html += '</ol></div>';
-  html += '<div class="mono text-[9px] text-slate-600 mt-1.5">本地规则引擎 · 参照 CET-4 官方五档标准与四维加权，结果仅作日常自测参考</div>';
+  r.sug.slice(0, 7).forEach(function(t){ html += '<li>' + wrEsc(t) + '</li>'; });
+  html += '</ol>';
+  /* 字数不足 / 缺论据 → 一键生成例证支架 */
+  if(r.n < WR_MIN || r.sug.some(function(s){ return s.indexOf('缺具体论据') >= 0; })){
+    html += '<button id="wrScafBtn" onclick="wrScafShow()" class="mt-2.5 w-full rounded-lg px-2 py-2 text-[11px] font-bold active:scale-[.98] transition-transform" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">✨ 一键生成例证支架（贴合本题主题 · 约 45-60 词）</button>';
+    html += '<div id="wrScafBox" class="mt-2"></div>';
+  }
+  html += '</div>';
+  html += '<div class="mono text-[9px] text-slate-600 mt-1.5">本地规则引擎 · CET-4 官方五档标准 · 四维加权 · 全部改句建议经 P0 语法自检后输出</div>';
 
   box.innerHTML = html;
   box.classList.remove('hidden');
+}
+
+/* ---------- 例证支架：字数不足 / 缺论据时一键生成贴题万能例子 ---------- */
+let wrLastGrade = null;
+
+/* 主题分类：先识别题目话题域，例证场景与话题强对齐，绝不生搬硬套 */
+const WR_SCAT = [
+  { key:'culture',     re:/\b(chinese|culture|cultural|tradition|traditional|heritage|poetry|poem|poems|literature|classic|classics|festival|festivals|custom|customs|mandarin|opera|confucius|calligraphy)\b/i },
+  { key:'health',      re:/\b(exercise|exercises|health|healthy|sport|sports|fitness|diet|sleep|weight|running|body)\b/i },
+  { key:'environment', re:/\b(environment|environmental|green|pollution|recycle|recycling|waste|plastic|plastics|nature|energy|climate|protecting)\b/i },
+  { key:'volunteer',   re:/\b(volunteer|volunteers|volunteering|charity|community|donation|donate)\b/i },
+  { key:'career',      re:/\b(jobs?|careers?|employment|internships?|profession|workplace|part.time)\b/i },
+  { key:'tech',        re:/\b(technology|technological|internet|online|phones?|digital|robots?|network|media|videos?|electronic|apps?)\b/i },
+  { key:'study',       re:/\b(courses?|classes?|curriculum|lectures?|education|academic|knowledge|majors?|reading|books?|library|homework|skills?|exams?|learning|studying)\b/i },
+  { key:'quality',     re:/\b(confidence|perseverance|determination|teamwork|cooperation|habit|habits|attitude|responsibility|independence|patience|courage|failure|success|growth|kindness|optimism)\b/i }
+];
+function wrScafCatOf(catText){
+  const t = String(catText || '');
+  for(let i = 0; i < WR_SCAT.length; i++){ if(WR_SCAT[i].re.test(t)) return WR_SCAT[i].key; }
+  return 'general';
+}
+/* 调查版共用框架（consider 句式，单复数主语都安全） */
+function wrScafSurvey(t, aspect, tail){
+  return 'According to a recent survey conducted among 300 students in my university, nearly 62 percent of them consider ' + t + ' an important part of ' + aspect + ', while only 15 percent think otherwise. ' + tail;
+}
+
+const WR_SCAFS = {
+  /* 文化 / 语文 / 传统类：课堂感悟 + 阅读古诗文场景 */
+  culture: function(t){ return [
+    { label:'① 个人经历版（课堂感悟 · 阅读经历）',
+      en:'Take my own experience as an example. Last term, when our teacher explained a classic Tang poem in class, I was deeply moved by the beauty of its language. Since then, I have spent twenty minutes reading classical works every evening, and this habit has quietly built up my confidence in our own culture.',
+      cn:'把“唐诗 / 二十分钟”换成课堂上真实打动过你的作品（古文、宋词、名著均可），细节越真越可信。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'our cultural confidence', 'Such figures clearly prove that traditional culture still shines among the young generation.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据，真实性会露馅。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider Xu Yuanchong, the great translator who devoted his whole life to sharing the beauty of Chinese poetry with the world. His remarkable achievement reminds us that our own culture is a real treasure, and it fully deserves our confidence, our patience and careful study.',
+      cn:'人物可换成你更熟悉的：季羡林、杨绛、故宫文创团队均可。' }
+  ]; },
+  /* 学习 / 课程 / 技能类：课堂与成绩变化场景 */
+  study: function(t){ return [
+    { label:'① 个人经历版（课堂转变 · 成绩提升）',
+      en:'Take my own experience as an example. At the beginning of last term, I treated ' + t + ' as a burden and seldom spent time on it after class. Then my teacher asked us to keep a short daily note about what we had learned, and I gradually found real joy in it. Three months later, my grades improved clearly.',
+      cn:'把“每日笔记 / 三个月”换成你自己的真实经历（错题本、早读、课后打卡均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'their academic life', 'Such figures clearly prove that a serious attitude toward learning always pays off.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider Thomas Edison, who failed thousands of times before the light bulb finally glowed. His story tells us that real progress in learning never comes from talent alone, but from patient daily effort, which is exactly what every student needs most at every stage of growth.',
+      cn:'人物可换成居里夫人、钱学森等与题目更相关的例子。' }
+  ]; },
+  /* 健康 / 运动类：跑步与作息场景 */
+  health: function(t){ return [
+    { label:'① 个人经历版（跑步 · 作息变化）',
+      en:'Take my own experience as an example. Last autumn, I often felt tired in class and could hardly focus on my study. Then I started to run around the playground for thirty minutes every evening. Two months later, I not only became more energetic but also slept far better at night.',
+      cn:'把“跑步 / 三十分钟”换成你真实的运动方式（跳绳、打球、晨跑均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'their physical and mental health', 'Such figures clearly prove that a healthy body is the true foundation of everything else.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider Su Bingtian, the Chinese sprinter who broke the Asian record at the age of thirty-two. Behind his historic seconds were ten years of strict training and self-discipline, which clearly proves that a strong body and a strong will always grow together on the same track.',
+      cn:'人物可换成钟南山（坚持锻炼）、谷爱凌等体育相关例子。' }
+  ]; },
+  /* 环保类：校园回收行动场景 */
+  environment: function(t){ return [
+    { label:'① 个人经历版（校园环保行动）',
+      en:'Take my own experience as an example. Last term, our class started a recycling program in the dormitory area. At first, some classmates found it troublesome, but after a few weeks of sorting waste every day, our campus looked visibly cleaner, which convinced all of us that small actions truly matter.',
+      cn:'把“垃圾分类 / 宿舍区”换成你做过的真实环保小事（随手关灯、光盘行动均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'the environment we share', 'Such figures clearly prove that green awareness is quietly taking root on campus.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider the builders of the Saihanba forest, who turned a barren desert into the largest man-made forest in China over three generations. Their great effort proves that every small green act, when repeated by millions of people, can truly change the world we live in.',
+      cn:'人物可换成蚂蚁森林、塞罕坝造林人等环保群体例子。' }
+  ]; },
+  /* 科技 / 网络类：短视频与自律场景 */
+  tech: function(t){ return [
+    { label:'① 个人经历版（屏幕时间 · 自律转变）',
+      en:'Take my own experience as an example. Last term, I spent nearly three hours a day on short videos, and my study suffered a lot. Then I set a strict limit on my screen time and replaced it with reading. One month later, I could focus much longer and my grades began to rise.',
+      cn:'把“短视频 / 三个小时”换成你真实的手机使用场景，越具体越好。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'our daily life and study habits', 'Such figures clearly prove that technology serves us well only when we control it wisely.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider the scientists behind the Beidou Navigation System, who spent over twenty years turning a bold idea into a global network of satellites. Their achievement proves that technology, guided by patient research, can truly serve millions of ordinary people around the world every single day.',
+      cn:'人物可换成屠呦呦、北斗团队等科技相关例子。' }
+  ]; },
+  /* 志愿 / 公益类：社区服务场景 */
+  volunteer: function(t){ return [
+    { label:'① 个人经历版（社区服务经历）',
+      en:'Take my own experience as an example. Last summer, I worked as a volunteer in a community library, helping children choose and read books. When I saw their happy smiles, I truly understood that small acts of kindness can warm others and enrich our own life at the same time.',
+      cn:'把“社区图书室 / 帮孩子选书”换成你真实的志愿经历（支教、敬老院、运动会志愿者均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'their sense of social responsibility', 'Such figures clearly prove that volunteering has become a warm habit on campus.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider Lei Feng, an ordinary soldier whose spirit of helping others still inspires millions of people today. His short but bright life proves that the value of a person is measured not by what he takes, but by what he gives to society and to the people around him.',
+      cn:'人物可换成张桂梅、青年志愿者协会等公益相关例子。' }
+  ]; },
+  /* 职场 / 兼职类：只有题目本身涉及求职兼职时才启用 */
+  career: function(t){ return [
+    { label:'① 个人经历版（兼职 · 职场初体验）',
+      en:'Take my own experience as an example. Last summer vacation, I took a part-time job in a small bookstore near my campus, where I learned to communicate with all kinds of customers. That experience taught me that real workplaces value responsibility and teamwork far more than certificates.',
+      cn:'把“书店兼职”换成你真实的打工或实习经历（家教、咖啡店、社团招新均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'their career preparation', 'Such figures clearly prove that early workplace experience has become a common choice among students.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 群体事例版（显积累 · 有高度）',
+      en:'Consider those successful people who started from ordinary positions and grew step by step through hard work. Their experiences show that every small job can become a stepping stone, as long as we treat every small task seriously and keep learning from it with patience.',
+      cn:'可换成具体人物：董宇辉、稻盛和夫等职场成长例子。' }
+  ]; },
+  /* 品质 / 成长类：当众发言等自我突破场景 */
+  quality: function(t){ return [
+    { label:'① 个人经历版（自我突破经历）',
+      en:'Take my own experience as an example. I used to be shy and afraid of speaking in front of the class. Then I forced myself to give one short speech every week. Half a year later, I could express my ideas confidently, which taught me that real growth always comes from constant practice.',
+      cn:'把“每周演讲”换成你真实的突破经历（第一次上台、坚持晨读、写日记均可）。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'their personal growth', 'Such figures clearly prove that good qualities are built through daily practice.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider J. K. Rowling, who was rejected by twelve publishers before Harry Potter finally came out. Her experience proves that failure is not the opposite of success, but a necessary step on the way to it, as long as we refuse to give up our dreams.',
+      cn:'人物可换成苏炳添、樊锦诗等与题目品质更相关的例子。' }
+  ]; },
+  /* 通用兜底：题目特征不明显时使用 */
+  general: function(t){ return [
+    { label:'① 个人经历版（最稳妥 · 通用性最强）',
+      en:'Take my own experience as an example. Last term, I hardly paid any attention to ' + t + ', and my performance kept slipping without my noticing it. Then my teacher reminded me to spend just half an hour on it every day. Three weeks later, I could already feel the difference, which surprised me greatly.',
+      cn:'把“老师提醒 / 半小时 / 三周”换成你自己的真实细节，阅卷老师最认这个。' },
+    { label:'② 校园调查版（显专业 · 有数据感）',
+      en:wrScafSurvey(t, 'daily life on campus', 'Such figures clearly prove that it has become a topic worth our serious attention.'),
+      cn:'数字可微调（如 58%、70%），但别写 99% 这类夸张数据。' },
+    { label:'③ 名人事例版（显积累 · 有高度）',
+      en:'Consider Yuan Longping, the father of hybrid rice in China. His remarkable achievement was never built on luck, but on decades of persistent effort in his rice fields, which clearly shows that whoever wants to achieve real success in ' + t + ' should always stay patient and keep working hard.',
+      cn:'人物可换成更贴题的：学习类用居里夫人，环保类用塞罕坝造林人，科技类用乔布斯。' }
+  ]; }
+};
+
+function wrScaffold(topic, catText){
+  const t = (!topic || topic === 'this practice') ? 'this practice' : String(topic);
+  const key = wrScafCatOf(catText);
+  const list = (WR_SCAFS[key] || WR_SCAFS.general)(t);
+  list.forEach(function(s){ s.words = wrWords(s.en); s.cat = key; });
+  return list;
+}
+
+const WR_SCAT_CN = { culture:'文化 / 语文', health:'健康 / 运动', environment:'环保', volunteer:'志愿 / 公益', career:'职场 / 兼职', tech:'科技 / 网络', study:'学习 / 课程', quality:'品质 / 成长', general:'通用' };
+function wrScafShow(){
+  const box = $('wrScafBox');
+  if(!box || !wrLastGrade) return;
+  const list = wrScaffold(wrLastGrade.topic, wrLastGrade.cat);
+  let html = '';
+  list.forEach(function(s, i){
+    html += '<div class="rounded-lg px-2 py-1.5 mb-1.5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)">';
+    html += '<div class="flex items-center justify-between"><span class="text-[10px] font-bold text-emerald-300">' + wrEsc(s.label) + '</span>';
+    html += '<span class="mono text-[9px] text-slate-500">' + s.words + ' 词</span></div>';
+    html += '<div class="text-[10px] text-slate-200 leading-relaxed mt-1 break-words">' + wrEsc(s.en) + '</div>';
+    html += '<div class="text-[9px] text-slate-500 mt-1 leading-snug">💡 ' + wrEsc(s.cn) + '</div>';
+    html += '<button onclick="wrScafInsert(' + i + ')" class="mt-1.5 w-full rounded-md px-2 py-1.5 text-[10px] font-bold active:scale-[.98] transition-transform" style="background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.4);color:#6ee7b7">⬆️ 插入到正文</button>';
+    html += '</div>';
+  });
+  html += '<div class="text-[8px] text-slate-600 leading-snug">已识别本题话题域【' + wrEsc(WR_SCAT_CN[list[0].cat] || '通用') + '】，例证场景与主题强对齐。插入后字数自动刷新；支架是通用例证，建议替换成你自己的细节再定稿。</div>';
+  box.innerHTML = html;
+  try{ box.scrollIntoView({ behavior:'smooth', block:'nearest' }); }catch(e){}
+}
+
+function wrScafInsert(i){
+  if(!wrLastGrade) return;
+  const list = wrScaffold(wrLastGrade.topic, wrLastGrade.cat);
+  const scaf = list[i];
+  const ta = $('wrText');
+  if(!scaf || !ta) return;
+  const cur = String(ta.value || '');
+  const pos = (typeof ta.selectionStart === 'number' && ta.selectionStart > 0 && ta.selectionStart < cur.length) ? ta.selectionStart : -1;
+  if(pos >= 0){
+    const before = cur.slice(0, pos), after = cur.slice(pos);
+    ta.value = before + (/[.\s]$/.test(before) ? '' : ' ') + scaf.en + (after ? ' ' + after : '');
+  }else{
+    ta.value = cur.replace(/\s+$/, '') + (cur.trim() ? ' ' : '') + scaf.en;
+  }
+  try{ ta.dispatchEvent(new Event('input', { bubbles:true })); }catch(e){}
+  const box = $('wrScafBox');
+  if(box){
+    const done = document.createElement('div');
+    done.className = 'text-[9px] text-emerald-400 mt-1';
+    done.textContent = '✅ 已插入正文（+' + scaf.words + ' 词），可再次评分查看效果';
+    box.insertBefore(done, box.firstChild);
+  }
 }
 
 /* ---------- 追加式记录（绝不覆盖） ---------- */
@@ -3154,6 +3484,7 @@ function wrRenderHist(){
       h.sug.forEach(function(t){ html += '<li>' + wrEsc(t) + '</li>'; });
       html += '</ul>';
     }
+    html += '<button class="wr-hist-del w-full mt-2 py-1.5 rounded-lg text-[10px] font-bold text-rose-300 active:scale-95 transition" data-i="' + i + '" style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25)">🗑 删除这条记录</button>';
     html += '</div></div>';
   });
   box.innerHTML = html;
@@ -3161,6 +3492,21 @@ function wrRenderHist(){
     b.addEventListener('click', function(){
       const body = box.querySelector('[data-body="' + b.dataset.i + '"]');
       if(body) body.classList.toggle('hidden');
+    });
+  });
+  /* 删除单条历史：list 是倒序展示的，真实索引 = 总数 - 1 - i */
+  box.querySelectorAll('.wr-hist-del').forEach(function(b){
+    b.addEventListener('click', function(){
+      const all = wrHistOf(wrPrompt.id);
+      const real = all.length - 1 - Number(b.dataset.i);
+      if(real < 0 || real >= all.length) return;
+      const h = all[real];
+      const when = h.ts ? new Date(h.ts).toLocaleString() : '';
+      if(!window.confirm || !window.confirm('确定删除这条记录吗？（' + when + ' · ' + (typeof h.s15 === 'number' ? h.s15 : h.score) + ' 分）删除后不可恢复')) return;
+      all.splice(real, 1);
+      save();
+      wrRenderHist();
+      toast('🗑 已删除 1 条记录（剩 ' + all.length + ' 条）');
     });
   });
 }
@@ -3261,7 +3607,7 @@ setInterval(()=>{ if(document.visibilityState==='visible'){ T().t+=5; save(); } 
 const bootEl=document.getElementById('boot'); if(bootEl) bootEl.remove();
 renderCountdown(); renderQuizHome();
 if($('exDate') && !$('exDate').value) $('exDate').value = today();
-examLive(); renderGuide(); ltInit(); wrInit(); bkInit();
+examLive(); renderGuide(); setView('stats'); ltInit(); wrInit(); bkInit();   /* 默认首页：日历（含渲染与高亮） */
 /* 存储降级提示：沙箱/无痕环境下数据只在本次会话有效 */
 (function storageNotice(){
   if(STORE.ok) return;

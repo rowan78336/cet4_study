@@ -389,6 +389,8 @@
                 <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.25">1.25x</button>
                 <button class="lt-sp flex-1 py-1 rounded-lg mono text-[10px] border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-sp="1.5">1.5x</button>
               </div>
+              <!-- Section A / B / C 跳转按钮（时间戳来自语音识别，精准写死） -->
+              <div id="ltSegBtns" class="hidden mt-1.5 flex gap-1.5"></div>
               <div id="ltErr" class="hidden mt-1.5 text-[10px] text-rose-300 leading-relaxed">
                 <div id="ltErrText">音频加载失败</div>
                 <div id="ltErrSrc" class="mono text-slate-500 mt-0.5 break-all"></div>
@@ -1711,7 +1713,7 @@ if($('gdToggle')) $('gdToggle').addEventListener('click', function(){
 });
 
 /* ================= 历年听力专项训练（2016-2026.6） ================= */
-const LT_MANIFEST = [{"id":"2016-06-1","y":2016,"m":6,"s":1,"label":"2016年6月 · 第1套","audio":"2016-06-1.mp3","text":"listening/text/2016-06-1.pdf","analysis":"listening/analysis/2016-06.pdf"},{"id":"2016-06-2","y":2016,"m":6,"s":2,"label":"2016年6月 · 第2套","audio":"2016-06-2.mp3","text":"listening/text/2016-06-2.pdf","analysis":"listening/analysis/2016-06.pdf"},{"id":"2016-12-1","y":2016,"m":12,"s":1,"label":"2016年12月 · 第1套","audio":"2016-12-1.mp3","text":"listening/text/2016-12-1.pdf","analysis":"listening/analysis/2016-12.pdf"},{"id":"2016-12-2","y":2016,"m":12,"s":2,"label":"2016年12月 · 第2套","audio":"2016-12-2.mp3","text":"listening/text/2016-12-2.pdf","analysis":"listening/analysis/2016-12.pdf"},{"id":"2017-06-1","y":2017,"m":6,"s":1,"label":"2017年6月 · 第1套","audio":"2017-06-1.mp3","text":"listening/text/2017-06-1.pdf","analysis":"listening/analysis/2017-06.pdf"},{"id":"2017-06-2","y":2017,"m":6,"s":2,"label":"2017年6月 · 第2套","audio":"2017-06-2.mp3","text":"listening/text/2017-06-2.pdf","analysis":"listening/analysis/2017-06.pdf"},{"id":"2017-12-1","y":2017,"m":12,"s":1,"label":"2017年12月 · 第1套","audio":"2017-12-1.mp3","text":"listening/text/2017-12-1.pdf","analysis":"listening/analysis/2017-12.pdf"},{"id":"2017-12-2","y":2017,"m":12,"s":2,"label":"2017年12月 · 第2套","audio":"2017-12-2.mp3","text":"listening/text/2017-12-2.pdf","analysis":"listening/analysis/2017-12.pdf"},{"id":"2018-06-1","y":2018,"m":6,"s":1,"label":"2018年6月 · 第1套","audio":"2018-06-1.mp3","text":"listening/text/2018-06-1.pdf","analysis":"listening/analysis/2018-06.pdf"},{"id":"2018-06-2","y":2018,"m":6,"s":2,"label":"2018年6月 · 第2套","audio":"2018-06-2.mp3","text":"listening/text/2018-06-2.pdf","analysis":"listening/analysis/2018-06.pdf"},{"id":"2018-12-1","y":2018,"m":12,"s":1,"label":"2018年12月 · 第1套","audio":"2018-12-1.mp3","text":"listening/text/2018-12-1.pdf","analysis":"listening/analysis/2018-12.pdf"},{"id":"2018-12-2","y":2018,"m":12,"s":2,"label":"2018年12月 · 第2套","audio":"2018-12-2.mp3","text":"listening/text/2018-12-2.pdf","analysis":"listening/analysis/2018-12.pdf"},{"id":"2019-06-1","y":2019,"m":6,"s":1,"label":"2019年6月 · 第1套","audio":"2019-06-1.mp3","text":"listening/text/2019-06-1.pdf","analysis":"listening/analysis/2019-06.pdf"},{"id":"2019-06-2","y":2019,"m":6,"s":2,"label":"2019年6月 · 第2套","audio":"2019-06-2.mp3","text":"listening/text/2019-06-2.pdf","analysis":"listening/analysis/2019-06.pdf"},{"id":"2019-12-1","y":2019,"m":12,"s":1,"label":"2019年12月 · 第1套","audio":"2019-12-1.mp3","text":"listening/text/2019-12-1.pdf","analysis":"listening/analysis/2019-12.pdf"},{"id":"2019-12-2","y":2019,"m":12,"s":2,"label":"2019年12月 · 第2套","audio":"2019-12-2.mp3","text":"listening/text/2019-12-2.pdf","analysis":"listening/analysis/2019-12.pdf"},{"id":"2020-07-1","y":2020,"m":7,"s":1,"label":"2020年7月 · 第1套","audio":"2020-07-1.mp3","text":"listening/text/2020-07-1.pdf","analysis":"listening/analysis/2020-07.pdf"},{"id":"2020-09-1","y":2020,"m":9,"s":1,"label":"2020年9月 · 第1套","audio":"2020-09-1.mp3","text":"listening/text/2020-09-1.pdf","analysis":"listening/analysis/2020-09.pdf"},{"id":"2020-12-1","y":2020,"m":12,"s":1,"label":"2020年12月 · 第1套","audio":"2020-12-1.mp3","text":"listening/text/2020-12-1.pdf","analysis":"listening/analysis/2020-12.pdf"},{"id":"2020-12-2","y":2020,"m":12,"s":2,"label":"2020年12月 · 第2套","audio":"2020-12-2.mp3","text":"listening/text/2020-12-2.pdf","analysis":"listening/analysis/2020-12.pdf"},{"id":"2021-06-1","y":2021,"m":6,"s":1,"label":"2021年6月 · 第1套","audio":"2021-06-1.mp3","text":"listening/text/2021-06-1.pdf","analysis":"listening/analysis/2021-06.pdf"},{"id":"2021-06-2","y":2021,"m":6,"s":2,"label":"2021年6月 · 第2套","audio":"2021-06-2.mp3","text":"listening/text/2021-06-2.pdf","analysis":"listening/analysis/2021-06.pdf"},{"id":"2021-12-1","y":2021,"m":12,"s":1,"label":"2021年12月 · 第1套","audio":"2021-12-1.mp3","text":"listening/text/2021-12-1.pdf","analysis":"listening/analysis/2021-12.pdf"},{"id":"2021-12-2","y":2021,"m":12,"s":2,"label":"2021年12月 · 第2套","audio":"2021-12-2.mp3","text":"listening/text/2021-12-2.pdf","analysis":"listening/analysis/2021-12.pdf"},{"id":"2022-06-1","y":2022,"m":6,"s":1,"label":"2022年6月 · 第1套","audio":"2022-06-1.mp3","text":"listening/text/2022-06-1.pdf","analysis":"listening/analysis/2022-06.pdf"},{"id":"2022-09-1","y":2022,"m":9,"s":1,"label":"2022年9月 · 第1套","audio":"2022-09-1.mp3","text":"listening/text/2022-09-1.pdf","analysis":"listening/analysis/2022-09.pdf"},{"id":"2022-12-1","y":2022,"m":12,"s":1,"label":"2022年12月 · 第1套","audio":"2022-12-1.mp3","text":"listening/text/2022-12-1.pdf","analysis":"listening/analysis/2022-12.pdf"},{"id":"2022-12-2","y":2022,"m":12,"s":2,"label":"2022年12月 · 第2套","audio":"2022-12-2.mp3","text":"listening/text/2022-12-2.pdf","analysis":"listening/analysis/2022-12.pdf"},{"id":"2023-03-1","y":2023,"m":3,"s":1,"label":"2023年3月 · 第1套","audio":"2023-03-1.mp3","text":"listening/text/2023-03-1.pdf","analysis":"listening/analysis/2023-03.pdf"},{"id":"2023-06-1","y":2023,"m":6,"s":1,"label":"2023年6月 · 第1套","audio":"2023-06-1.mp3","text":"listening/text/2023-06-1.pdf","analysis":"listening/analysis/2023-06.pdf"},{"id":"2023-06-2","y":2023,"m":6,"s":2,"label":"2023年6月 · 第2套","audio":"2023-06-2.mp3","text":"listening/text/2023-06-2.pdf","analysis":"listening/analysis/2023-06.pdf"},{"id":"2023-12-1","y":2023,"m":12,"s":1,"label":"2023年12月 · 第1套","audio":"2023-12-1.mp3","text":"listening/text/2023-12-1.pdf","analysis":"listening/analysis/2023-12.pdf"},{"id":"2023-12-2","y":2023,"m":12,"s":2,"label":"2023年12月 · 第2套","audio":"2023-12-2.mp3","text":"listening/text/2023-12-2.pdf","analysis":"listening/analysis/2023-12.pdf"},{"id":"2024-06-1","y":2024,"m":6,"s":1,"label":"2024年6月 · 第1套","audio":"2024-06-1.mp3","text":"listening/text/2024-06-1.pdf","analysis":"listening/analysis/2024-06.pdf"},{"id":"2024-06-2","y":2024,"m":6,"s":2,"label":"2024年6月 · 第2套","audio":"2024-06-2.mp3","text":"listening/text/2024-06-2.pdf","analysis":"listening/analysis/2024-06.pdf"},{"id":"2024-12-1","y":2024,"m":12,"s":1,"label":"2024年12月 · 第1套","audio":"2024-12-1.mp3","text":"listening/text/2024-12-1.pdf","analysis":"listening/analysis/2024-12.pdf"},{"id":"2024-12-2","y":2024,"m":12,"s":2,"label":"2024年12月 · 第2套","audio":"2024-12-2.mp3","text":"listening/text/2024-12-2.pdf","analysis":"listening/analysis/2024-12.pdf"},{"id":"2025-06-1","y":2025,"m":6,"s":1,"label":"2025年6月 · 第1套","audio":"2025-06-1.mp3","text":"listening/text/2025-06-1.pdf","analysis":"listening/analysis/2025-06.pdf"},{"id":"2025-06-2","y":2025,"m":6,"s":2,"label":"2025年6月 · 第2套","audio":"2025-06-2.mp3","text":"listening/text/2025-06-2.pdf","analysis":"listening/analysis/2025-06.pdf"},{"id":"2025-12-1","y":2025,"m":12,"s":1,"label":"2025年12月 · 第1套","audio":"2025-12-1.mp3","text":"listening/text/2025-12-1.pdf","analysis":"listening/analysis/2025-12.pdf"},{"id":"2025-12-2","y":2025,"m":12,"s":2,"label":"2025年12月 · 第2套","audio":"2025-12-2.mp3","text":"listening/text/2025-12-2.pdf","analysis":"listening/analysis/2025-12.pdf"},{"id":"2026-06-1","y":2026,"m":6,"s":1,"label":"2026年6月 · 第1套","audio":"2026-06-1.mp3","text":"listening/text/2026-06-1.pdf","analysis":"listening/analysis/2026-06.pdf"},{"id":"2026-06-2","y":2026,"m":6,"s":2,"label":"2026年6月 · 第2套","audio":"2026-06-2.mp3","text":"listening/text/2026-06-2.pdf","analysis":"listening/analysis/2026-06.pdf"}];
+const LT_MANIFEST = [{"id":"2016-06-1","y":2016,"m":6,"s":1,"label":"2016年6月 · 第1套","audio":"2016-06-1.mp3","text":"listening/text/2016-06-1.pdf","analysis":"listening/analysis/2016-06.pdf","seg":[479.4,904.4]},{"id":"2016-06-2","y":2016,"m":6,"s":2,"label":"2016年6月 · 第2套","audio":"2016-06-2.mp3","text":"listening/text/2016-06-2.pdf","analysis":"listening/analysis/2016-06.pdf","seg":[422.2,862.0]},{"id":"2016-12-1","y":2016,"m":12,"s":1,"label":"2016年12月 · 第1套","audio":"2016-12-1.mp3","text":"listening/text/2016-12-1.pdf","analysis":"listening/analysis/2016-12.pdf","seg":[411.4,799.8]},{"id":"2016-12-2","y":2016,"m":12,"s":2,"label":"2016年12月 · 第2套","audio":"2016-12-2.mp3","text":"listening/text/2016-12-2.pdf","analysis":"listening/analysis/2016-12.pdf","seg":[424.7,806.3]},{"id":"2017-06-1","y":2017,"m":6,"s":1,"label":"2017年6月 · 第1套","audio":"2017-06-1.mp3","text":"listening/text/2017-06-1.pdf","analysis":"listening/analysis/2017-06.pdf","seg":[417.4,817.9]},{"id":"2017-06-2","y":2017,"m":6,"s":2,"label":"2017年6月 · 第2套","audio":"2017-06-2.mp3","text":"listening/text/2017-06-2.pdf","analysis":"listening/analysis/2017-06.pdf","seg":[445.4,886.2]},{"id":"2017-12-1","y":2017,"m":12,"s":1,"label":"2017年12月 · 第1套","audio":"2017-12-1.mp3","text":"listening/text/2017-12-1.pdf","analysis":"listening/analysis/2017-12.pdf","seg":[431.7,856.2]},{"id":"2017-12-2","y":2017,"m":12,"s":2,"label":"2017年12月 · 第2套","audio":"2017-12-2.mp3","text":"listening/text/2017-12-2.pdf","analysis":"listening/analysis/2017-12.pdf","seg":[422.4,807.7]},{"id":"2018-06-1","y":2018,"m":6,"s":1,"label":"2018年6月 · 第1套","audio":"2018-06-1.mp3","text":"listening/text/2018-06-1.pdf","analysis":"listening/analysis/2018-06.pdf","seg":[426.9,836.1]},{"id":"2018-06-2","y":2018,"m":6,"s":2,"label":"2018年6月 · 第2套","audio":"2018-06-2.mp3","text":"listening/text/2018-06-2.pdf","analysis":"listening/analysis/2018-06.pdf","seg":[448.0,848.1]},{"id":"2018-12-1","y":2018,"m":12,"s":1,"label":"2018年12月 · 第1套","audio":"2018-12-1.mp3","text":"listening/text/2018-12-1.pdf","analysis":"listening/analysis/2018-12.pdf","seg":[424.5,839.4]},{"id":"2018-12-2","y":2018,"m":12,"s":2,"label":"2018年12月 · 第2套","audio":"2018-12-2.mp3","text":"listening/text/2018-12-2.pdf","analysis":"listening/analysis/2018-12.pdf","seg":[425.0,856.6]},{"id":"2019-06-1","y":2019,"m":6,"s":1,"label":"2019年6月 · 第1套","audio":"2019-06-1.mp3","text":"listening/text/2019-06-1.pdf","analysis":"listening/analysis/2019-06.pdf","seg":[422.9,825.8]},{"id":"2019-06-2","y":2019,"m":6,"s":2,"label":"2019年6月 · 第2套","audio":"2019-06-2.mp3","text":"listening/text/2019-06-2.pdf","analysis":"listening/analysis/2019-06.pdf","seg":[448.3,831.2]},{"id":"2019-12-1","y":2019,"m":12,"s":1,"label":"2019年12月 · 第1套","audio":"2019-12-1.mp3","text":"listening/text/2019-12-1.pdf","analysis":"listening/analysis/2019-12.pdf","seg":[439.4,872.5]},{"id":"2019-12-2","y":2019,"m":12,"s":2,"label":"2019年12月 · 第2套","audio":"2019-12-2.mp3","text":"listening/text/2019-12-2.pdf","analysis":"listening/analysis/2019-12.pdf","seg":[427.9,835.2]},{"id":"2020-07-1","y":2020,"m":7,"s":1,"label":"2020年7月 · 第1套","audio":"2020-07-1.mp3","text":"listening/text/2020-07-1.pdf","analysis":"listening/analysis/2020-07.pdf","seg":[447.7,865.0]},{"id":"2020-09-1","y":2020,"m":9,"s":1,"label":"2020年9月 · 第1套","audio":"2020-09-1.mp3","text":"listening/text/2020-09-1.pdf","analysis":"listening/analysis/2020-09.pdf","seg":[437.0,848.4]},{"id":"2020-12-1","y":2020,"m":12,"s":1,"label":"2020年12月 · 第1套","audio":"2020-12-1.mp3","text":"listening/text/2020-12-1.pdf","analysis":"listening/analysis/2020-12.pdf","seg":[395.1,806.6]},{"id":"2020-12-2","y":2020,"m":12,"s":2,"label":"2020年12月 · 第2套","audio":"2020-12-2.mp3","text":"listening/text/2020-12-2.pdf","analysis":"listening/analysis/2020-12.pdf","seg":[407.4,806.5]},{"id":"2021-06-1","y":2021,"m":6,"s":1,"label":"2021年6月 · 第1套","audio":"2021-06-1.mp3","text":"listening/text/2021-06-1.pdf","analysis":"listening/analysis/2021-06.pdf","seg":[413.7,806.5]},{"id":"2021-06-2","y":2021,"m":6,"s":2,"label":"2021年6月 · 第2套","audio":"2021-06-2.mp3","text":"listening/text/2021-06-2.pdf","analysis":"listening/analysis/2021-06.pdf","seg":[428.4,825.1]},{"id":"2021-12-1","y":2021,"m":12,"s":1,"label":"2021年12月 · 第1套","audio":"2021-12-1.mp3","text":"listening/text/2021-12-1.pdf","analysis":"listening/analysis/2021-12.pdf","seg":[416.0,852.4]},{"id":"2021-12-2","y":2021,"m":12,"s":2,"label":"2021年12月 · 第2套","audio":"2021-12-2.mp3","text":"listening/text/2021-12-2.pdf","analysis":"listening/analysis/2021-12.pdf","seg":[407.9,832.7]},{"id":"2022-06-1","y":2022,"m":6,"s":1,"label":"2022年6月 · 第1套","audio":"2022-06-1.mp3","text":"listening/text/2022-06-1.pdf","analysis":"listening/analysis/2022-06.pdf","seg":[449.0,904.8]},{"id":"2022-09-1","y":2022,"m":9,"s":1,"label":"2022年9月 · 第1套","audio":"2022-09-1.mp3","text":"listening/text/2022-09-1.pdf","analysis":"listening/analysis/2022-09.pdf","seg":[438.3,899.8]},{"id":"2022-12-1","y":2022,"m":12,"s":1,"label":"2022年12月 · 第1套","audio":"2022-12-1.mp3","text":"listening/text/2022-12-1.pdf","analysis":"listening/analysis/2022-12.pdf","seg":[438.0,831.6]},{"id":"2022-12-2","y":2022,"m":12,"s":2,"label":"2022年12月 · 第2套","audio":"2022-12-2.mp3","text":"listening/text/2022-12-2.pdf","analysis":"listening/analysis/2022-12.pdf","seg":[423.5,824.7]},{"id":"2023-03-1","y":2023,"m":3,"s":1,"label":"2023年3月 · 第1套","audio":"2023-03-1.mp3","text":"listening/text/2023-03-1.pdf","analysis":"listening/analysis/2023-03.pdf","seg":[499.5,887.1]},{"id":"2023-06-1","y":2023,"m":6,"s":1,"label":"2023年6月 · 第1套","audio":"2023-06-1.mp3","text":"listening/text/2023-06-1.pdf","analysis":"listening/analysis/2023-06.pdf","seg":[434.9,841.6]},{"id":"2023-06-2","y":2023,"m":6,"s":2,"label":"2023年6月 · 第2套","audio":"2023-06-2.mp3","text":"listening/text/2023-06-2.pdf","analysis":"listening/analysis/2023-06.pdf","seg":[396.3,830.1]},{"id":"2023-12-1","y":2023,"m":12,"s":1,"label":"2023年12月 · 第1套","audio":"2023-12-1.mp3","text":"listening/text/2023-12-1.pdf","analysis":"listening/analysis/2023-12.pdf","seg":[408.0,816.7]},{"id":"2023-12-2","y":2023,"m":12,"s":2,"label":"2023年12月 · 第2套","audio":"2023-12-2.mp3","text":"listening/text/2023-12-2.pdf","analysis":"listening/analysis/2023-12.pdf","seg":[412.0,803.2]},{"id":"2024-06-1","y":2024,"m":6,"s":1,"label":"2024年6月 · 第1套","audio":"2024-06-1.mp3","text":"listening/text/2024-06-1.pdf","analysis":"listening/analysis/2024-06.pdf","seg":[429.4,823.2]},{"id":"2024-06-2","y":2024,"m":6,"s":2,"label":"2024年6月 · 第2套","audio":"2024-06-2.mp3","text":"listening/text/2024-06-2.pdf","analysis":"listening/analysis/2024-06.pdf","seg":[410.5,835.8]},{"id":"2024-12-1","y":2024,"m":12,"s":1,"label":"2024年12月 · 第1套","audio":"2024-12-1.mp3","text":"listening/text/2024-12-1.pdf","analysis":"listening/analysis/2024-12.pdf","seg":[488.7,901.8]},{"id":"2024-12-2","y":2024,"m":12,"s":2,"label":"2024年12月 · 第2套","audio":"2024-12-2.mp3","text":"listening/text/2024-12-2.pdf","analysis":"listening/analysis/2024-12.pdf","seg":[480.4,886.6]},{"id":"2025-06-1","y":2025,"m":6,"s":1,"label":"2025年6月 · 第1套","audio":"2025-06-1.mp3","text":"listening/text/2025-06-1.pdf","analysis":"listening/analysis/2025-06.pdf","seg":[431.8,832.6]},{"id":"2025-06-2","y":2025,"m":6,"s":2,"label":"2025年6月 · 第2套","audio":"2025-06-2.mp3","text":"listening/text/2025-06-2.pdf","analysis":"listening/analysis/2025-06.pdf","seg":[432.5,839.9]},{"id":"2025-12-1","y":2025,"m":12,"s":1,"label":"2025年12月 · 第1套","audio":"2025-12-1.mp3","text":"listening/text/2025-12-1.pdf","analysis":"listening/analysis/2025-12.pdf","seg":[394.6,786.0]},{"id":"2025-12-2","y":2025,"m":12,"s":2,"label":"2025年12月 · 第2套","audio":"2025-12-2.mp3","text":"listening/text/2025-12-2.pdf","analysis":"listening/analysis/2025-12.pdf","seg":[447.1,849.4]},{"id":"2026-06-1","y":2026,"m":6,"s":1,"label":"2026年6月 · 第1套","audio":"2026-06-1.mp3","text":"listening/text/2026-06-1.pdf","analysis":"listening/analysis/2026-06.pdf","seg":[431.0,838.6]},{"id":"2026-06-2","y":2026,"m":6,"s":2,"label":"2026年6月 · 第2套","audio":"2026-06-2.mp3","text":"listening/text/2026-06-2.pdf","analysis":"listening/analysis/2026-06.pdf","seg":[414.9,801.7]}];
 const LT_BY_ID = {};
 LT_MANIFEST.forEach(function(p){ LT_BY_ID[p.id] = p; });
 function ltScore(o){ return r1((o.la||0)*7.1 + (o.lb||0)*7.1 + (o.lc||0)*14.3); }
@@ -1786,6 +1788,7 @@ function ltLoad(id, keepAnswer){
     ltShowScore();
   }
   ltRenderHist();
+  ltSegRender();   /* 显示本题已保存的 AI 分段按钮（如有） */
 }
 function ltCurPaper(){ return LT_BY_ID[ltCur] || LT_MANIFEST[0]; }
 
@@ -1828,7 +1831,7 @@ $('ltClear').addEventListener('click', function(){
 (function(){
   const a=$('ltAudio'), bar=$('ltBar'), fill=$('ltBarFill'), knob=$('ltBarKnob');
   let dragging=false, pending=null, lastTarget=-1, failCount=0;
-  let blobUrl='', blobLoading=false, durTimer=null;
+  let blobUrl='', blobLoading=false, durTimer=null, blobCb=null, blobErr=null;
 
   function fmt(t){ if(!isFinite(t)||t<0) return '--:--'; t=Math.floor(t); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); }
   function ui(r){ const pc=(Math.min(1,Math.max(0,r))*100).toFixed(2)+'%'; fill.style.width=pc; knob.style.left=pc; }
@@ -1876,9 +1879,10 @@ $('ltClear').addEventListener('click', function(){
           }
           $('ltState').textContent = wasPaused ? '\u23f8 已暂停' : '\u25b6 播放中';
           if(!wasPaused){ const pr=a.play(); if(pr&&pr.catch) pr.catch(function(){}); }
+          if(blobCb){ const c=blobCb; blobCb=null; blobErr=null; c(); }
         });
       })
-      .catch(function(){ blobLoading=false; $('ltState').textContent='音频加载失败，请重试'; });
+      .catch(function(){ blobLoading=false; $('ltState').textContent='音频加载失败，请重试'; if(blobErr){ const e=blobErr; blobCb=null; blobErr=null; e('完整音频加载失败，请检查网络后重试'); } });
   }
   function doSeek(r){
     r=Math.min(1,Math.max(0,r));
@@ -1997,7 +2001,165 @@ $('ltClear').addEventListener('click', function(){
   }
   spBtns.forEach(function(b){ b.addEventListener('click',function(){ setSpeed(b.dataset.sp); $('ltState').textContent='倍速 '+b.textContent; }); });
   setSpeed((S.settings && S.settings.ltSpeed)||1, true);
+  /* 暴露给分段跳转复用：原生 seek（未缓冲 / 服务器不支持 Range 时自动 Blob 整载补跳） */
+  window.ltSeekRatio = doSeek;
+  /* 暴露给分段跳转复用：强制把整段音频加载为 Blob（本地 seek 100% 可靠），完成后回调 */
+  window.ltEnsureBlob = function(cb, onerr){
+    if(blobUrl || /^blob:/.test(a.currentSrc || '')){ if(cb) cb(); return; }
+    if(location.protocol === 'file:' || typeof fetch !== 'function'){ if(onerr) onerr('当前环境无法加载完整音频'); return; }
+    blobCb = cb || null; blobErr = onerr || null;
+    ensureBlob(0, true);
+  };
 })();
+
+/* ---------- Section A/B/C 分段跳转（时间戳来自离线语音识别，精准写死在 manifest.seg） ---------- */
+function ltSegFmt(t){
+  t = Math.max(0, Math.round(Number(t) || 0));
+  return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+/* 分段数据优先级：手动微调(manual) > 官方语音识别精准分段(manifest.seg) > 声学分析(audio) */
+function ltSegRec(){
+  const p = LT_MANIFEST.filter(function(x){ return x.id === ltCur; })[0];
+  const saved = (S.ltSeg || {})[ltCur];
+  if(saved && saved.src === 'manual' && saved.marks && saved.marks.length >= 2) return saved;
+  if(p && p.seg && p.seg.length === 2){
+    return { v: 3, src: 'asr', marks: [
+      { l: 'Section A', t: 0 },
+      { l: 'Section B', t: p.seg[0] },
+      { l: 'Section C', t: p.seg[1] }
+    ] };
+  }
+  return (saved && saved.marks && saved.marks.length >= 2) ? saved : null;
+}
+function ltSegRender(){
+  const box = $('ltSegBtns');
+  if(!box) return;
+  const rec = ltSegRec();
+  /* 旧版本声学分段（均匀算法选点，会误中假断点）直接作废；官方精准分段不受影响 */
+  if(rec && rec.v !== 3 && rec.src === 'audio'){
+    if(S.ltSeg) delete S.ltSeg[ltCur];
+    save();
+  }
+  const cur = ltSegRec();
+  if(!cur || !cur.marks || cur.marks.length < 2){
+    box.classList.add('hidden'); box.innerHTML = '';
+    ltSegDrawDots();
+    return;
+  }
+  let html = '';
+  cur.marks.forEach(function(m){
+    html += '<button class="ltseg-jump flex-1 py-1.5 rounded-lg mono text-[10px] font-bold active:scale-95 transition" data-t="' + m.t + '" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);color:#a5f3fc">' + wrEsc(m.l) + ' · ' + ltSegFmt(m.t) + '</button>';
+  });
+  box.innerHTML = html;
+  box.classList.remove('hidden');
+  ltSegDrawDots();
+}
+function ltSegDrawDots(){
+  const bar = $('ltBar');
+  if(!bar) return;
+  let holder = document.getElementById('ltSegDots');
+  if(!holder){
+    holder = document.createElement('div');
+    holder.id = 'ltSegDots';
+    holder.className = 'absolute inset-0 pointer-events-none';
+    bar.appendChild(holder);
+  }
+  holder.innerHTML = '';
+  const rec = ltSegRec();
+  if(!rec || !rec.marks || !rec.marks.length) return;
+  const dur = $('ltAudio').duration;
+  if(!isFinite(dur) || dur <= 0) return;
+  rec.marks.forEach(function(m){
+    if(!(m.t > 0) || m.t >= dur) return;
+    const d = document.createElement('div');
+    d.className = 'absolute rounded-full';
+    d.style.cssText = 'left:' + (m.t / dur * 100) + '%;top:50%;width:5px;height:11px;transform:translate(-50%,-50%);background:#22d3ee;box-shadow:0 0 5px rgba(34,211,238,.9)';
+    holder.appendChild(d);
+  });
+}
+/* 分段跳转 → 点哪播哪：
+   先走原生 seek（未缓冲自动 Blob 补载）；自愈看门狗只认进度是否真的在走，
+   直连 seek 卡住 4 秒自动升级为「整段音频 Blob 加载 + 本地跳转」（100% 可靠），
+   播放被中断 / 缓冲卡死都会自动重踢，直到真正出声 */
+let ltSegEscN = 0;
+function ltSegWatch(t){
+  const a = $('ltAudio');
+  const t0 = Date.now();
+  let last = a.currentTime || 0, stalled = 0, good = 0;
+  const timer = setInterval(function(){
+    if(a.error){ ltSegEscN = 0; clearInterval(timer); $('ltState').textContent = '⚠️ 音频加载/解码出错，请重新点一次分段按钮'; return; }
+    const ct = a.currentTime || 0;
+    /* 连续两轮进度在走 = 真的出声了（单轮大跳可能只是 seek，不算） */
+    if(!a.paused && ct > last + 0.05){
+      good++;
+      if(good >= 2){
+        ltSegEscN = 0;
+        clearInterval(timer);
+        $('ltState').textContent = '▶ 跳到 ' + ltSegFmt(t) + ' 播放中';
+        return;
+      }
+    }else{
+      good = 0;
+    }
+    if(a.paused){
+      const p = a.play();
+      if(p && p.catch) p.catch(function(){
+        $('ltState').textContent = '⚠️ 浏览器拦截了自动播放：先手动点一下 ▶ 播放键，再点分段按钮';
+      });
+    }else if(ct <= last + 0.05){
+      stalled++;
+      /* 直连 seek 卡住 4 秒 → 升级 Blob 整载（最多升级 2 次，防止死循环） */
+      if(stalled >= 2 && Date.now() - t0 > 4000 && ltSegEscN < 2
+         && !/^blob:/.test(a.currentSrc || '') && typeof window.ltEnsureBlob === 'function'){
+        ltSegEscN++;
+        clearInterval(timer);
+        $('ltState').textContent = '⏳ 直连跳转不畅，正在加载完整音频（几秒到十几秒），之后秒跳…';
+        window.ltEnsureBlob(function(){
+          try{ a.currentTime = t; }catch(_){}
+          ltSegWatch(t);
+        }, function(msg){
+          $('ltState').textContent = '⚠️ ' + (msg || '完整音频加载失败');
+        });
+        return;
+      }
+      if(stalled >= 2){
+        stalled = 0;
+        try{ a.pause(); }catch(_){}
+        const p = a.play();
+        if(p && p.catch) p.catch(function(){
+          $('ltState').textContent = '⚠️ 浏览器拦截了自动播放：先手动点一下 ▶ 播放键，再点分段按钮';
+        });
+      }
+    }
+    last = ct;
+    if(Date.now() - t0 > 25000){
+      ltSegEscN = 0;
+      clearInterval(timer);
+      $('ltState').textContent = '⚠️ 还没播起来：请检查网络（建议 WiFi）后重新点一次分段按钮';
+    }
+  }, 700);
+}
+function ltSegJump(t){
+  const a = $('ltAudio');
+  const dur = isFinite(a.duration) ? a.duration : 0;
+  if(dur > 0 && typeof window.ltSeekRatio === 'function'){
+    window.ltSeekRatio(Math.min(0.999, t / dur));
+  }else{
+    try{ a.currentTime = t; }catch(_){}
+  }
+  $('ltCur').textContent = ltSegFmt(t);
+  $('ltState').textContent = '⏳ 正在跳到 ' + ltSegFmt(t) + '…';
+  ltSegWatch(t);
+}
+$('ltSegBtns').addEventListener('click', function(e){
+  const btn = e.target.closest ? e.target.closest('.ltseg-jump') : null;
+  if(!btn) return;
+  const t = +btn.dataset.t;
+  if(!(t >= 0)) return;
+  ltSegJump(t);
+});
+$('ltAudio').addEventListener('loadedmetadata', ltSegDrawDots);
+$('ltAudio').addEventListener('durationchange', ltSegDrawDots);
 
 /* ---------- 成绩记录列表 ---------- */
 function ltRenderDone(){

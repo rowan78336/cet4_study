@@ -398,25 +398,30 @@
             </div>
 
             <div class="mt-3 text-[11px] font-bold text-cyan-300 flex items-center justify-between">
-              <span>✍️ 答对题数 <span class="mono text-slate-500 font-normal">满分 249.5</span></span>
-              <span class="text-slate-500 font-normal">A 7题×7.1 · B 8题×7.1 · C 10题×14.3</span>
+              <span>✍️ 答对题数 <span id="ltFull" class="mono text-slate-500 font-normal">满分 249.5</span></span>
+              <span class="text-[9px] text-slate-500 font-normal">点下方字母选择本次练习范围</span>
             </div>
-            <div class="grid grid-cols-3 gap-2 mt-1.5">
-              <div>
+            <div id="ltScopeRow" class="flex gap-1.5 mt-2">
+              <button class="lt-scope flex-1 py-1.5 rounded-lg text-[10px] font-bold border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-s="a">A 短篇新闻</button>
+              <button class="lt-scope flex-1 py-1.5 rounded-lg text-[10px] font-bold border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-s="b">B 长对话</button>
+              <button class="lt-scope flex-1 py-1.5 rounded-lg text-[10px] font-bold border border-white/10 text-slate-400 bg-black/25 active:scale-95 transition" data-s="c">C 听力篇章</button>
+            </div>
+            <div id="ltGrid" class="grid grid-cols-3 gap-2 mt-1.5">
+              <div id="ltWrapA">
                 <input id="ltA" type="number" inputmode="numeric" min="0" max="7" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
                 <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">A 短篇新闻<br><span class="text-slate-600">×7.1</span></div>
               </div>
-              <div>
+              <div id="ltWrapB">
                 <input id="ltB" type="number" inputmode="numeric" min="0" max="8" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
                 <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">B 长对话<br><span class="text-slate-600">×7.1</span></div>
               </div>
-              <div>
+              <div id="ltWrapC">
                 <input id="ltC" type="number" inputmode="numeric" min="0" max="10" autocomplete="off" class="ex-input w-full bg-black/30 border border-white/10 rounded-lg py-2.5 text-center text-base text-white focus:outline-none focus:border-cyan-400/60 focus:bg-cyan-400/[.06] transition">
                 <div class="text-[9px] text-slate-400 mt-1 text-center leading-tight">C 听力篇章<br><span class="text-slate-600">×14.3</span></div>
               </div>
             </div>
             <div class="mt-2.5 rounded-xl bg-black/35 border border-white/10 px-3.5 py-2.5 flex items-end justify-between">
-              <span class="text-[11px] text-slate-400">本次听力得分 <span class="mono text-slate-600">＝ A×7.1 ＋ B×7.1 ＋ C×14.3</span></span>
+              <span class="text-[11px] text-slate-400">本次听力得分 <span id="ltFormula" class="mono text-slate-600">＝ A×7.1 ＋ B×7.1 ＋ C×14.3</span></span>
               <b id="ltScore" class="mono text-2xl grad-text">0.0</b>
             </div>
 
@@ -711,7 +716,8 @@ const defaultState = () => ({
   quizWrong: {},    // 'YYYY-MM-DD' -> [{w,d}] 快答答错的词（今日错题本）
   wrongFreq: {},    // word -> 次数（错误频次统计，跨天累计）
   exams: [],        // 真题模考记录 [{id,name,date,la,lb,lc,ra,rb,rc,L,R,total}]
-  listen: {},       // 听力专项 id -> {la,lb,lc,score,ts}
+  listen: {},       // 听力专项 id -> {la,lb,lc,score,ts,sc}（sc=练习范围 'abc'/'ab'/'c'…，缺省=整套）
+  ltScope: {},      // 听力练习范围（每套独立记忆）id -> 'abc'/'ab'/'c'…
   listenCur: '',    // 上次选中的听力套题
   write: {},        // 写作 promptId -> {history:[{ts,n,score,dims,sug,text}]}（只增不减）
   writeDraft: {},   // 写作 promptId -> 草稿文本
@@ -727,7 +733,7 @@ function normalizeState(m){
     if(typeof m.settings.goal !== 'number' || !isFinite(m.settings.goal)) m.settings.goal = 30;
     if(!isStr(m.settings.examDate) || !m.settings.examDate) m.settings.examDate = base.settings.examDate;
   }
-  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','diaryTs','quizHist','quizWrong','wrongFreq','wrongToday','listen']){
+  for(const k of ['known','customKnown','seenAny','stats','checkins','diary','diaryTs','quizHist','quizWrong','wrongFreq','wrongToday','listen','ltScope']){
     if(!m[k] || typeof m[k] !== 'object' || Array.isArray(m[k])) m[k] = {};
   }
   if(!Array.isArray(m.custom)) m.custom = [];
@@ -1077,11 +1083,15 @@ function aiAnalyze(){
   const missed=CK_MODULES.filter(([id])=>!ck[id]).map(([,l])=>l);
   const assess=[], advice=[];
 
-  /* 当日听力专项成绩 */
-  let ltCnt=0, ltScore=0;
+  /* 当日听力专项成绩：整套记录进均分；部分练习（单/双 section）单独复盘，不算均分 */
+  let ltCnt=0, ltSum=0, ltPartCnt=0, ltPartMap={};
   Object.keys(S.listen||{}).forEach(function(id){
     (S.listen[id].history||[]).forEach(function(h){
-      if(aiDateKey(h.ts)===d && isFinite(h.score)){ ltCnt++; ltScore+=h.score; }
+      if(aiDateKey(h.ts)===d && isFinite(h.score)){
+        const sc = (h.sc && /^[abc]{1,3}$/.test(h.sc)) ? h.sc : 'abc';
+        if(sc === 'abc'){ ltCnt++; ltSum += h.score; }
+        else { ltPartCnt++; ltPartMap[sc] = (ltPartMap[sc]||0) + 1; }
+      }
     });
   });
   /* 当日写作练习 */
@@ -1096,7 +1106,7 @@ function aiAnalyze(){
   /* 当日快答 */
   const qh=Array.isArray(S.quizHist[d])? S.quizHist[d] : [];
   const qw=Array.isArray(S.quizWrong[d])? S.quizWrong[d] : [];
-  const empty=!done.length && !diary.trim() && !ltCnt && !wrCnt && !ex.length && !qh.length;
+  const empty=!done.length && !diary.trim() && !ltCnt && !ltPartCnt && !wrCnt && !ex.length && !qh.length;
 
   if(empty){
     assess.push('这一天还没有学习记录。');
@@ -1109,12 +1119,19 @@ function aiAnalyze(){
 
     /* 听力 */
     if(ltCnt){
-      const avg=(ltScore/ltCnt).toFixed(1);
-      assess.push('🎧 听力专项 '+ltCnt+' 次，平均 '+avg+' / 249.5 分。');
-      const pct=ltScore/ltCnt/249.5;
+      const avg=(ltSum/ltCnt).toFixed(1);
+      assess.push('🎧 听力整套练习 '+ltCnt+' 次，平均 '+avg+' / 249.5 分。');
+      const pct=ltSum/ltCnt/249.5;
       if(pct>=0.8) advice.push('听力正确率很稳（'+avg+' 分），可以开 1.25 倍速磨耳朵，考场上会更从容。');
       else if(pct>=0.6) advice.push('听力中等（'+avg+' 分）：把错得最多的那套重听一遍，逐句跟读出错的对话段，比刷新题更提分。');
       else advice.push('听力偏弱（'+avg+' 分）：先精听 1 套真题——听一句懂一句再对原文，坚持 3 天会有明显变化。');
+    }
+    if(ltPartCnt){
+      const parts = Object.keys(ltPartMap).map(function(sc){
+        return ltScopeTag(sc) + ' ×' + ltPartMap[sc];
+      }).join('、');
+      assess.push('🎧 听力分段练习 '+ltPartCnt+' 次（'+parts+'），单段不计入整套均分。');
+      if(!ltCnt) advice.push('今天听力是分 section 练的（专攻弱项是好事）：单段刷熟之后，记得隔天抽一套完整音频连着做完，练 25 分钟不间断的考场耐力。');
     }
 
     /* 写作 */
@@ -1717,12 +1734,68 @@ const LT_MANIFEST = [{"id":"2016-06-1","y":2016,"m":6,"s":1,"label":"2016年6月
 const LT_BY_ID = {};
 LT_MANIFEST.forEach(function(p){ LT_BY_ID[p.id] = p; });
 function ltScore(o){ return r1((o.la||0)*7.1 + (o.lb||0)*7.1 + (o.lc||0)*14.3); }
-function ltRead(){ return {
-  la: Math.max(0, Math.min(7,  parseInt($('ltA').value, 10) || 0)),
-  lb: Math.max(0, Math.min(8,  parseInt($('ltB').value, 10) || 0)),
-  lc: Math.max(0, Math.min(10, parseInt($('ltC').value, 10) || 0))
-}; }
+/* ---------- 练习范围（每套独立记忆）：'abc'=整套，'ab'/'ac'/'c'…=部分练习 ---------- */
+const LT_SC_MAX = { a: 7, b: 8, c: 10 };
+const LT_SC_PTS  = { a: 7.1, b: 7.1, c: 14.3 };
+function ltScopeStr(){ const s = (S.ltScope || {})[ltCur]; return (s && /^[abc]{1,3}$/.test(s)) ? s : 'abc'; }
+function ltScopeTag(sc){
+  sc = sc || 'abc';
+  if(sc === 'abc') return '';
+  return (sc.length === 1 ? '只练' : '练') + sc.toUpperCase();
+}
+function ltSetScope(sc){
+  if(!sc || !/^[abc]{1,3}$/.test(sc) || !sc.length) sc = 'abc';
+  if(!S.ltScope || typeof S.ltScope !== 'object') S.ltScope = {};
+  S.ltScope[ltCur] = sc;
+  save();
+  ltScopeUI();
+}
+/* 范围变化 → 联动输入框显隐、满分标注、得分公式 */
+function ltScopeUI(){
+  const sc = ltScopeStr();
+  const keys = sc.split('');
+  document.querySelectorAll('.lt-scope').forEach(function(b){
+    const on = sc.indexOf(b.dataset.s) >= 0;
+    b.classList.toggle('border-cyan-400/60', on);
+    b.classList.toggle('text-cyan-300', on);
+    b.classList.toggle('bg-cyan-400/[.08]', on);
+    b.classList.toggle('text-slate-400', !on);
+  });
+  $('ltGrid').className = 'grid gap-2 mt-1.5 ' + (keys.length === 1 ? 'grid-cols-1' : keys.length === 2 ? 'grid-cols-2' : 'grid-cols-3');
+  ['a','b','c'].forEach(function(k){
+    const wrap = $('ltWrap' + k.toUpperCase());
+    const on = sc.indexOf(k) >= 0;
+    wrap.classList.toggle('hidden', !on);
+    if(!on) $('lt' + k.toUpperCase()).value = '';   /* 隐藏的 section 作废，避免陈旧值 */
+  });
+  const full = keys.reduce(function(s, k){ return s + LT_SC_MAX[k] * LT_SC_PTS[k]; }, 0);
+  $('ltFull').textContent = sc === 'abc' ? '满分 249.5' : (ltScopeTag(sc) + ' · 满分 ' + full.toFixed(1));
+  $('ltFormula').textContent = '＝ ' + keys.map(function(k){ return k.toUpperCase() + '×' + LT_SC_PTS[k]; }).join(' ＋ ');
+  ltShowScore();
+}
+function ltRead(){
+  const sc = ltScopeStr();
+  const v = function(id, max){ return Math.max(0, Math.min(max, parseInt($(id).value, 10) || 0)); };
+  return {
+    la: sc.indexOf('a') >= 0 ? v('ltA', 7) : 0,
+    lb: sc.indexOf('b') >= 0 ? v('ltB', 8) : 0,
+    lc: sc.indexOf('c') >= 0 ? v('ltC', 10) : 0
+  };
+}
 function ltShowScore(){ $('ltScore').textContent = ltScore(ltRead()).toFixed(1); }
+$('ltScopeRow').addEventListener('click', function(e){
+  const b = e.target.closest ? e.target.closest('.lt-scope') : null;
+  if(!b) return;
+  const k = b.dataset.s;
+  let sc = ltScopeStr();
+  if(sc.indexOf(k) >= 0){
+    if(sc.length === 1) { toast('至少保留一个练习范围'); return; }   /* 不能全关 */
+    sc = sc.replace(k, '');
+  }else{
+    sc = 'abc'.split('').filter(function(x){ return x === k || sc.indexOf(x) >= 0; }).join('');
+  }
+  ltSetScope(sc);
+});
 let ltCur = '';
 
 /* ---------- WiFi 提醒：检测到手机流量时显示警示条 ---------- */
@@ -1779,12 +1852,19 @@ function ltLoad(id, keepAnswer){
   ltSetSrc(p);
   $('ltErr').classList.add('hidden');
   $('ltState').textContent = '';
+  /* 范围按套记忆：优先用已记住的范围，没有才从最近一次记录还原 */
+  const rec = (S.listen || {})[id];
+  if(!S.ltScope || typeof S.ltScope !== 'object') S.ltScope = {};
+  if(!S.ltScope[id] || !/^[abc]{1,3}$/.test(S.ltScope[id])){
+    S.ltScope[id] = (rec && rec.sc && /^[abc]{1,3}$/.test(rec.sc)) ? rec.sc : 'abc';
+  }
+  ltScopeUI();
   /* 回填已保存作答（切换年份/场次时） */
   if(!keepAnswer){
-    const rec = (S.listen || {})[id];
-    $('ltA').value = rec && rec.la > 0 ? rec.la : '';
-    $('ltB').value = rec && rec.lb > 0 ? rec.lb : '';
-    $('ltC').value = rec && rec.lc > 0 ? rec.lc : '';
+    const scArr = S.ltScope[id].split('');
+    $('ltA').value = scArr.indexOf('a') >= 0 && rec && rec.la > 0 ? rec.la : '';
+    $('ltB').value = scArr.indexOf('b') >= 0 && rec && rec.lb > 0 ? rec.lb : '';
+    $('ltC').value = scArr.indexOf('c') >= 0 && rec && rec.lc > 0 ? rec.lc : '';
     ltShowScore();
   }
   ltRenderHist();
@@ -1802,15 +1882,16 @@ function ltCurPaper(){ return LT_BY_ID[ltCur] || LT_MANIFEST[0]; }
 function ltPersist(explicit){
   if(!ltCur) return;
   const o = ltRead();
+  const sc = ltScopeStr();
   const now = Date.now();
-  /* 当前作答实时更新（不覆盖历史）；history 数组只增不减 */
+  /* 当前作答实时更新（不覆盖历史）；history 数组只增不减；sc=练习范围随记录保存 */
   if(!S.listen[ltCur] || typeof S.listen[ltCur] !== 'object') S.listen[ltCur] = {};
   const rec = S.listen[ltCur];
   if(!Array.isArray(rec.history)) rec.history = [];
-  rec.la = o.la; rec.lb = o.lb; rec.lc = o.lc; rec.score = ltScore(o); rec.ts = now;
+  rec.la = o.la; rec.lb = o.lb; rec.lc = o.lc; rec.score = ltScore(o); rec.ts = now; rec.sc = sc;
   if(explicit){
     /* 保存 = 追加一条独立历史记录，绝不覆盖旧数据 */
-    rec.history.push({ ts: now, la: o.la, lb: o.lb, lc: o.lc, score: ltScore(o) });
+    rec.history.push({ ts: now, la: o.la, lb: o.lb, lc: o.lc, score: ltScore(o), sc: sc });
   }
   if(explicit && (o.la + o.lb + o.lc) > 0){
     const dk = today();
@@ -1819,7 +1900,19 @@ function ltPersist(explicit){
   }
   save();                       /* 立刻落盘 */
   renderLtList(); ltRenderDone(); ltRenderHist();
-  if(explicit) toast('✓ 已保存「' + ltCurPaper().label + '」· ' + rec.score.toFixed(1) + ' 分（第 ' + rec.history.length + ' 次练习）');
+  if(explicit){
+    const tag = ltScopeTag(sc);
+    const dk = today();
+    const nToday = Object.keys(S.listen || {}).filter(function(k){
+      const r = S.listen[k];
+      return r && (r.la > 0 || r.lb > 0 || r.lc > 0) && aiDateKey(r.ts) === dk;
+    }).length;
+    let msg = '✓ 已保存「' + ltCurPaper().label + '」'
+      + (tag ? '（' + tag + '）' : '')
+      + ' · ' + rec.score.toFixed(1) + ' 分（第 ' + rec.history.length + ' 次练习）';
+    if(nToday >= 2) msg += ' · 今日已练 ' + nToday + ' 套';
+    toast(msg);
+  }
 }
 $('ltSave').addEventListener('click', function(){ ltPersist(true); });
 $('ltClear').addEventListener('click', function(){
@@ -2166,6 +2259,14 @@ function ltRenderDone(){
   const n = Object.keys(S.listen || {}).filter(function(k){ const r = S.listen[k]; return r && (r.la > 0 || r.lb > 0 || r.lc > 0); }).length;
   $('ltDone').textContent = '已练 ' + n + '/' + LT_MANIFEST.length;
 }
+function ltScParts(sc, la, lb, lc){
+  /* 按练习范围生成 "A5 B6" 片段与题数分母；未练的 section 绝不显示 0 */
+  const v = { a: la, b: lb, c: lc };
+  const keys = (sc || 'abc').split('');
+  const parts = keys.map(function(k){ return k.toUpperCase() + (+v[k] || 0); }).join(' ');
+  const qmax = keys.reduce(function(s, k){ return s + LT_SC_MAX[k]; }, 0);
+  return { parts: parts, qmax: qmax, right: keys.reduce(function(s, k){ return s + (+v[k] || 0); }, 0) };
+}
 function renderLtList(){
   const box = $('ltList'); if(!box) return;
   const keys = Object.keys(S.listen || {}).filter(function(k){ return LT_BY_ID[k]; });
@@ -2173,13 +2274,16 @@ function renderLtList(){
   keys.sort(function(a,b){ return (S.listen[b].ts||0) - (S.listen[a].ts||0); });
   box.innerHTML = keys.map(function(k){
     const r = S.listen[k], p = LT_BY_ID[k];
-    const pct = Math.round((r.la + r.lb + r.lc) / 25 * 100);
+    const sc = r.sc || 'abc';
+    const sp = ltScParts(sc, r.la, r.lb, r.lc);
+    const pct = Math.round(sp.right / sp.qmax * 100);
+    const tag = sc !== 'abc' ? ' <span class="mono text-[8px] text-amber-300/90">' + ltScopeTag(sc) + '</span>' : '';
     const d = r.ts ? new Date(r.ts) : null;
     const ds = d ? (d.getMonth()+1) + '/' + d.getDate() : '';
     const n = Array.isArray(r.history) ? r.history.length : 0;
     return '<button class="lt-item w-full flex items-center justify-between gap-2 rounded-lg bg-black/25 border border-white/10 px-2.5 py-1.5 active:scale-[.99] transition" data-id="'+k+'">'
-      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-200 block truncate">'+p.label+' <span class="mono text-[9px] text-cyan-400/80">×'+n+'次</span></span>'
-      + '<span class="mono text-[9px] text-slate-600">A'+r.la+' B'+r.lb+' C'+r.lc+' · '+ds+'</span></span>'
+      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-200 block truncate">'+p.label + tag + ' <span class="mono text-[9px] text-cyan-400/80">×'+n+'次</span></span>'
+      + '<span class="mono text-[9px] text-slate-600">'+sp.parts+'（对 '+sp.right+'/'+sp.qmax+' 题）· '+ds+'</span></span>'
       + '<span class="mono text-sm font-black shrink-0 '+(pct<60?'text-rose-400':'grad-text')+'">'+(r.score||0).toFixed(1)+'</span></button>';
   }).join('');
   box.querySelectorAll('.lt-item').forEach(function(b){
@@ -2212,20 +2316,29 @@ function ltRenderHist(){
   box.innerHTML = sorted.map(function(e, i){
     const d = e.ts ? new Date(e.ts) : null;
     const ds = d ? (d.getMonth()+1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') : '';
-    const pct = Math.round((e.la + e.lb + e.lc) / 25 * 100);
+    const sc = e.sc || 'abc';
+    const sp = ltScParts(sc, e.la, e.lb, e.lc);
+    const pct = Math.round(sp.right / sp.qmax * 100);
+    const tag = sc !== 'abc' ? ' <span class="mono text-[8px] text-amber-300/90">' + ltScopeTag(sc) + '</span>' : '';
     const idx = h.length - sorted.indexOf(e);   /* 第几次练习（按时间正序） */
     return '<button class="lt-hist w-full flex items-center justify-between gap-2 rounded-lg bg-black/20 border border-white/[.08] px-2.5 py-1.5 active:scale-[.99] transition" data-ts="'+(e.ts||0)+'">'
-      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-300 block">第 '+idx+' 次 · <span class="mono text-[9px] text-slate-500">'+ds+'</span></span>'
-      + '<span class="mono text-[9px] text-slate-600">A'+e.la+' B'+e.lb+' C'+e.lc+'（对 '+((+e.la||0)+(+e.lb||0)+(+e.lc||0))+'/25 题）</span></span>'
+      + '<span class="min-w-0 text-left"><span class="text-[10px] text-slate-300 block">第 '+idx+' 次'+tag+' · <span class="mono text-[9px] text-slate-500">'+ds+'</span></span>'
+      + '<span class="mono text-[9px] text-slate-600">'+sp.parts+'（对 '+sp.right+'/'+sp.qmax+' 题）</span></span>'
       + '<span class="mono text-sm font-black shrink-0 '+(pct<60?'text-rose-400':'grad-text')+'">'+(e.score||0).toFixed(1)+'</span></button>';
   }).join('');
   box.querySelectorAll('.lt-hist').forEach(function(b){
     b.addEventListener('click', function(){
       const e = h.find(function(x){ return (x.ts||0) === Number(b.dataset.ts); });
       if(!e) return;
-      $('ltA').value = e.la > 0 ? e.la : '';
-      $('ltB').value = e.lb > 0 ? e.lb : '';
-      $('ltC').value = e.lc > 0 ? e.lc : '';
+      /* 按该条记录的范围还原界面 */
+      const sc = (e.sc && /^[abc]{1,3}$/.test(e.sc)) ? e.sc : 'abc';
+      if(!S.ltScope || typeof S.ltScope !== 'object') S.ltScope = {};
+      S.ltScope[ltCur] = sc;
+      ltScopeUI();
+      const scArr = sc.split('');
+      $('ltA').value = scArr.indexOf('a') >= 0 && e.la > 0 ? e.la : '';
+      $('ltB').value = scArr.indexOf('b') >= 0 && e.lb > 0 ? e.lb : '';
+      $('ltC').value = scArr.indexOf('c') >= 0 && e.lc > 0 ? e.lc : '';
       ltShowScore(); ltPersist(false);
       toast('已回填第 ' + (h.length - sorted.indexOf(e)) + ' 次作答');
     });
@@ -2266,15 +2379,26 @@ $('ltImportFile').addEventListener('change', function(ev){
         if(r && typeof r === 'object' && LT_BY_ID[k] && isFinite(r.la) && isFinite(r.lb) && isFinite(r.lc)){
           const hist = Array.isArray(r.history)
             ? r.history.filter(function(e){ return e && typeof e === 'object' && isFinite(e.la) && isFinite(e.lb) && isFinite(e.lc); })
-                .map(function(e){ return { ts:+e.ts||0, la:+e.la||0, lb:+e.lb||0, lc:+e.lc||0, score:ltScore(e) }; })
+                .map(function(e){ return { ts:+e.ts||0, la:+e.la||0, lb:+e.lb||0, lc:+e.lc||0, score:ltScore(e), sc:(e.sc && /^[abc]{1,3}$/.test(e.sc)) ? e.sc : 'abc' }; })
             : [];
-          S.listen[k] = { la:+r.la||0, lb:+r.lb||0, lc:+r.lc||0, score:ltScore(r), ts:+r.ts||Date.now(), history:hist };
+          S.listen[k] = { la:+r.la||0, lb:+r.lb||0, lc:+r.lc||0, score:ltScore(r), ts:+r.ts||Date.now(), sc:(r.sc && /^[abc]{1,3}$/.test(r.sc)) ? r.sc : 'abc', history:hist };
           n++;
         }
       });
       if(!n) throw new Error('没有可识别的有效记录');
       save(); renderLtList(); ltRenderDone();
-      if(ltCur && S.listen[ltCur]){ const r = S.listen[ltCur]; $('ltA').value=r.la>0?r.la:''; $('ltB').value=r.lb>0?r.lb:''; $('ltC').value=r.lc>0?r.lc:''; ltShowScore(); }
+      if(ltCur && S.listen[ltCur]){
+        const r = S.listen[ltCur];
+        const sc = (r.sc && /^[abc]{1,3}$/.test(r.sc)) ? r.sc : 'abc';
+        if(!S.ltScope || typeof S.ltScope !== 'object') S.ltScope = {};
+        S.ltScope[ltCur] = sc;
+        ltScopeUI();
+        const scArr = sc.split('');
+        $('ltA').value = scArr.indexOf('a') >= 0 && r.la > 0 ? r.la : '';
+        $('ltB').value = scArr.indexOf('b') >= 0 && r.lb > 0 ? r.lb : '';
+        $('ltC').value = scArr.indexOf('c') >= 0 && r.lc > 0 ? r.lc : '';
+        ltShowScore();
+      }
       toast('✓ 已恢复 ' + n + ' 条练习记录');
     }catch(e){ toast('导入失败：' + e.message); }
     ev.target.value = '';
@@ -2383,7 +2507,7 @@ function bkMergeData(inc){
     const c=b.listen[id]; if(!c || typeof c!=='object' || !LT_BY_ID[id]) return;
     const cur=S.listen[id];
     if(!cur || typeof cur!=='object'){
-      S.listen[id]={ la:+c.la||0, lb:+c.lb||0, lc:+c.lc||0, score:+c.score||0, ts:+c.ts||0, history:Array.isArray(c.history)?c.history.slice():[] };
+      S.listen[id]={ la:+c.la||0, lb:+c.lb||0, lc:+c.lc||0, score:+c.score||0, ts:+c.ts||0, sc:c.sc||'abc', history:Array.isArray(c.history)?c.history.slice():[] };
       return;
     }
     if(!Array.isArray(cur.history)) cur.history=[];
@@ -2392,7 +2516,7 @@ function bkMergeData(inc){
       if(!cur.history.some(function(x){ return x && x.ts===e.ts; })) cur.history.push(e);
     });
     cur.history.sort(function(x,y){ return (+x.ts||0)-(+y.ts||0); });
-    if((+c.ts||0) > (+cur.ts||0)){ cur.la=+c.la||0; cur.lb=+c.lb||0; cur.lc=+c.lc||0; cur.score=+c.score||0; cur.ts=+c.ts||0; }
+    if((+c.ts||0) > (+cur.ts||0)){ cur.la=+c.la||0; cur.lb=+c.lb||0; cur.lc=+c.lc||0; cur.score=+c.score||0; cur.ts=+c.ts||0; cur.sc=c.sc||cur.sc||'abc'; }
   });
   Object.keys(b.write||{}).forEach(function(pid){
     const c=b.write[pid]; if(!c || typeof c!=='object') return;

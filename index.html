@@ -67,6 +67,10 @@
   #ltBar::after{ content:''; position:absolute; inset:-8px 0; }
   ::-webkit-scrollbar{ width:0; height:0 }
   .no-sel{ user-select:none; -webkit-user-select:none; }
+  .psg-sent{ transition:background .18s, box-shadow .18s; }
+  .psg-sent-on{ background:rgba(34,211,238,.10) !important; box-shadow:inset 0 0 0 1.5px rgba(34,211,238,.65); }
+  .psg-sent-on .psg-sent-now{ display:inline-block; }
+  .psg-sent-now{ display:none; }
   .toast{ animation:toastIn .25s ease; }
   @keyframes toastIn{ from{ transform:translateY(20px); opacity:0 } to{ transform:translateY(0); opacity:1 } }
   .island-locked{ filter:grayscale(1) brightness(.55); }
@@ -170,10 +174,10 @@
         <div class="text-5xl mb-3">⚡</div>
         <h3 class="font-bold text-white text-lg">60 秒限时极限挑战</h3>
         <p class="text-xs text-slate-400 mt-2 leading-relaxed">四选一快答，答对连击有 Combo 加成<br>每次成绩与正确率自动保存在本地</p>
-        <button id="quizStartV" class="mt-5 w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition" style="background:linear-gradient(135deg,#7c3aed,#db2777);box-shadow:0 8px 24px rgba(219,39,119,.3)">👀 看单词 · 选意思</button>
-        <div class="text-[10px] text-slate-500 mt-1.5">看词模式最佳 <b id="bestV" class="text-amber-300">0</b> 分</div>
-        <button id="quizStartL" class="mt-4 w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 24px rgba(34,211,238,.3)">👂 听单词 · 选意思</button>
+        <button id="quizStartL" class="mt-5 w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 8px 24px rgba(34,211,238,.3)">👂 听单词 · 选意思</button>
         <div class="text-[10px] text-slate-500 mt-1.5">听音模式最佳 <b id="bestL" class="text-amber-300">0</b> 分</div>
+        <button id="psgStart" class="mt-4 w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition" style="background:linear-gradient(135deg,#0d9488,#22d3ee);box-shadow:0 8px 24px rgba(13,148,136,.3)">🎧 听段落 · 说意思</button>
+        <div class="text-[10px] text-slate-500 mt-1.5">CET-4 难度真题风 · 盲听 → 中文复述 → AI 逐句评分<br>练习记录、漏听诊断在练习页右上角「📚」里</div>
         <div id="quizHist" class="mt-4 text-[11px] text-slate-400 leading-relaxed"></div>
         <button id="quizWrongBtn" class="mt-4 w-full py-3 rounded-2xl glass font-bold text-sm text-rose-300 active:scale-95 transition" style="border-color:rgba(251,113,133,.35)">📕 今日错题回顾（<b id="quizWrongCount">0</b>）</button>
         <div id="quizWrongList" class="hidden mt-2 text-left max-h-72 overflow-y-auto"></div>
@@ -203,6 +207,124 @@
           <button id="quizAgain" class="py-3.5 rounded-2xl font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#7c3aed,#db2777)">再来一局</button>
           <button id="quizBackHome" class="py-3.5 rounded-2xl font-bold text-slate-300 glass active:scale-95 transition">返回选择</button>
         </div>
+      </div>
+
+      <!-- ------- 听段落 · 说意思：练习页 ------- -->
+      <div id="psgPlay" class="hidden">
+        <div class="flex items-center justify-between mb-2">
+          <button id="psgBack" class="mono text-[11px] text-slate-400 px-1 py-1 active:scale-95">‹ 返回</button>
+          <span id="psgTag" class="mono text-[9px] px-2 py-0.5 rounded-full" style="background:rgba(34,211,238,.14);color:#67e8f9;border:1px solid rgba(34,211,238,.3)">—</span>
+          <button id="psgHistBtn" class="mono text-[10px] text-cyan-300 px-2 py-1 rounded-lg active:scale-95 transition" style="border:1px solid rgba(34,211,238,.28);background:rgba(34,211,238,.08)">📚 <b id="psgHistCount" class="text-amber-300">0</b></button>
+        </div>
+
+        <div class="glass rounded-2xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-slate-200">🎧 盲听模式</div>
+            <span id="psgWc" class="mono text-[9px] text-slate-500">0 词</span>
+          </div>
+          <div class="text-[10px] text-slate-500 mt-1 leading-relaxed">先不看原文，听完用中文写下大意 · 建议听 2 遍再动笔 <span id="psgWeakTag" class="mono text-[9px] text-amber-300"></span></div>
+
+          <button id="psgPlayBtn" class="mt-3 w-full py-4 rounded-2xl font-bold text-white text-base active:scale-95 transition" style="background:linear-gradient(135deg,#0d9488,#0891b2);box-shadow:0 8px 22px rgba(13,148,136,.32)">▶ 播放音频</button>
+
+          <div class="flex items-center justify-between mt-3">
+            <span class="mono text-[10px] text-slate-500">倍速</span>
+            <div id="psgSpeed" class="flex gap-1.5"></div>
+          </div>
+
+          <div class="flex items-center justify-between mt-2.5">
+            <span class="mono text-[10px] text-slate-500">已听 <b id="psgCnt" class="text-cyan-300">0</b> 遍</span>
+            <span class="mono text-[10px] text-slate-500">本次用时 <b id="psgTime" class="text-slate-300">0:00</b></span>
+          </div>
+          <div id="psgTtsWarn" class="hidden text-[10px] text-amber-300 mt-2 leading-relaxed"></div>
+        </div>
+
+        <div class="mt-3">
+          <div class="text-[11px] font-bold text-slate-200 mb-1.5">✍️ 写下你听到的中文意思</div>
+          <textarea id="psgInput" rows="7" autocomplete="off" placeholder="谁 + 做了什么 + 数字/原因/结论… 不用逐字翻译，把意思写全就行" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-[13px] leading-relaxed text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400/60 transition resize-y"></textarea>
+          <div class="flex items-center justify-between mt-1.5">
+            <span id="psgChar" class="mono text-[10px] text-slate-500">0 字</span>
+            <span class="text-[9px] text-slate-600">按关键信息点给分，不要求逐字翻译</span>
+          </div>
+        </div>
+
+        <button id="psgSubmit" class="mt-3 w-full py-3.5 rounded-2xl font-bold text-white active:scale-95 transition" style="background:linear-gradient(135deg,#4f46e5,#0891b2);box-shadow:0 8px 24px rgba(79,70,229,.3)">🤖 提交 · AI 逐句评分</button>
+      </div>
+
+      <!-- ------- 评分结果页 ------- -->
+      <div id="psgRes" class="hidden">
+        <div class="flex items-center justify-between mb-2">
+          <button id="psgResBack" class="mono text-[11px] text-slate-400 px-1 py-1 active:scale-95">‹ 返回</button>
+          <span id="psgResMeta" class="mono text-[9px] text-slate-500"></span>
+          <button id="psgResHist" class="mono text-[10px] text-cyan-300 px-2 py-1 rounded-lg active:scale-95 transition" style="border:1px solid rgba(34,211,238,.28);background:rgba(34,211,238,.08)">📚 记录</button>
+        </div>
+
+        <div id="psgResBar" class="rounded-2xl px-3 py-2.5 mb-2" style="position:sticky;top:0;z-index:20;background:rgba(13,20,36,.96);backdrop-filter:blur(8px);border:1px solid rgba(34,211,238,.22)">
+          <div class="flex items-center gap-2">
+            <button id="psgResPlayBtn" class="flex-1 py-2.5 rounded-xl font-bold text-white text-xs active:scale-95 transition" style="background:linear-gradient(135deg,#0d9488,#0891b2)">▶ 再播一遍</button>
+            <div id="psgResSpeed" class="flex gap-1"></div>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span id="psgResTime" class="mono text-[10px] text-slate-500">0:00</span>
+            <div class="flex-1 h-1 rounded-full bg-white/10 overflow-hidden"><div id="psgResProg" class="h-full rounded-full" style="width:0%;background:linear-gradient(90deg,#22d3ee,#34d399)"></div></div>
+          </div>
+          <div id="psgResWarn" class="hidden text-[9px] text-amber-300 mt-1"></div>
+          <div class="text-[9px] text-slate-500 mt-1">正在播的那句会高亮 · 点句子右上角 ▶ 可单独重听这一句</div>
+        </div>
+
+        <details id="psgOrig" class="glass rounded-2xl px-3.5 py-3">
+          <summary class="text-xs font-bold text-cyan-300 cursor-pointer select-none">📄 完整英文原文 + 参考译文（点击展开 / 收起）</summary>
+          <div id="psgOrigBody" class="mt-2.5 text-[11px] leading-relaxed text-slate-300"></div>
+        </details>
+
+        <div class="glass rounded-2xl p-4 text-center">
+          <div class="text-[10px] text-slate-500">本次得分</div>
+          <div id="psgScore" class="text-5xl font-black grad-text leading-none mt-1">0</div>
+          <div id="psgGrade" class="text-xs font-bold mt-1.5 text-slate-300">—</div>
+          <div id="psgDelta" class="text-[10px] mt-1"></div>
+          <div id="psgDims" class="mt-3.5 space-y-2 text-left"></div>
+        </div>
+
+        <div id="psgDiag" class="glass rounded-2xl p-3.5 mt-2"></div>
+
+        <div class="flex items-center justify-between mt-3.5">
+          <div class="text-xs font-bold text-slate-200">🔍 逐句对照</div>
+          <span class="mono text-[9px] text-slate-600">覆盖 ＝ 关键信息命中率</span>
+        </div>
+        <div id="psgSents" class="mt-2 space-y-2"></div>
+
+
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <button id="psgAgain" class="py-3 rounded-2xl font-bold text-white text-xs active:scale-95 transition" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">🔁 再听一遍</button>
+          <button id="psgNext" class="py-3 rounded-2xl glass font-bold text-slate-200 text-xs active:scale-95 transition">🎲 换一篇新素材</button>
+        </div>
+      </div>
+
+      <!-- ------- 记录 + 漏听诊断统计 ------- -->
+      <div id="psgHist" class="hidden">
+        <div class="flex items-center justify-between mb-2">
+          <button id="psgHistBack" class="mono text-[11px] text-slate-400 px-1 py-1 active:scale-95">‹ 返回练习</button>
+          <span class="mono text-[10px] text-slate-500">共 <b id="psgHn" class="text-slate-300">0</b> 次</span>
+        </div>
+
+        <div class="glass rounded-2xl p-4">
+          <div class="flex items-end justify-between">
+            <div>
+              <div class="text-[10px] text-slate-500">平均分</div>
+              <div id="psgAvg" class="text-3xl font-black grad-text leading-none mt-0.5">—</div>
+            </div>
+            <div id="psgTrend" class="text-[10px] text-slate-400 text-right leading-relaxed"></div>
+          </div>
+          <div class="text-[10px] font-bold text-slate-200 mt-3 mb-1.5">漏听原因占比</div>
+          <div id="psgCause" class="space-y-1.5"></div>
+          <div id="psgWeak" class="text-[10px] text-amber-300/90 mt-2.5 leading-relaxed"></div>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 mb-1.5">
+          <div class="text-xs font-bold text-slate-200">📚 练习记录</div>
+          <span class="mono text-[9px] text-slate-600">点一条 → 重听同一篇</span>
+        </div>
+        <div id="psgRecs" class="space-y-1.5"></div>
+        <div id="psgRecEmpty" class="hidden text-[11px] text-slate-500 text-center py-6">还没有记录，先练一篇吧 👆</div>
       </div>
     </section>
 
@@ -729,6 +851,7 @@ const defaultState = () => ({
   quizBestL: 0,     // 听音模式最佳分
   quizHist: {},     // 'YYYY-MM-DD' -> [{m:'v'|'l', score, right, wrong, ts}]
   quizWrong: {},    // 'YYYY-MM-DD' -> [{w,d}] 快答答错的词（今日错题本）
+  psg: { recs: [], cause: {}, speed: 1.0, lastPid: '' },  // 听段落·说意思：记录 / 漏听原因累计 / 上次倍速
   wrongFreq: {},    // word -> 次数（错误频次统计，跨天累计）
   exams: [],        // 真题模考记录 [{id,name,date,la,lb,lc,ra,rb,rc,L,R,total}]
   listen: {},       // 听力专项 id -> {la,lb,lc,score,ts,sc}（sc=练习范围 'abc'/'ab'/'c'…，缺省=整套）
@@ -754,6 +877,15 @@ function normalizeState(m){
   if(!Array.isArray(m.custom)) m.custom = [];
   if(!Array.isArray(m.exams)) m.exams = [];
   if(!isStr(m.listenCur)) m.listenCur = '';
+  /* 听段落模块：老版本无此字段，补默认值并剔除脏数据 */
+  if(!m.psg || typeof m.psg !== 'object' || Array.isArray(m.psg)) m.psg = base.psg;
+  if(!Array.isArray(m.psg.recs)) m.psg.recs = [];
+  if(!m.psg.cause || typeof m.psg.cause !== 'object' || Array.isArray(m.psg.cause)) m.psg.cause = {};
+  if(!isFinite(m.psg.speed) || m.psg.speed <= 0) m.psg.speed = 1.0;
+  if(!isStr(m.psg.lastPid)) m.psg.lastPid = '';
+  m.psg.recs = m.psg.recs.filter(function(r){
+    return r && typeof r === 'object' && isFinite(r.ts) && isFinite(r.total) && Array.isArray(r.scov);
+  });
   if(!isStr(m.writeCur)) m.writeCur = '';
   if(!m.writeDraft || typeof m.writeDraft !== 'object' || Array.isArray(m.writeDraft)) m.writeDraft = {};
   if(!m.write || typeof m.write !== 'object' || Array.isArray(m.write)) m.write = {};
@@ -883,14 +1015,23 @@ function prepSpeech(t){
 }
 /* ---- TTS 队列管理器：串行播放 + 看门狗重试，彻底杜绝中途哑火 ---- */
 const TTS = {
-  q: [], busy:false, cur:null, wdTimer:null,
-  say(text){ // 打断式：立刻说（用于切卡片/听写下一题）
+  q: [], busy:false, cur:null, wdTimer:null, rate:0.85, onDone:null,
+  say(text, rate, onDone){ // 打断式：立刻说（用于切卡片/听写下一题/整段盲听）
     if(!isStr(text) || !text.trim()) return;
     this.q = [text];
+    this.rate = (isFinite(rate) && rate > 0.3 && rate < 2.5) ? rate : 0.85;
+    this.onDone = (typeof onDone === 'function') ? onDone : null;
     try{ speechSynthesis.cancel(); }catch(e){}
     clearTimeout(this.wdTimer); this.busy=false;
     setTimeout(()=>this._pump(), 60);
   },
+  stop(){
+    this.q = []; this.onDone = null;
+    try{ speechSynthesis.cancel(); }catch(e){}
+    clearTimeout(this.wdTimer); this.busy=false; this.cur=null;
+  },
+  pause(){ try{ speechSynthesis.pause(); }catch(e){} },
+  resume(){ try{ speechSynthesis.resume(); }catch(e){} },
   _pump(){
     if(!('speechSynthesis' in window)) return;
     if(this.busy || !this.q.length) return;
@@ -901,20 +1042,28 @@ const TTS = {
     try{
       if(speechSynthesis.paused) speechSynthesis.resume();
       const u = new SpeechSynthesisUtterance(txt);
-      u.lang='en-US'; u.rate=0.85;
+      u.lang='en-US'; u.rate=this.rate || 0.85;
       if(voiceEN) u.voice=voiceEN;
       let started=false, done=false;
       const finish = ()=>{
         if(done) return; done=true;
         clearTimeout(this.wdTimer); this.cur=null; this.busy=false;
-        if(this.q.length) setTimeout(()=>this._pump(), 30);
+        if(this.q.length){ setTimeout(()=>this._pump(), 30); return; }
+        const cb = this.onDone; this.onDone = null;
+        if(cb){ try{ cb(); }catch(e){} }
       };
       u.onstart = ()=>{ started=true; };
       u.onend = finish;
+      const abort = ()=>{
+        this.busy = false;
+        if(this.q.length){ setTimeout(()=>this._pump(), 30); return; }
+        const cb = this.onDone; this.onDone = null;
+        if(cb){ try{ cb(); }catch(e){} }
+      };
       u.onerror = ()=>{
         if(done) return; done=true; clearTimeout(this.wdTimer);
         if(attempt < 2){ this.busy=false; setTimeout(()=>this._speak(txt, attempt+1), 200); }
-        else { this.busy=false; if(this.q.length) setTimeout(()=>this._pump(), 30); }
+        else abort();
       };
       this.cur = u; window.__lastUtt = u; /* 持引用防 GC 掐断 */
       try{ speechSynthesis.resume(); speechSynthesis.speak(u); }catch(e){}
@@ -924,7 +1073,7 @@ const TTS = {
         if(!started){
           try{ speechSynthesis.cancel(); }catch(e){}
           if(attempt < 2) setTimeout(()=>this._speak(txt, attempt+1), 150);
-          else { this.busy=false; if(this.q.length) setTimeout(()=>this._pump(), 30); }
+          else abort();
         }
       }, 1400);
     }catch(e){
@@ -1262,8 +1411,9 @@ function prettyDef(d){
 let qTimer=null, qScore=0, qCombo=0, qLeft=60, qMode='v', qRight=0, qWrong=0, qAns=null;
 function allEntries(){ return decks().flatMap(d=>d.list).filter(e=>e && isStr(e.w) && e.w.trim() && isStr(e.d) && e.d.trim()); }
 function renderQuizHome(){
-  $('bestV').textContent=S.quizBestV||0;
+  const bv=$('bestV'); if(bv) bv.textContent=S.quizBestV||0;
   $('bestL').textContent=S.quizBestL||0;
+  const pc=$('psgHistCount'); if(pc) pc.textContent=((S.psg&&S.psg.recs)||[]).length;
   const list=S.quizHist[today()]||[];
   $('quizHist').innerHTML = list.length
     ? '今日已挑战 <b class="text-cyan-300">'+list.length+'</b> 局 · 最近：'+list.slice(-3).map(x=>x.score+'分/'+x.acc+'%').join('，')
@@ -1357,7 +1507,6 @@ function endQuiz(){
   save(); renderQuizHome(); renderCountdown();
   $('quizEndMsg').textContent=(isBest?'🏆 新纪录！ ':'')+(qMode==='l'?'听音模式 · ':'看词模式 ')+'答对 '+qRight+'/'+total+' · 正确率 '+acc+'%';
 }
-$('quizStartV').addEventListener('click',()=>startQuiz('v'));
 $('quizStartL').addEventListener('click',()=>startQuiz('l'));
 $('quizAgain').addEventListener('click',()=>{ $('quizEnd').classList.add('hidden'); startQuiz(qMode); });
 $('quizBackHome').addEventListener('click',()=>{ $('quizEnd').classList.add('hidden'); $('quizHome').classList.remove('hidden'); renderQuizHome(); });
@@ -4067,6 +4216,1593 @@ function toast(t){
   setTimeout(()=>{ el.style.transition='opacity .4s'; el.style.opacity=0; setTimeout(()=>el.remove(),400); },1200);
 }
 
+/* ================= 听段落 · 说意思（盲听复述 + 逐句评分 + 漏听诊断） =================
+   设计要点：
+   1) 素材为 CET-4 难度的「新闻报道 / 说明短文」，每篇 6 句、约 110 词，带参考译文与关键信息点；
+   2) 播放用系统语音合成（en-US），支持 0.75/0.9/1.0/1.15 倍速与暂停续播；
+   3) 评分四维：核心信息还原 40 + 细节精准度 25 + 逻辑结构 20 + 中文表达 15 = 100；
+   4) 逐句比对关键信息点，漏听句子按规则归因（数字/生词/长句/逻辑/走神/语速）；
+   5) 记录可回看、可重听同一篇对比进步；原因占比驱动下一篇素材选题。
+==================================================================== */
+const PSG_SPEEDS = [0.75, 0.9, 1.0, 1.15];
+/* 与 app/psg/*.mp3 对齐的逐句起止时间（秒），用于结果页边听边看高亮 */
+const PSG_TIMES = {"tech-1":[[0,5.084],[5.364,11.392],[11.672,17.256],[17.536,24.054],[24.334,35.221],[35.501,43.536],[43.816,51.684],[51.964,57.309],[57.589,62.216],[62.496,70.39]],"env-1":[[0,8.092],[8.372,15.203],[15.483,21.504],[21.784,28.819],[29.099,34.693],[34.973,38.873],[39.153,47.862],[48.142,52.813],[53.093,57.621],[57.901,63.663]],"health-1":[[0,7.454],[7.734,13.003],[13.283,17.084],[17.364,26.353],[26.633,35.198],[35.478,43.856],[44.136,49.044],[49.324,53.013],[53.293,60.846],[61.126,70.536]],"edu-1":[[0,6.844],[7.124,12.857],[13.137,18.027],[18.307,26.934],[27.214,34.199],[34.479,41.273],[41.553,50.114],[50.394,57.691],[57.971,62.203],[62.483,71.355]],"work-1":[[0,8.426],[8.706,15.726],[16.006,21.24],[21.52,26.85],[27.13,34.628],[34.908,43.195],[43.475,47.787],[48.067,52.392],[52.672,59.76],[60.04,67.833]],"soc-1":[[0,8.488],[8.768,13.343],[13.623,17.796],[18.076,26.34],[26.62,34.213],[34.493,41.532],[41.812,45.596],[45.876,51.782],[52.062,59.707],[59.987,64.182],[64.462,67.771]],"shop-1":[[0,6.227],[6.507,10.063],[10.343,18.007],[18.287,24.716],[24.996,29.259],[29.539,36.591],[36.871,44.098],[44.378,49.978],[50.258,54.454],[54.734,62.176],[62.456,69.814]],"culture-1":[[0,7.196],[7.476,16.642],[16.922,26.361],[26.641,33.424],[33.704,38.059],[38.339,41.634],[41.914,45.893],[46.173,50.712],[50.992,56.433],[56.713,61.114],[61.394,69.226]]};
+const PSG_CAUSE = {
+  num:      { name:'数字/时间听不清', short:'数字', ico:'🔢', fix:'数字、时间、百分比是听力最爱设的点：听到 two thousand / sixty percent 立刻记下来，别等句子结束。' },
+  vocab:    { name:'词汇盲区',       short:'生词', ico:'📖', fix:'生词一卡就整句断片：先把本篇标出的生词过一遍，再回头听这句，你会突然听清。' },
+  syntax:   { name:'长句断句没跟上', short:'长句', ico:'🧩', fix:'长句先抓主干（谁 + 做了什么），从句、非谓语都只是修饰，丢了不影响大意。' },
+  logic:    { name:'逻辑连接漏听',   short:'逻辑', ico:'🔀', fix:'however / therefore / although 是答案信号：听到就警觉，前后意思往往相反或成因果。' },
+  attention:{ name:'注意力断片',     short:'走神', ico:'💤', fix:'整句 0 命中多半是走神或卡在上一句：听不清就果断跳过，盯住下一句的开头。' },
+  speed:    { name:'语速跟不上（后半段）', short:'语速', ico:'⏩', fix:'后半段命中率骤降说明耐力不够：先用 0.75 倍把这句精听 3 遍，再提到 1.0 倍。' }
+};
+/* ---- 素材库：每句含 原文 / 译文 / 关键信息点 / 类型 / 讲解 / 生词 ---- */
+const PSG_BANK = [
+
+  { id:'tech-1', topic:'科技', style:'report', title:'大学生手机使用调查', sents:[
+
+    { en:'A recent survey covered 2,000 college students in eight cities.',
+
+      zh:'最近一项调查覆盖了8个城市的2000名大学生。',
+
+      k:[['调查'],['2000','两千'],['8个城市','八个城市'],['大学生','学生']], tag:'num',
+
+      tip:'开头三个信息：调查、2000人、8个城市，数字要立刻记。',
+
+      hard:[['survey','调查'],['cover','覆盖']] },
+
+    { en:'It found that nearly 60 percent check their phones within five minutes of waking up.',
+
+      zh:'调查发现，近60%的人起床后五分钟内就会看手机。',
+
+      k:[['60%','六成','百分之六十'],['五分钟','5分钟'],['起床','醒来'],['手机']], tag:'num',
+
+      tip:'nearly 60 percent 是「近60%」，不是「超过60%」。',
+
+      hard:[['within','在……之内'],['wake up','醒来']] },
+
+    { en:'The researchers say the habit is not simply a matter of weak self-control.',
+
+      zh:'研究人员表示，这一习惯并不只是自控力弱的问题。',
+
+      k:[['研究人员','研究者'],['习惯'],['自控','自制力'],['不只是','并非简单']], tag:'fact',
+
+      tip:'not simply 是「不只是」，听成「不是」整句意思就反了。',
+
+      hard:[['self-control','自控力']] },
+
+    { en:'Many students say they need their phones to check class schedules and messages from group projects.',
+
+      zh:'很多学生说，他们需要用手机查看课表和小组作业的消息。',
+
+      k:[['学生'],['课表','课程表'],['消息','信息'],['小组','团队']], tag:'fact',
+
+      tip:'say 后面是学生自己的说法，不是研究结论。',
+
+      hard:[['schedule','日程、课表']] },
+
+    { en:'However, the same study suggests that this behaviour does not necessarily harm academic performance, as long as students set clear limits.',
+
+      zh:'然而同一项研究也表明，只要学生设定明确界限，这种行为未必会损害学业表现。',
+
+      k:[['然而','但是','不过'],['未必','不一定'],['损害','影响'],['界限','限制']], tag:'logic',
+
+      tip:'However 后面才是作者态度；not necessarily 是弱否定。',
+
+      hard:[['necessarily','必然地'],['academic performance','学业表现']] },
+
+    { en:'Those who turned off notifications during study hours scored about 12 percent higher in the final exams.',
+
+      zh:'那些在学习时段关闭通知的人，期末考试成绩大约高出12%。',
+
+      k:[['关闭','关掉'],['通知','提醒'],['12%','百分之十二'],['期末','考试']], tag:'num',
+
+      tip:'关通知不是开通知；12 percent higher 是高出，不是达到。',
+
+      hard:[['notification','通知'],['score','得分']] },
+
+    { en:'Teachers, meanwhile, notice that students who put phones away in class ask more questions and take better notes.',
+
+      zh:'与此同时，老师们注意到，上课把手机收起来的学生提问更多、笔记也记得更好。',
+
+      k:[['老师','教师'],['注意到','发现'],['收起来','放好'],['提问','问题'],['笔记']], tag:'fact',
+
+      tip:'meanwhile 是插入语，跳过直接听 notice 后面。',
+
+      hard:[['meanwhile','与此同时'],['take notes','记笔记']] },
+
+    { en:'The team therefore recommends keeping the phone in another room while reviewing.',
+
+      zh:'因此团队建议复习时把手机放在另一个房间。',
+
+      k:[['建议','推荐'],['另一个房间','别的房间'],['复习']], tag:'logic',
+
+      tip:'therefore 引出结论，题目常问「建议做什么」。',
+
+      hard:[['recommend','建议']] },
+
+    { en:'Students can use it as a reward after each study session.',
+
+      zh:'学生可以在每一轮学习结束后把它当作奖励。',
+
+      k:[['学生'],['奖励'],['学习','复习'],['结束']], tag:'fact',
+
+      tip:'as a reward 是「当作奖励」，不是「作为回报」。',
+
+      hard:[['reward','奖励']] },
+
+    { en:'For most young people the real challenge is not giving up the phone, but deciding when it should stay in the bag.',
+
+      zh:'对大多数年轻人来说，真正的挑战不是戒掉手机，而是决定什么时候它该待在书包里。',
+
+      k:[['年轻人'],['挑战'],['戒掉','放弃'],['决定'],['书包','包里']], tag:'logic',
+
+      tip:'not ... but ... 结构：否定前半、肯定后半，答案常在 but 之后。',
+
+      hard:[['challenge','挑战'],['give up','放弃']] }
+
+  ]},
+
+  { id:'env-1', topic:'环境', style:'report', title:'校园塑料回收计划', sents:[
+
+    { en:'A campus recycling programme in Shanghai has cut plastic waste by almost 40 percent in just one year.',
+
+      zh:'上海一项校园回收计划仅用一年就把塑料垃圾减少了近40%。',
+
+      k:[['回收','循环'],['上海'],['塑料'],['40%','四成'],['一年']], tag:'num',
+
+      tip:'cut ... by 40 percent 是「减少了40%」，不是「减少到40%」。',
+
+      hard:[['recycling','回收'],['waste','垃圾、废弃物']] },
+
+    { en:'Before the programme started, most students threw bottles and food boxes into the same bin.',
+
+      zh:'计划开始前，大多数学生把瓶子和餐盒扔进同一个垃圾桶。',
+
+      k:[['之前','以前','开始前'],['学生'],['瓶子'],['餐盒','饭盒'],['同一个','混在一起']], tag:'fact',
+
+      tip:'Before 开头是背景，考点常在后面的变化。',
+
+      hard:[['bin','垃圾桶']] },
+
+    { en:'Now more than 30 special machines have been placed near dormitories and canteens.',
+
+      zh:'现在宿舍和食堂附近已经放置了30多台专用机器。',
+
+      k:[['30','三十'],['机器','设备'],['宿舍'],['食堂','餐厅']], tag:'num',
+
+      tip:'more than 30 是「30多」，不是正好30。',
+
+      hard:[['dormitory','宿舍'],['canteen','食堂']] },
+
+    { en:'Students who return bottles receive small points that can be exchanged for drinks or notebooks.',
+
+      zh:'返还瓶子的学生可以获得小额积分，用来兑换饮料或笔记本。',
+
+      k:[['积分','分数'],['兑换','换'],['饮料','饮品'],['笔记本','本子']], tag:'fact',
+
+      tip:'that 从句解释 points 的用途，听到 exchanged for 就知道是「换东西」。',
+
+      hard:[['exchange','交换、兑换']] },
+
+    { en:'A screen on each machine shows how much waste the campus has collected that week.',
+
+      zh:'每台机器上的屏幕会显示校园当周收集了多少垃圾。',
+
+      k:[['屏幕'],['显示','展示'],['当周','本周'],['收集','垃圾']], tag:'num',
+
+      tip:'how much ... that week 是宾语从句，数字常藏在这类细节句里。',
+
+      hard:[['screen','屏幕'],['collect','收集']] },
+
+    { en:'The numbers are checked every morning by a student team.',
+
+      zh:'这些数字每天早上由一个学生小组核对。',
+
+      k:[['数字','数据'],['每天早上','每天早晨'],['学生'],['核对','检查']], tag:'fact',
+
+      tip:'by a student team 是「由学生小组（来做）」，被动句要听出执行者。',
+
+      hard:[['check','核对']] },
+
+    { en:'Although the machines cost a large amount of money, the university believes the investment will pay off within five years.',
+
+      zh:'尽管这些机器花费不小，校方相信这笔投资五年内就能回本。',
+
+      k:[['尽管','虽然'],['花费','成本'],['五年','5年'],['回报','回本']], tag:'logic',
+
+      tip:'Although 从句是让步，主句才是重点；pay off 是「回本、见效」。',
+
+      hard:[['investment','投资'],['pay off','回本、见效']] },
+
+    { en:'Officials say the next step is to add paper and old batteries.',
+
+      zh:'负责人说下一步要增加纸张和旧电池的回收。',
+
+      k:[['下一步'],['纸张','纸'],['电池']], tag:'fact',
+
+      tip:'the next step is to 后面就是计划，听到 next step 立刻集中注意。',
+
+      hard:[['official','负责人'],['battery','电池']] },
+
+    { en:'Both are still mixed with ordinary rubbish in many buildings.',
+
+      zh:'在很多楼里，这两类垃圾仍和普通垃圾混在一起。',
+
+      k:[['普通垃圾','生活垃圾'],['混在一起','混'],['垃圾']], tag:'fact',
+
+      tip:'both 指前面提到的纸张和电池，指代关系是听力常考点。',
+
+      hard:[['ordinary','普通的'],['rubbish','垃圾']] },
+
+    { en:'Other schools are watching the results closely and may copy the model next term.',
+
+      zh:'其他学校正在密切关注结果，可能下学期就照搬这个模式。',
+
+      k:[['其他学校','别的学校'],['关注','观察'],['效仿','照搬','借鉴'],['下学期']], tag:'fact',
+
+      tip:'copy the model 不是「抄模型」，是「照搬这个模式」。',
+
+      hard:[['closely','密切地']] }
+
+  ]},
+
+  { id:'health-1', topic:'健康', style:'article', title:'睡眠与记忆', sents:[
+
+    { en:'Researchers have found a close link between sleep and memory, especially among young adults.',
+
+      zh:'研究人员发现睡眠与记忆之间存在密切联系，在年轻人身上尤其明显。',
+
+      k:[['研究人员','研究者'],['睡眠','睡觉'],['记忆'],['年轻人','青年']], tag:'fact',
+
+      tip:'link between A and B 是「A 与 B 的联系」，别只听懂一个名词。',
+
+      hard:[['link','联系']] },
+
+    { en:'During deep sleep, the brain sorts through what you learned during the day.',
+
+      zh:'在深度睡眠中，大脑会整理你白天学到的东西。',
+
+      k:[['深度睡眠','深睡'],['大脑'],['整理','分类'],['白天']], tag:'syntax',
+
+      tip:'主干是 the brain sorts through ...，what 从句是宾语。',
+
+      hard:[['sort through','梳理']] },
+
+    { en:'It then stores the parts that seem most important.',
+
+      zh:'然后它会储存看起来最重要的部分。',
+
+      k:[['储存','保存'],['重要'],['部分']], tag:'fact',
+
+      tip:'it 指大脑；the parts that seem most important 是「看起来最重要的部分」。',
+
+      hard:[['store','储存']] },
+
+    { en:'Students who slept less than six hours before an exam remembered about 20 percent less than those who slept eight.',
+
+      zh:'考试前睡眠不足六小时的学生，比睡八小时的学生少记住大约20%。',
+
+      k:[['六小时','6小时'],['20%','两成'],['少'],['八小时','8小时']], tag:'num',
+
+      tip:'两个数字对比：少于6小时 vs 8小时，结果是少记20%，方向别搞反。',
+
+      hard:[['remember','记住']] },
+
+    { en:'This does not mean that staying up all night is always useless, but the gain is usually small and short-lived.',
+
+      zh:'这并不意味着通宵完全没用，但收获通常很小而且不持久。',
+
+      k:[['熬夜','通宵'],['没用','无效'],['收获','效果'],['短暂','不持久']], tag:'logic',
+
+      tip:'does not mean ... but ... 是「先让步再转折」，重点在 but 后面。',
+
+      hard:[['stay up','熬夜'],['short-lived','短暂的']] },
+
+    { en:'A short nap after lunch, they add, can also help the brain refresh without disturbing the night sleep.',
+
+      zh:'他们补充说，午饭后小睡一会儿也能帮助大脑恢复，而不影响夜间睡眠。',
+
+      k:[['午睡','小睡'],['午饭','中午'],['恢复','清醒'],['影响','打扰']], tag:'syntax',
+
+      tip:'they add 是插入语，先跳过；主干是 A short nap can help the brain refresh。',
+
+      hard:[['nap','小睡'],['disturb','打扰']] },
+
+    { en:'They also warn that using a phone in bed keeps the brain active.',
+
+      zh:'他们还提醒，躺在床上玩手机会让大脑保持活跃。',
+
+      k:[['提醒','警告'],['床','床上'],['手机'],['活跃','兴奋']], tag:'vocab',
+
+      tip:'keep + 宾语 + 形容词 表示「让……保持某种状态」。',
+
+      hard:[['warn','提醒'],['active','活跃的']] },
+
+    { en:'It can delay the moment when real sleep begins.',
+
+      zh:'这会推迟真正入睡的时间。',
+
+      k:[['推迟','延后'],['入睡','睡着'],['真正']], tag:'syntax',
+
+      tip:'delay the moment when ... 直译是「推迟……的时刻」，即「更难入睡」。',
+
+      hard:[['delay','推迟'],['moment','时刻']] },
+
+    { en:'Experts therefore advise reviewing key points in the evening and going to bed at a regular time.',
+
+      zh:'因此专家建议晚上复习要点，并保持规律的就寝时间。',
+
+      k:[['建议'],['复习'],['晚上','傍晚'],['规律','固定']], tag:'logic',
+
+      tip:'therefore 后面的 advise 就是建议题答案。',
+
+      hard:[['regular','规律的']] },
+
+    { en:'In their view, a fixed bedtime matters more than the total number of hours, because the body follows a daily rhythm.',
+
+      zh:'在他们看来，固定的就寝时间比总睡眠时长更重要，因为身体遵循着每日节律。',
+
+      k:[['固定','规律'],['就寝','睡觉','上床'],['总时长','小时数','时长'],['更重要'],['节律']], tag:'logic',
+
+      tip:'matters more than 是「比……更重要」；because 给原因，前后都要听。',
+
+      hard:[['bedtime','就寝时间'],['rhythm','节律']] }
+
+  ]},
+
+  { id:'edu-1', topic:'教育', style:'article', title:'在线课程的两面', sents:[
+
+    { en:'Online courses are now a common choice for students who want to learn beyond the classroom.',
+
+      zh:'在线课程已成为想在课堂之外学习的学生的常见选择。',
+
+      k:[['在线课程','网课'],['常见','普遍'],['选择'],['课堂之外','课外']], tag:'fact',
+
+      tip:'beyond the classroom 是「课堂之外」，不是「在教室里」。',
+
+      hard:[['beyond','超出']] },
+
+    { en:'A national report looked at students in more than 200 universities.',
+
+      zh:'一份全国报告调查了200多所大学的学生。',
+
+      k:[['报告'],['200','两百'],['大学'],['学生']], tag:'num',
+
+      tip:'more than 200 是「200多」，不是正好200。',
+
+      hard:[['national','全国的']] },
+
+    { en:'It shows that over half have taken at least one course online.',
+
+      zh:'报告显示，一半以上的学生至少上过一门网络课程。',
+
+      k:[['一半以上','超过一半'],['至少一门','至少1门','至少上过'],['网络','线上']], tag:'num',
+
+      tip:'over half 与 at least one 都是模糊量，别记成「一半」和「一门」。',
+
+      hard:[['at least','至少']] },
+
+    { en:'The biggest advantage is flexibility, since learners can pause, replay and study at their own pace.',
+
+      zh:'最大的优势是灵活，因为学习者可以暂停、回放，并按自己的节奏学习。',
+
+      k:[['优势','好处'],['灵活'],['暂停'],['回放','重播'],['节奏']], tag:'syntax',
+
+      tip:'since 在这里是「因为」，不是「自从」。',
+
+      hard:[['flexibility','灵活性'],['pace','节奏']] },
+
+    { en:'Yet the same report warns that about one in three learners give up before finishing the course.',
+
+      zh:'然而同一份报告警告说，大约三分之一的学习者在学完课程前就放弃了。',
+
+      k:[['然而','但是'],['三分之一'],['放弃'],['完成','学完']], tag:'num',
+
+      tip:'one in three 是三分之一，听到 in 就知道是比例。',
+
+      hard:[['give up','放弃']] },
+
+    { en:'The main reasons are a lack of discussion with teachers and the absence of a fixed schedule.',
+
+      zh:'主要原因是缺少与老师的讨论，以及没有固定的时间安排。',
+
+      k:[['原因'],['缺少','缺乏'],['老师','教师'],['讨论','交流'],['固定','安排']], tag:'fact',
+
+      tip:'a lack of 和 the absence of 都是「缺少」，两个并列原因要听全。',
+
+      hard:[['absence','缺乏'],['schedule','时间安排']] },
+
+    { en:'Teachers point out that students who take notes by hand remember more than those who simply click through the pages.',
+
+      zh:'老师们指出，手写笔记的学生，比只是点着翻页的学生记得更牢。',
+
+      k:[['老师'],['指出','认为'],['手写','动手记'],['笔记'],['翻页','点过去'],['记得更牢','记住更多']], tag:'syntax',
+
+      tip:'A ... more than B 的比较结构；by hand 是「用手写」。',
+
+      hard:[['by hand','手写'],['click through','点着浏览']] },
+
+    { en:'To solve the problem, some universities now mix short videos with weekly group meetings.',
+
+      zh:'为解决这个问题，一些大学现在把短视频与每周小组见面结合起来。',
+
+      k:[['解决','应对'],['短视频'],['每周'],['小组','团队']], tag:'syntax',
+
+      tip:'To solve 开头是目的，主句在后面，别停在 problem 上。',
+
+      hard:[['mix','结合']] },
+
+    { en:'In these schools the completion rate has risen sharply.',
+
+      zh:'在这些学校，完成率大幅上升。',
+
+      k:[['完成率'],['上升','提高'],['大幅','急剧']], tag:'num',
+
+      tip:'has risen sharply 是现在完成时，指「已经大幅上升」。',
+
+      hard:[['completion rate','完成率'],['sharply','急剧地']] },
+
+    { en:'In the end, the value of an online course depends less on the platform than on how the learner plans the week.',
+
+      zh:'归根到底，一门网课的价值与其说取决于平台，不如说取决于学习者怎么规划这一周。',
+
+      k:[['价值'],['平台'],['取决于','在于'],['规划','计划'],['一周','这周']], tag:'logic',
+
+      tip:'less on A than on B 是「与其说 A，不如说 B」，重点在 than 后面。',
+
+      hard:[['depend on','取决于']] }
+
+  ]},
+
+  { id:'work-1', topic:'职场', style:'report', title:'远程办公的得失', sents:[
+
+    { en:'A new report on remote work shows that employees save nearly 40 minutes a day on average by not commuting.',
+
+      zh:'一份关于远程办公的新报告显示，员工因为不用通勤，平均每天节省近40分钟。',
+
+      k:[['报告'],['远程办公','居家办公'],['员工'],['40分钟'],['通勤']], tag:'num',
+
+      tip:'save ... by not commuting：省时间的原因是「不通勤」，因果别听反。',
+
+      hard:[['commute','通勤'],['on average','平均']] },
+
+    { en:'Most of them spend part of that time on exercise or with family rather than on extra work.',
+
+      zh:'其中大多数人把一部分时间花在锻炼或陪家人上，而不是加班。',
+
+      k:[['大部分','多数'],['锻炼','运动'],['家人','家庭'],['而不是','并非']], tag:'logic',
+
+      tip:'rather than 前后是对比，考点常在「做什么，而不是什么」。',
+
+      hard:[['rather than','而不是']] },
+
+    { en:'Managers, however, worry about young staff who work from home.',
+
+      zh:'然而管理者担心在家办公的年轻员工。',
+
+      k:[['管理者','经理'],['担心'],['年轻员工','新人'],['在家','远程']], tag:'logic',
+
+      tip:'however 插在主语后，别当成句子结束。',
+
+      hard:[['staff','员工']] },
+
+    { en:'They may learn less when they rarely meet senior colleagues face to face.',
+
+      zh:'他们很少与资深同事面对面交流，可能会学得更少。',
+
+      k:[['资深','老同事'],['同事'],['面对面'],['学得更少','学到更少']], tag:'syntax',
+
+      tip:'when 从句给条件；rarely 是「很少」，是否定含义。',
+
+      hard:[['senior','资深的'],['rarely','很少']] },
+
+    { en:'The report suggests that companies keep at least two days a week in the office for training and teamwork.',
+
+      zh:'报告建议公司每周至少保留两天在办公室，用于培训和团队合作。',
+
+      k:[['建议'],['至少两天','至少2天','至少保留两天'],['办公室'],['培训'],['团队合作']], tag:'num',
+
+      tip:'at least two days a week 三个信息叠在一起，速记成「2天/周」最稳。',
+
+      hard:[['teamwork','团队合作']] },
+
+    { en:'It also finds that clear goals matter more than watching hours, because results are easier to measure than effort.',
+
+      zh:'报告还发现，明确的目标比盯工时更重要，因为结果比努力更容易衡量。',
+
+      k:[['明确目标','清晰目标','明确的目标'],['更重要'],['结果'],['衡量','考核']], tag:'logic',
+
+      tip:'matter more than 是「比……更重要」，比较对象是 goals 和 hours。',
+
+      hard:[['measure','衡量']] },
+
+    { en:'Some firms now ask staff to write a short daily plan.',
+
+      zh:'一些公司现在要求员工写一份简短的每日计划。',
+
+      k:[['公司','企业'],['要求','让'],['每日','每天'],['计划']], tag:'fact',
+
+      tip:'ask sb to do 是「要求某人做」，动作是 write。',
+
+      hard:[['firm','公司']] },
+
+    { en:'Managers can then see progress without calling a meeting.',
+
+      zh:'这样管理者不用开会也能看到进度。',
+
+      k:[['管理者','经理'],['进度','进展'],['开会','会议']], tag:'syntax',
+
+      tip:'without calling a meeting 是否定介词短语，最容易被漏。',
+
+      hard:[['progress','进度'],['call a meeting','召集会议']] },
+
+    { en:'Firms that followed this advice reported both higher productivity and lower staff turnover.',
+
+      zh:'采纳这一建议的公司，生产率更高，员工离职率更低。',
+
+      k:[['公司','企业'],['生产率','效率'],['更高'],['离职率','人员流失'],['更低']], tag:'fact',
+
+      tip:'both A and B 两个结果都要，turnover 指人员流动率。',
+
+      hard:[['productivity','生产率'],['turnover','人员流动率']] },
+
+    { en:'Still, most workers say they would rather keep two or three remote days than return to the office full time.',
+
+      zh:'不过，多数员工表示，他们宁愿保留两三天远程办公，也不愿全职回办公室。',
+
+      k:[['员工','职员'],['宁愿','更愿意'],['两三天','两到三天'],['远程','在家'],['全职','全天'],['办公室']], tag:'logic',
+
+      tip:'would rather A than B 是「宁愿 A 不愿 B」，方向别听反。',
+
+      hard:[['would rather','宁愿'],['full time','全职地']] }
+
+  ]},
+
+  { id:'soc-1', topic:'社会', style:'report', title:'社区志愿者的周末', sents:[
+
+    { en:'Every weekend, hundreds of volunteers in this city help elderly residents with shopping, cooking and housework.',
+
+      zh:'每个周末，这座城市都有数百名志愿者帮老年居民购物、做饭和做家务。',
+
+      k:[['周末'],['数百','上百'],['志愿者'],['老人','老年居民'],['购物','买菜'],['家务']], tag:'fact',
+
+      tip:'help sb with sth 后面三个并列宾语，要听出都是家务类。',
+
+      hard:[['volunteer','志愿者'],['elderly','年长的']] },
+
+    { en:'The programme began three years ago with only 20 students.',
+
+      zh:'该计划三年前启动时只有20名学生参加。',
+
+      k:[['三年前','3年'],['20','二十'],['学生'],['计划']], tag:'num',
+
+      tip:'three years ago 与 only 20 是时间＋数量组合考点。',
+
+      hard:[['programme','计划']] },
+
+    { en:'Nobody in the city expected it to grow so fast.',
+
+      zh:'城里没人想到它会发展得这么快。',
+
+      k:[['没人想到','没想到'],['发展','扩张'],['快']], tag:'fact',
+
+      tip:'Nobody expected 是「没人想到」，说明超出预期。',
+
+      hard:[['expect','预料']] },
+
+    { en:'Today the programme covers 15 communities and has trained more than 500 young people in basic care skills.',
+
+      zh:'如今该计划覆盖15个社区，已培训500多名年轻人掌握基本护理技能。',
+
+      k:[['如今','现在'],['15','十五'],['社区'],['500','五百'],['培训'],['技能']], tag:'num',
+
+      tip:'15 communities / more than 500，两个数字都出现，选项里常互换。',
+
+      hard:[['cover','覆盖'],['skill','技能']] },
+
+    { en:'Volunteers say the experience teaches them patience and helps them understand the real needs of other people.',
+
+      zh:'志愿者说，这段经历教会他们耐心，也帮助他们理解别人真正的需求。',
+
+      k:[['志愿者'],['耐心'],['理解'],['需求','需要'],['别人','他人']], tag:'vocab',
+
+      tip:'patience 和 needs 是这句的两个关键词。',
+
+      hard:[['patience','耐心']] },
+
+    { en:'Because many elderly people live alone, a short visit can make a real difference to their mood.',
+
+      zh:'因为很多老人独居，一次短暂的探访就能实实在在改善他们的心情。',
+
+      k:[['因为','由于'],['独居','一个人住'],['探访','看望'],['心情','情绪']], tag:'logic',
+
+      tip:'make a real difference 是「真的有用」，不是「有区别」。',
+
+      hard:[['live alone','独居'],['mood','心情']] },
+
+    { en:'The oldest volunteer in the group is 72.',
+
+      zh:'团队里最年长的志愿者已经72岁。',
+
+      k:[['72','七十二'],['年长','最老'],['志愿者']], tag:'num',
+
+      tip:'数字＋人物身份的组合考点，听到年龄要记下对应的人。',
+
+      hard:[['oldest','最年长的']] },
+
+    { en:'She says the young students keep her informed about new apps and online services.',
+
+      zh:'她说年轻学生让她了解了各种新应用和线上服务。',
+
+      k:[['学生'],['新应用','应用'],['线上服务','网络服务'],['了解','知道']], tag:'vocab',
+
+      tip:'keep sb informed about 是「让某人了解」，不是「通知某人」。',
+
+      hard:[['informed','知情的'],['app','应用程序']] },
+
+    { en:'Local shops support the group by donating rice, oil and warm clothes before the cold season arrives.',
+
+      zh:'当地商店也支持这个团队，在寒冷季节到来前捐赠大米、食用油和保暖衣物。',
+
+      k:[['商店'],['支持'],['捐赠','捐'],['大米','米'],['油'],['保暖','厚'],['衣物','衣服']], tag:'vocab',
+
+      tip:'by donating 引出方式；before the cold season arrives 是时间状语。',
+
+      hard:[['donate','捐赠'],['season','季节']] },
+
+    { en:'The city plans to expand the service to rural areas.',
+
+      zh:'该市计划把这项服务扩展到农村地区。',
+
+      k:[['计划'],['扩展','扩大'],['农村','乡村'],['服务']], tag:'fact',
+
+      tip:'expand A to B 是「把 A 扩展到 B」。',
+
+      hard:[['expand','扩展'],['rural','农村的']] },
+
+    { en:'Officials say the need there is even greater.',
+
+      zh:'负责人说那里的需求更大。',
+
+      k:[['需求','需要'],['更大'],['负责人','官员']], tag:'fact',
+
+      tip:'there 指农村地区；even greater 是「更大」，比较级常被忽略。',
+
+      hard:[['official','负责人']] }
+
+  ]},
+
+  { id:'shop-1', topic:'消费', style:'report', title:'二手交易在年轻人中升温', sents:[
+
+    { en:'Buying and selling second-hand goods has grown quickly among young Chinese consumers.',
+
+      zh:'买卖二手商品在中国年轻消费者中迅速增长。',
+
+      k:[['二手'],['增长','发展'],['年轻'],['消费者']], tag:'fact',
+
+      tip:'second-hand 是「二手」，动名词短语作主语，别等谓语才开始听。',
+
+      hard:[['second-hand','二手的'],['consumer','消费者']] },
+
+    { en:'The finding comes from a new report on the market.',
+
+      zh:'这一结论来自一份关于该市场的新报告。',
+
+      k:[['结论','发现'],['报告'],['市场']], tag:'fact',
+
+      tip:'the finding 指上一句的结论，指代关系是常考点。',
+
+      hard:[['finding','调查结果']] },
+
+    { en:'A survey of 3,000 users found that nearly 70 percent had bought a used item in the past year.',
+
+      zh:'一项针对3000名用户的调查发现，近70%的人过去一年买过二手物品。',
+
+      k:[['调查'],['3000','三千'],['70%','七成'],['买过','购买'],['过去一年','去年']], tag:'num',
+
+      tip:'had bought 是过去完成，指「（调查前）一年内买过」。',
+
+      hard:[['used item','二手物品']] },
+
+    { en:'Books, bicycles and small home appliances are the three most popular categories.',
+
+      zh:'书籍、自行车和小家电是最受欢迎的三大品类。',
+
+      k:[['书'],['自行车'],['小家电','电器'],['最受欢迎','最流行']], tag:'vocab',
+
+      tip:'三个名词并列，漏一个不影响大意，但要听出是「品类」。',
+
+      hard:[['appliance','电器'],['category','类别']] },
+
+    { en:'Students and young couples buy them more often than others.',
+
+      zh:'学生和年轻夫妻比其他人买得更多。',
+
+      k:[['学生'],['年轻夫妻','夫妻'],['更多','更经常']], tag:'fact',
+
+      tip:'more often than others 是「比其他人更经常」。',
+
+      hard:[['couple','夫妻']] },
+
+    { en:'Price is the first reason, but concern for the environment is becoming equally important.',
+
+      zh:'价格是第一位的理由，但对环境的关注正变得同样重要。',
+
+      k:[['价格'],['原因','理由'],['环境'],['同样','一样重要']], tag:'logic',
+
+      tip:'but 后面是趋势变化；equally important 是「同样重要」。',
+
+      hard:[['concern','关注'],['equally','同样地']] },
+
+    { en:'Still, buyers are advised to check the condition carefully and to keep the chat records as evidence.',
+
+      zh:'不过，建议买家仔细检查物品状况，并保留聊天记录作为证据。',
+
+      k:[['建议','提醒'],['检查','查看'],['状况','成色'],['聊天记录'],['证据']], tag:'syntax',
+
+      tip:'be advised to 是「被建议」，两个动作都要听。',
+
+      hard:[['condition','状况'],['evidence','证据']] },
+
+    { en:'Many sellers now photograph every small scratch before they post an item.',
+
+      zh:'很多卖家在发布商品前会拍下每一处小划痕。',
+
+      k:[['卖家'],['拍照','拍'],['划痕'],['发布','上架']], tag:'vocab',
+
+      tip:'photograph 在这里是动词「拍照」，不是名词。',
+
+      hard:[['scratch','划痕'],['post','发布']] },
+
+    { en:'Arguments about condition are the most common complaints.',
+
+      zh:'关于成色的争执是最常见的投诉。',
+
+      k:[['成色','状况'],['争执','争论'],['投诉','抱怨']], tag:'vocab',
+
+      tip:'complaint 是「投诉」，argument 是「争执」，两个词常一起出现。',
+
+      hard:[['argument','争执'],['complaint','投诉']] },
+
+    { en:'Experts believe the market will keep expanding as long as trust between strangers can be protected.',
+
+      zh:'专家认为，只要陌生人之间的信任能得到保障，这个市场就会持续扩大。',
+
+      k:[['专家'],['相信','认为'],['市场'],['扩大','增长'],['信任'],['保护','保障']], tag:'logic',
+
+      tip:'as long as 是「只要」，条件句；trust 是核心名词。',
+
+      hard:[['expand','扩大'],['trust','信任']] },
+
+    { en:'For students who move every year, a used desk or chair is simply cheaper and saves a lot of trouble.',
+
+      zh:'对每年都要搬家的学生来说，买一张二手书桌或椅子更便宜，也省去很多麻烦。',
+
+      k:[['学生'],['搬家'],['二手'],['书桌','桌子'],['椅子'],['便宜'],['麻烦']], tag:'fact',
+
+      tip:'for students who... 是对象限定；simply cheaper 里的 simply 是「就是」。',
+
+      hard:[['move house','搬家'],['save trouble','省事']] }
+
+  ]},
+
+  { id:'culture-1', topic:'文化', style:'article', title:'博物馆的夜场', sents:[
+
+    { en:'More museums in big cities are opening their doors in the evening to attract younger visitors.',
+
+      zh:'大城市里越来越多博物馆在晚间开放，以吸引更年轻的参观者。',
+
+      k:[['博物馆'],['晚上','夜间'],['吸引'],['年轻','年轻人'],['大城市']], tag:'fact',
+
+      tip:'open their doors 是「开放」，不是「开门」这个动作。',
+
+      hard:[['attract','吸引']] },
+
+    { en:'Last summer, one museum in Beijing welcomed over 100,000 visitors after 6 p.m. on weekends.',
+
+      zh:'去年夏天，北京一家博物馆在周末晚6点后接待了超过10万名参观者。',
+
+      k:[['去年夏天','去年暑期'],['北京'],['10万','十万'],['六点','6点'],['周末']], tag:'num',
+
+      tip:'over 100,000 与 after 6 p.m. 是数量和时间的双重考点。',
+
+      hard:[['welcome','接待']] },
+
+    { en:'Instead of simply looking at exhibits, visitors can join guided tours, listen to lectures and buy creative gifts.',
+
+      zh:'参观者不只是看展，还可以参加导览、听讲座、买文创礼物。',
+
+      k:[['不只是','而不是'],['参观','看展'],['导览','讲解'],['讲座'],['礼物','文创']], tag:'syntax',
+
+      tip:'Instead of 引出「不是这样」，后面三个动作才是重点。',
+
+      hard:[['exhibit','展品'],['lecture','讲座']] },
+
+    { en:'Some critics argue that late hours may increase costs without bringing much extra income.',
+
+      zh:'一些批评者认为，延长夜间开放可能增加成本，却带不来多少额外收入。',
+
+      k:[['批评者','反对者'],['认为'],['成本','花费'],['收入']], tag:'vocab',
+
+      tip:'without bringing 是「却没有带来」，否定介词短语最容易被漏。',
+
+      hard:[['critic','批评者'],['income','收入']] },
+
+    { en:'Supporters reply that culture should be part of daily life.',
+
+      zh:'支持者回应说，文化应该成为日常生活的一部分。',
+
+      k:[['支持者'],['文化'],['日常生活'],['一部分','部分']], tag:'logic',
+
+      tip:'reply that 后面是支持者的反驳观点。',
+
+      hard:[['supporter','支持者']] },
+
+    { en:'They say it should not be only a special event.',
+
+      zh:'他们说，它不该只是特殊活动。',
+
+      k:[['特殊活动','特别活动'],['不该','不应','不是'],['只是','仅仅']], tag:'logic',
+
+      tip:'not ... only 是部分否定，意思是「不只是」，不是「完全不是」。',
+
+      hard:[['special','特殊的']] },
+
+    { en:'Families with children are the largest group of visitors.',
+
+      zh:'带孩子的家庭是最大的参观群体。',
+
+      k:[['家庭','家长','孩子'],['最大','最多'],['群体','参观者']], tag:'fact',
+
+      tip:'the largest group 指人群占比，不是「最大的团队」。',
+
+      hard:[['family','家庭']] },
+
+    { en:'Parents find it easier to come after work and school are over.',
+
+      zh:'家长觉得下班、放学之后来更方便。',
+
+      k:[['方便','容易'],['下班'],['放学'],['家长']], tag:'fact',
+
+      tip:'find it easier to do 是「觉得做某事更容易」，it 是形式宾语。',
+
+      hard:[['be over','结束']] },
+
+    { en:'To keep the halls calm, some museums now limit the number of tickets.',
+
+      zh:'为了让展厅保持安静，一些博物馆现在限制门票数量。',
+
+      k:[['展厅','大厅'],['安静','平静'],['限制','限量'],['门票','票']], tag:'num',
+
+      tip:'To keep ... 是目的状语；limit the number of tickets 就是「限票」。',
+
+      hard:[['limit','限制'],['hall','展厅']] },
+
+    { en:'Visitors are also asked to book online before they come.',
+
+      zh:'参观者还被要求来之前线上预约。',
+
+      k:[['参观者','游客'],['线上','网上'],['预约','预订']], tag:'fact',
+
+      tip:'be asked to 是「被要求」，book 在这里是「预订」不是「书」。',
+
+      hard:[['book','预订']] },
+
+    { en:'The museum plans to continue the experiment for another year and to study visitor feedback in detail.',
+
+      zh:'该博物馆计划再试行一年，并仔细研究参观者的反馈。',
+
+      k:[['计划'],['继续','试行'],['试验','尝试','试行'],['一年'],['反馈']], tag:'fact',
+
+      tip:'for another year 是「再一年」；in detail 是「详细地」。',
+
+      hard:[['experiment','试验'],['feedback','反馈']] }
+
+  ]}
+
+];
+
+/* ---- 文本归一化：全角转半角、去标点空格，用于关键信息匹配 ---- */
+function psgN(s){
+  let t = isStr(s) ? s : '';
+  t = t.replace(/[\uFF01-\uFF5E]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+       .replace(/\u3000/g, ' ')
+       .toLowerCase();
+  return t.replace(/[，。、；：？！“”‘’（）《》【】…—·,.;:?!"'()\[\]{}\/\\\s~`@#$^&*+=|<>_-]/g, '');
+}
+function psgGroupHit(group, txt){
+  for(let i=0; i<group.length; i++){
+    const a = psgN(group[i]);
+    if(a && txt.indexOf(a) >= 0) return true;
+  }
+  return false;
+}
+/* ---- 选材：按漏听主因加权，避开上一篇 ---- */
+function psgWeakKey(){
+  const c = (S.psg && S.psg.cause) || {};
+  let best = '', bn = 0, tot = 0;
+  Object.keys(c).forEach(function(k){
+    const v = c[k] || 0;
+    tot += v;
+    if(v > bn){ bn = v; best = k; }
+  });
+  return (tot >= 3 && bn / tot >= 0.3 && PSG_CAUSE[best]) ? best : '';
+}
+function psgPickBlock(weak){
+  let best = null, bestScore = -1;
+  PSG_BANK.forEach(function(b){
+    let sc = Math.random() * 0.8;
+    if(weak) sc += b.sents.filter(function(x){ return x.tag === weak; }).length * 0.9;
+    if(S.psg && S.psg.lastPid === b.id) sc -= 1.2;
+    if(sc > bestScore){ bestScore = sc; best = b; }
+  });
+  return best || PSG_BANK[0];
+}
+function psgGen(){
+  const weak = psgWeakKey();
+  const b = psgPickBlock(weak);
+  const wc = b.sents.reduce(function(a,s){ return a + s.en.split(/\s+/).length; }, 0);
+  if(S.psg){ S.psg.lastPid = b.id; save(); }
+  return { pid:b.id, topic:b.topic, style:b.style, title:b.title, sents:b.sents, wc:wc, weak:weak };
+}
+
+/* ---- 评分引擎 ---- */
+const PSG_DIMS = [
+  { k:'mean',  name:'核心信息还原', max:40, ico:'🎯' },
+  { k:'detail',name:'细节精准度',   max:25, ico:'🔍' },
+  { k:'logic', name:'逻辑结构',     max:20, ico:'🔀' },
+  { k:'expr',  name:'中文表达',     max:15, ico:'✍️' }
+];
+const PSG_CONN = /(因为|所以|因此|但是|然而|不过|而且|同时|尽管|虽然|由于|于是|此外|反而)/g;
+function psgScore(passage, input){
+  const txt = psgN(input);
+  const sents = passage.sents;
+  let totalG = 0, hitG = 0, detT = 0, detH = 0, logT = 0, logH = 0;
+  const rows = sents.map(function(s, i){
+    let g = 0, h = 0;
+    const missed = [];
+    (s.k || []).forEach(function(group){
+      g++;
+      totalG++;
+      if(psgGroupHit(group, txt)){ h++; hitG++; }
+      else missed.push(group[0]);
+      if(s.tag === 'num' || s.tag === 'fact' && /\d/.test(group[0])){ detT++; if(psgGroupHit(group, txt)) detH++; }
+      if(s.tag === 'logic'){ logT++; if(psgGroupHit(group, txt)) logH++; }
+    });
+    /* 数字句的细节分也计入 */
+    if(s.tag === 'num'){ /* 已按 group 计过 */ }
+    const cov = g ? h / g : 0;
+    return { i:i, s:s, cov:cov, missed:missed };
+  });
+  const refLen = sents.reduce(function(a,s){ return a + psgN(s.zh).length; }, 0);
+  const len = txt.length;
+
+  /* 1 核心信息还原 40 */
+  const meanR = totalG ? hitG / totalG : 0;
+  /* 2 细节精准度 25：数字/事实型信息点的命中率；无量则退化为整体 */
+  const detR = detT ? detH / detT : meanR;
+  /* 3 逻辑结构 20：逻辑句信息点 + 复述里是否用上连接词 */
+  const logR = logT ? logH / logT : meanR;
+  const conn = (String(input||'').match(PSG_CONN) || []).length;
+  const connR = Math.min(1, conn / 2);
+  /* 逻辑信息点全中 → 逻辑维度直接满分；否则连接词只占小权重（避免满分译文被误扣） */
+  const logicR = logT ? (logR >= 0.999 ? 1 : (logR * 0.72 + connR * 0.28)) : meanR;
+  /* 4 中文表达 15：篇幅是否够、是否成句 */
+  const lenR = refLen ? Math.min(1, len / (refLen * 0.55)) : 0;
+  const chunks = String(input||'').split(/[。！？；\n]+/).filter(function(x){ return psgN(x).length >= 4; }).length;
+  const chunkR = Math.min(1, chunks / 3);
+  let exprR = (lenR * 0.6 + chunkR * 0.4);
+  if(meanR < 0.15) exprR = Math.min(exprR, 0.25);   /* 完全跑题不给表达分 */
+
+  const dims = [
+    { k:'mean',  score: Math.round(40 * meanR  * 10) / 10 },
+    { k:'detail',score: Math.round(25 * detR   * 10) / 10 },
+    { k:'logic', score: Math.round(20 * logicR * 10) / 10 },
+    { k:'expr',  score: Math.round(15 * exprR  * 10) / 10 }
+  ];
+  const total = Math.round(dims.reduce(function(a,d){ return a + d.score; }, 0) * 10) / 10;
+
+  /* ---- 逐句归因 ---- */
+  const cause = {};
+  const scause = [];
+  const half = Math.ceil(sents.length / 2);
+  const firstCov = rows.slice(0, half).reduce(function(a,r){ return a + r.cov; }, 0) / Math.max(1, half);
+  rows.forEach(function(r){
+    let c = '';
+    const missNum = r.missed.some(function(x){ return /\d|%|分钟|小时|年|天/.test(x); });
+    const tail = r.i >= sents.length - 2;
+    if(r.cov >= 0.8) c = '';
+    else if(tail && r.s.tag !== 'num' && firstCov - r.cov >= 0.5 && r.cov <= 0.35) c = 'speed';   /* 后半段整体掉队（数字句仍按数字归因） */
+    else if(r.s.tag === 'num' && missNum) c = 'num';
+    else if(r.s.tag === 'logic' && r.cov < 0.8) c = 'logic';
+    else if(r.s.tag === 'syntax' && r.cov < 0.6) c = 'syntax';
+    else if(r.s.tag === 'vocab' && r.cov < 0.6) c = 'vocab';
+    else if(r.cov <= 0.15) c = 'attention';
+    else if(r.i >= half && firstCov - r.cov >= 0.5) c = 'speed';
+    else c = (r.s.tag === 'num') ? 'num' : (r.s.tag === 'logic') ? 'logic' : 'vocab';
+    r.cause = c;
+    scause.push(c);
+    if(c){ cause[c] = (cause[c] || 0) + 1; }
+  });
+  return {
+    pid: passage.pid, topic: passage.topic, style: passage.style, en: sents.map(function(s){ return s.en; }).join(' '),
+    wc: passage.wc, total: total, dims: dims, rows: rows, cause: cause, scause: scause, scs: scause,
+    scov: rows.map(function(r){ return Math.round(r.cov * 100) / 100; }),
+    input: String(input || '').slice(0, 1200)
+  };
+}
+function psgGrade(t){
+  if(t >= 85) return { t:'优秀 · 大意与细节都抓住了', c:'text-emerald-300' };
+  if(t >= 70) return { t:'良好 · 主线清楚，细节还有漏', c:'text-cyan-300' };
+  if(t >= 55) return { t:'及格 · 听出了主题，信息不完整', c:'text-amber-300' };
+  return { t:'待加强 · 先从关键词抓起', c:'text-rose-300' };
+}
+function psgCauseTop(c){
+  let best = '', bn = 0;
+  Object.keys(c || {}).forEach(function(k){ if((c[k] || 0) > bn){ bn = c[k]; best = k; } });
+  return best;
+}
+
+/* ---- 运行态 ---- */
+let psgCur = null;          // 当前素材
+let psgReplayOf = null;     // 重听时的上一次记录
+let psgSpeed = 1.0;
+let psgListens = 0;
+let psgPlaying = 0;         // 0 idle / 1 playing / 2 paused
+let psgTick = null, psgSecs = 0;
+
+function psgEnsure(){
+  if(!S.psg || typeof S.psg !== 'object' || Array.isArray(S.psg)) S.psg = { recs:[], cause:{}, speed:1.0, lastPid:'' };
+  if(!Array.isArray(S.psg.recs)) S.psg.recs = [];
+  if(!S.psg.cause || typeof S.psg.cause !== 'object' || Array.isArray(S.psg.cause)) S.psg.cause = {};
+  if(!isFinite(S.psg.speed) || S.psg.speed <= 0) S.psg.speed = 1.0;
+}
+function psgShow(which){
+  if(which !== 'psgRes'){ try{ psgRStop(); }catch(e){} }
+  ['quizHome','quizPlay','quizEnd','psgPlay','psgRes','psgHist'].forEach(function(id){
+    const el = $(id); if(!el) return;
+    el.classList.toggle('hidden', id !== which);
+  });
+  window.scrollTo(0, 0);
+}
+function psgFmtTime(s){
+  const m = Math.floor(s / 60), ss = s % 60;
+  return m + ':' + (ss < 10 ? '0' : '') + ss;
+}
+function psgStopTick(){ clearInterval(psgTick); psgTick = null; }
+/* 预生成真人级神经语音（edge-tts，48kbps 单声道），数字按英文读法，语速自然；
+   倍速用 playbackRate 实现，音高不变；音频缺失时回退系统语音合成。 */
+let psgAudio = null, psgAudioFail = false;
+function psgTimeText(){
+  let cur = psgSecs, dur = 0;
+  if(psgAudio && !psgAudioFail){
+    cur = psgAudio.currentTime || 0;
+    dur = isFinite(psgAudio.duration) ? psgAudio.duration : 0;
+  }
+  return psgFmtTime(Math.floor(cur)) + (dur > 0.5 ? ' / ' + psgFmtTime(Math.round(dur)) : '');
+}
+function psgPaintTime(){ const el = $('psgTime'); if(el) el.textContent = psgTimeText(); }
+function psgStartTick(){
+  psgStopTick();
+  psgTick = setInterval(function(){
+    if(psgPlaying !== 1) return;
+    psgSecs++;
+    psgPaintTime();
+    if(psgAudio && !psgAudioFail && psgAudio.ended){
+      psgPlaying = 0; psgStopTick();
+      const b = $('psgPlayBtn'); if(b) b.textContent = '🔁 再听一遍';
+    }
+  }, 1000);
+}
+function psgWarn(msg){
+  const w = $('psgTtsWarn');
+  if(!w) return;
+  if(!msg){ w.classList.add('hidden'); w.textContent = ''; return; }
+  w.classList.remove('hidden'); w.textContent = msg;
+}
+function psgLoadAudio(){
+  psgAudioFail = false; psgSecs = 0;
+  try{
+    if(psgAudio){ try{ psgAudio.pause(); }catch(e){} }
+    psgAudio = new Audio('psg/' + psgCur.pid + '.mp3');
+    psgAudio.preload = 'auto';
+    psgAudio.addEventListener('loadedmetadata', function(){
+      psgPaintTime();
+      const w = $('psgWc');
+      const d = isFinite(psgAudio.duration) ? psgAudio.duration : 0;
+      if(w && psgCur && d > 0.5) w.textContent = psgCur.wc + ' 词 · ' + psgCur.sents.length + ' 句 · ' + psgFmtTime(Math.round(d));
+    });
+    psgAudio.addEventListener('ended', function(){
+      psgPlaying = 0; psgSecs = 0; psgStopTick(); psgPaintTime();
+      const b = $('psgPlayBtn'); if(b) b.textContent = '🔁 再听一遍';
+    });
+    psgAudio.addEventListener('error', function(){ psgAudioFail = true; });
+  }catch(e){ psgAudio = null; psgAudioFail = true; }
+  psgPaintTime();
+}
+function psgRenderSpeed(){
+  const box = $('psgSpeed'); if(!box) return;
+  box.innerHTML = PSG_SPEEDS.map(function(v){
+    const on = Math.abs(v - psgSpeed) < 0.001;
+    return '<button class="psg-sp mono text-[10px] px-2.5 py-1 rounded-lg transition active:scale-95" data-v="' + v + '" style="border:1px solid ' +
+      (on ? 'rgba(34,211,238,.65)' : 'rgba(255,255,255,.12)') + ';background:' +
+      (on ? 'rgba(34,211,238,.14)' : 'rgba(0,0,0,.22)') + ';color:' + (on ? '#67e8f9' : '#94a3b8') + '">' + v.toFixed(2).replace(/0$/, '') + '×</button>';
+  }).join('');
+  box.querySelectorAll('.psg-sp').forEach(function(b){
+    b.addEventListener('click', function(){
+      psgSpeed = parseFloat(b.dataset.v) || 1.0;
+      psgEnsure(); S.psg.speed = psgSpeed; save();
+      psgRenderSpeed();
+      if(psgPlaying === 1 && psgAudio && !psgAudioFail){
+        try{ psgAudio.playbackRate = psgSpeed; }catch(e){}      /* 边听边变速，不断流 */
+      }else if(psgPlaying === 1){
+        psgTTSTop(); psgPlay();
+      }
+      toast('倍速 ' + psgSpeed + '×');
+    });
+  });
+}
+function psgTTSTop(){
+  if(psgAudio){ try{ psgAudio.pause(); }catch(e){} try{ psgAudio.currentTime = 0; }catch(e){} }
+  try{ if(typeof TTS !== 'undefined') TTS.stop(); }catch(e){}
+  psgPlaying = 0; psgSecs = 0; psgStopTick(); psgPaintTime();
+  const b = $('psgPlayBtn'); if(b) b.textContent = psgListens ? '🔁 再听一遍' : '▶ 播放音频';
+}
+function psgSpeakFallback(){
+  if(!('speechSynthesis' in window)){
+    psgWarn('⚠️ 音频加载失败，且当前浏览器不支持语音合成：请联网后重试。');
+    psgPlaying = 0; psgStopTick();
+    return;
+  }
+  psgWarn('⚠️ 音频加载失败，已临时切换手机系统语音（音色与数字读法取决于系统，建议联网重听）。');
+  psgPlaying = 1;
+  const btn = $('psgPlayBtn'); if(btn) btn.textContent = '⏸ 暂停';
+  psgStartTick();
+  TTS.say(psgCur.sents.map(function(s){ return s.en; }).join(' '), psgSpeed, function(){
+    psgPlaying = 0; psgStopTick();
+    const b = $('psgPlayBtn'); if(b) b.textContent = '🔁 再听一遍';
+  });
+}
+function psgPlay(){
+  if(!psgCur) return;
+  psgListens++;
+  const c = $('psgCnt'); if(c) c.textContent = psgListens;
+  const btn = $('psgPlayBtn');
+  if(!psgAudio || psgAudioFail) psgLoadAudio();
+  if(psgAudio && !psgAudioFail){
+    try{
+      psgAudio.playbackRate = psgSpeed;
+      psgAudio.currentTime = 0;
+      const p = psgAudio.play();
+      if(p && typeof p.catch === 'function') p.catch(function(){ psgSpeakFallback(); });
+      psgPlaying = 1;
+      if(btn) btn.textContent = '⏸ 暂停';
+      psgStartTick(); psgPaintTime();
+      return;
+    }catch(e){ /* 落到回退分支 */ }
+  }
+  psgSpeakFallback();
+}
+function psgBoundPlay(){
+  const btn = $('psgPlayBtn'); if(!btn) return;
+  btn.addEventListener('click', function(){
+    unlockTTS();
+    if(psgPlaying === 1){
+      if(psgAudio && !psgAudioFail){ try{ psgAudio.pause(); }catch(e){} } else { try{ speechSynthesis.pause(); }catch(e){} }
+      psgPlaying = 2; btn.textContent = '▶ 继续播放'; psgStopTick();
+      return;
+    }
+    if(psgPlaying === 2){
+      if(psgAudio && !psgAudioFail){
+        try{
+          psgAudio.playbackRate = psgSpeed;
+          const p = psgAudio.play();
+          if(p && typeof p.catch === 'function') p.catch(function(){});
+        }catch(e){}
+      } else { try{ speechSynthesis.resume(); }catch(e){} }
+      psgPlaying = 1; btn.textContent = '⏸ 暂停'; psgStartTick();
+      return;
+    }
+    psgPlay();
+  });
+}
+
+/* ---- 渲染：练习页 ---- */
+function psgRenderPlay(){
+  if(!psgCur) return;
+  psgListens = 0; psgSecs = 0; psgPlaying = 0;
+  $('psgTag').textContent = psgCur.topic + ' · ' + (psgCur.style === 'report' ? '新闻报道' : '说明短文');
+  $('psgWc').textContent = psgCur.wc + ' 词 · ' + psgCur.sents.length + ' 句';
+  $('psgCnt').textContent = '0';
+  $('psgTime').textContent = '0:00';
+  $('psgInput').value = '';
+  $('psgChar').textContent = '0 字';
+  const b = $('psgPlayBtn'); b.textContent = '▶ 播放音频';
+  const w = $('psgTtsWarn'); w.classList.add('hidden'); w.textContent = '';
+  const wt = $('psgWeakTag');
+  wt.textContent = psgCur.weak ? '⚡ 本篇加强：' + PSG_CAUSE[psgCur.weak].short : '';
+  if(psgReplayOf){
+    wt.textContent = '🔁 重听同一篇 · 上次 ' + psgReplayOf.total.toFixed(1) + ' 分';
+  }
+  psgRenderSpeed();
+  psgLoadAudio();
+  const hc = $('psgHistCount'); if(hc) hc.textContent = ((S.psg && S.psg.recs) || []).length;
+  psgShow('psgPlay');
+}
+function psgStartNew(){
+  psgEnsure();
+  psgCur = psgGen();
+  psgReplayOf = null;
+  psgRenderPlay();
+}
+function psgStartRecord(rec){
+  psgEnsure();
+  const b = PSG_BANK.filter(function(x){ return x.id === rec.pid; })[0];
+  if(!b){ toast('素材已更新，无法重听这一篇'); return; }
+  psgCur = { pid:b.id, topic:b.topic, style:b.style, title:b.title, sents:b.sents, wc:rec.wc || 0, weak:'' };
+  psgReplayOf = rec;
+  psgRenderPlay();
+}
+
+/* ---- 提交评分 ---- */
+function psgSubmit(){
+  if(!psgCur) return;
+  const input = $('psgInput').value.trim();
+  if(psgN(input).length < 6){ toast('先写两句听到的意思再提交'); return; }
+  if(psgListens === 0){ toast('还没听音频哦，先播放一遍'); return; }
+  const r = psgScore(psgCur, input);
+  r.ts = Date.now();
+  r.speed = psgSpeed;
+  r.sc = r.scov.slice();
+  r.scs = r.scause.slice();
+  r.replayOf = psgReplayOf ? psgReplayOf.ts : 0;
+  /* 记录落库 */
+  psgEnsure();
+  S.psg.recs.push({
+    ts: r.ts, pid: r.pid, topic: r.topic, style: r.style, en: r.en, wc: r.wc,
+    total: r.total, dims: r.dims, scov: r.scov, scs: r.scause, cause: r.cause,
+    input: r.input, speed: r.speed, replayOf: r.replayOf
+  });
+  if(S.psg.recs.length > 60) S.psg.recs = S.psg.recs.slice(-60);
+  Object.keys(r.cause).forEach(function(k){ S.psg.cause[k] = (S.psg.cause[k] || 0) + r.cause[k]; });
+  save();
+  psgShowRes(r, psgReplayOf);
+  psgReplayOf = null;
+  renderQuizHome();
+}
+/* ---- 渲染：结果页 ---- */
+function psgShowRes(r, prev){
+  $('psgResMeta').textContent = r.topic + ' · ' + new Date(r.ts).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) + ' · ' + r.speed + '×';
+  $('psgScore').textContent = r.total.toFixed(1);
+  const g = psgGrade(r.total);
+  const ge = $('psgGrade'); ge.textContent = g.t; ge.className = 'text-xs font-bold mt-1.5 ' + g.c;
+  const de = $('psgDelta');
+  if(prev && isFinite(prev.total)){
+    const d = Math.round((r.total - prev.total) * 10) / 10;
+    de.className = 'text-[10px] mt-1 ' + (d >= 0 ? 'text-emerald-300' : 'text-rose-300');
+    de.textContent = (d >= 0 ? '▲ 比上次同篇 +' : '▼ 比上次同篇 ') + d.toFixed(1) + ' 分（上次 ' + prev.total.toFixed(1) + '）' + (d > 0 ? ' · 有进步！' : ' · 再听一遍会更好');
+  }else{
+    de.className = 'text-[10px] mt-1 text-slate-500';
+    de.textContent = '四维满分 100 · 逐句覆盖与漏听原因见下';
+  }
+  /* 四维 */
+  $('psgDims').innerHTML = PSG_DIMS.map(function(d){
+    const got = (r.dims.filter(function(x){ return x.k === d.k; })[0] || {}).score || 0;
+    const pct = Math.max(0, Math.min(100, got / d.max * 100));
+    const col = pct >= 80 ? '#34d399' : pct >= 55 ? '#22d3ee' : '#fb7185';
+    return '<div><div class="flex items-center justify-between text-[10px]"><span class="text-slate-300">' + d.ico + ' ' + d.name + '</span>' +
+      '<span class="mono text-slate-400"><b style="color:' + col + '">' + got.toFixed(1) + '</b>/' + d.max + '</span></div>' +
+      '<div class="h-1.5 rounded-full bg-white/10 mt-1 overflow-hidden"><div style="width:' + pct + '%;background:' + col + '" class="h-full rounded-full transition-all"></div></div></div>';
+  }).join('');
+  /* 漏听诊断 */
+  const ck = Object.keys(r.cause || {}).sort(function(a,b){ return r.cause[b] - r.cause[a]; });
+  const nMiss = ck.reduce(function(a,k){ return a + r.cause[k]; }, 0);
+  let dh = '<div class="flex items-center justify-between mb-1.5"><div class="text-xs font-bold text-slate-200">🩺 漏听诊断</div>' +
+    '<span class="mono text-[9px] text-slate-500">' + nMiss + ' / ' + r.scov.length + ' 句没听全</span></div>';
+  if(!ck.length){
+    dh += '<div class="text-[11px] text-emerald-300 leading-relaxed">六句全部到位，没有可归因的漏听。可以提速到 1.15× 再挑战一次。</div>';
+  }else{
+    dh += ck.map(function(k){
+      const c = PSG_CAUSE[k]; if(!c) return '';
+      const pct = Math.round(r.cause[k] / nMiss * 100);
+      return '<div class="mt-2 first:mt-0"><div class="flex items-center justify-between text-[11px]">' +
+        '<span class="text-slate-200">' + c.ico + ' ' + c.name + '</span><span class="mono text-[10px] text-slate-500">' + r.cause[k] + ' 句 · ' + pct + '%</span></div>' +
+        '<div class="h-1 rounded-full bg-white/10 mt-1 overflow-hidden"><div style="width:' + pct + '%;background:linear-gradient(90deg,#f59e0b,#fb7185)" class="h-full rounded-full"></div></div>' +
+        '<div class="text-[10px] text-slate-400 leading-snug mt-1">' + c.fix + '</div></div>';
+    }).join('');
+  }
+  $('psgDiag').innerHTML = dh;
+  /* 逐句 */
+  const b = PSG_BANK.filter(function(x){ return x.id === r.pid; })[0];
+  const sents = b ? b.sents : [];
+  $('psgSents').innerHTML = r.scov.map(function(cov, i){
+    const s = sents[i] || { en:'', zh:'', k:[], tip:'', hard:[] };
+    const pct = Math.round(cov * 100);
+    const col = cov >= 0.8 ? '#34d399' : cov >= 0.5 ? '#fbbf24' : '#fb7185';
+    const cs = r.scs[i] ? PSG_CAUSE[r.scs[i]] : null;
+    let h = '<div class="psg-sent rounded-xl bg-black/25 border border-white/10 p-2.5" data-i="' + i + '">';
+    h += '<div class="flex items-center justify-between gap-2"><span class="mono text-[9px] text-slate-500">SENTENCE ' + (i + 1) +
+      ' <span class="psg-sent-now text-cyan-300">▶ 播放中</span></span>' +
+      '<span class="flex items-center gap-1.5"><span class="mono text-[10px]" style="color:' + col + '">覆盖 ' + pct + '%</span>' +
+      '<button class="psg-sent-play mono text-[10px] px-1.5 py-0.5 rounded active:scale-95" data-i="' + i + '" style="background:rgba(34,211,238,.14);color:#67e8f9;border:1px solid rgba(34,211,238,.3)">▶</button></span></div>';
+    h += '<div class="h-1 rounded-full bg-white/10 mt-1 mb-1.5 overflow-hidden"><div style="width:' + pct + '%;background:' + col + '" class="h-full rounded-full"></div></div>';
+    h += '<div class="text-[11px] text-slate-200 leading-snug">' + wrEsc(s.en) + '</div>';
+    h += '<div class="text-[10px] text-slate-400 leading-snug mt-1">' + wrEsc(s.zh) + '</div>';
+    if(cov < 0.8 && s.k && s.k.length){
+      h += '<div class="flex flex-wrap gap-1 mt-1.5">' + s.k.map(function(gr){
+        const hit = psgGroupHit(gr, psgN(r.input || ''));
+        return '<span class="text-[9px] px-1.5 py-0.5 rounded" style="background:' + (hit ? 'rgba(52,211,153,.12)' : 'rgba(251,113,133,.12)') + ';color:' + (hit ? '#6ee7b7' : '#fda4af') + '">' + (hit ? '✓ ' : '✗ ') + wrEsc(gr[0]) + '</span>';
+      }).join('') + '</div>';
+    }
+    if(cs){
+      h += '<div class="mt-1.5 text-[10px] leading-snug" style="color:#fbbf24">' + cs.ico + ' ' + cs.name + '：' + cs.fix + '</div>';
+    }
+    if(s.tip){ h += '<div class="mt-1 text-[10px] text-cyan-300/80 leading-snug">💡 ' + wrEsc(s.tip) + '</div>'; }
+    if(s.hard && s.hard.length){
+      h += '<div class="mt-1 text-[9px] text-slate-500 leading-snug">生词：' + s.hard.map(function(x){ return x[0] + ' ' + x[1]; }).join(' · ') + '</div>';
+    }
+    h += '</div>';
+    return h;
+  }).join('');
+  /* 原文 */
+  /* 原文：一段连续英文正文 + 一段参考译文（不逐句打断，便于整体复述） */
+  const pEn = (b ? b.sents.map(function(s){ return s.en; }).join(' ') : '') || r.en || '';
+  const pZh = b ? b.sents.map(function(s){ return s.zh; }).join('') : '';
+  $('psgOrigBody').innerHTML = (pEn ? '<div class="text-[11.5px] leading-[1.85] text-slate-200">' + wrEsc(pEn) + '</div>' : '') +
+    (pZh ? '<div class="mt-2 pt-2 border-t border-white/10 text-[10.5px] leading-relaxed text-slate-400">' + wrEsc(pZh) + '</div>' : '');
+  $('psgOrig').open = false;
+  /* 结果页播放器：沿用这次练习的倍速，随时可边听边看 */
+  psgRSpeed = (isFinite(r.speed) && r.speed > 0) ? r.speed : psgSpeed;
+  psgRRenderSpeed();
+  psgRLoad(r.pid);
+  psgShow('psgRes');
+}
+/* ---- 结果页「边听边看解析」播放器：整篇重播 + 逐句高亮 + 单句重听 ---- */
+let psgRAudio = null, psgRPlay = 0, psgRId = '', psgRSpeed = 1.0, psgRHl = -1, psgRSolo = -1;
+function psgRSeg(pid){
+  const t = PSG_TIMES[pid];
+  return (t && t.length) ? t : null;
+}
+function psgRPaint(){
+  const a = psgRAudio;
+  const cur = a ? (a.currentTime || 0) : 0;
+  const dur = (a && isFinite(a.duration) && a.duration > 0) ? a.duration : 0;
+  const t = $('psgResTime');
+  if(t) t.textContent = psgFmtTime(Math.floor(cur)) + (dur > 0.5 ? ' / ' + psgFmtTime(Math.round(dur)) : '');
+  const pr = $('psgResProg');
+  if(pr) pr.style.width = (dur > 0.5 ? Math.min(100, cur / dur * 100) : 0) + '%';
+}
+function psgRHlSet(i){
+  if(i === psgRHl) return;
+  psgRHl = i;
+  const box = $('psgSents'); if(!box) return;
+  box.querySelectorAll('.psg-sent').forEach(function(el, k){ el.classList.toggle('psg-sent-on', k === i); });
+}
+function psgRBtn(txt){ const b = $('psgResPlayBtn'); if(b) b.textContent = txt; }
+function psgRWarn(msg){
+  const w = $('psgResWarn'); if(!w) return;
+  if(!msg){ w.classList.add('hidden'); w.textContent = ''; return; }
+  w.classList.remove('hidden'); w.textContent = msg;
+}
+function psgRStop(){
+  if(psgRAudio){ try{ psgRAudio.pause(); }catch(e){} }
+  psgRPlay = 0; psgRSolo = -1;
+  psgRHlSet(-1); psgRBtn('▶ 再播一遍');
+}
+function psgRLoad(pid){
+  psgRStop();
+  psgRId = pid || '';
+  psgRWarn('');
+  try{
+    if(psgRAudio){ try{ psgRAudio.pause(); }catch(e){} }
+    psgRAudio = new Audio('psg/' + psgRId + '.mp3');
+    psgRAudio.preload = 'auto';
+    psgRAudio.playbackRate = psgRSpeed;
+    psgRAudio.addEventListener('timeupdate', psgRFrame);
+    psgRAudio.addEventListener('loadedmetadata', psgRPaint);
+    psgRAudio.addEventListener('ended', function(){ psgRStop(); psgRPaint(); });
+    psgRAudio.addEventListener('error', function(){ psgRWarn('⚠️ 音频加载失败，请联网后重试'); });
+  }catch(e){ psgRAudio = null; psgRWarn('⚠️ 当前浏览器无法播放音频'); }
+  psgRPaint();
+  const b = $('psgResSpeed'); if(b) psgRRenderSpeed();
+}
+function psgRFrame(){
+  if(!psgRAudio) return;
+  const cur = psgRAudio.currentTime || 0;
+  psgRPaint();
+  const tl = psgRSeg(psgRId);
+  if(psgRSolo >= 0 && tl && tl[psgRSolo] && cur >= tl[psgRSolo][1] - 0.02){
+    try{ psgRAudio.pause(); psgRAudio.currentTime = tl[psgRSolo][0]; }catch(e){}
+    psgRSolo = -1; psgRPlay = 0; psgRBtn('▶ 再播一遍'); psgRPaint(); return;
+  }
+  if(psgRPlay === 1 && tl){
+    let idx = -1;
+    for(let i = 0; i < tl.length; i++){ if(cur >= tl[i][0] - 0.05 && cur < tl[i][1]){ idx = i; break; } }
+    psgRHlSet(idx);
+  }
+}
+function psgRPlayFrom(i){
+  const tl = psgRSeg(psgRId);
+  if(!psgRAudio || !tl || !tl[i]) return;
+  try{
+    psgRAudio.pause();
+    psgRAudio.currentTime = Math.max(0, tl[i][0] - 0.1);
+    psgRAudio.playbackRate = psgRSpeed;
+    psgRSolo = i; psgRPlay = 1;
+    const p = psgRAudio.play();
+    if(p && typeof p.catch === 'function') p.catch(function(){ psgRWarn('⚠️ 点一下屏幕再试一次'); });
+    psgRBtn('⏸ 暂停');
+    psgRHlSet(i);
+    psgRPaint();
+  }catch(e){}
+}
+function psgRToggle(){
+  if(!psgRAudio) psgRLoad(psgRId || (psgCur && psgCur.pid));
+  if(!psgRAudio) return;
+  psgRWarn('');
+  if(psgRPlay === 1){
+    try{ psgRAudio.pause(); }catch(e){}
+    psgRPlay = 2; psgRSolo = -1; psgRBtn('▶ 继续播放');
+    return;
+  }
+  try{
+    if(psgRPlay === 0){ try{ psgRAudio.currentTime = 0; }catch(e){} psgRHlSet(-1); }
+    psgRSolo = -1;
+    psgRAudio.playbackRate = psgRSpeed;
+    const p = psgRAudio.play();
+    if(p && typeof p.catch === 'function') p.catch(function(){ psgRWarn('⚠️ 点一下屏幕再试一次'); });
+    psgRPlay = 1; psgRBtn('⏸ 暂停'); psgRPaint();
+  }catch(e){ psgRWarn('⚠️ 当前浏览器无法播放音频'); }
+}
+function psgRRenderSpeed(){
+  const box = $('psgResSpeed'); if(!box) return;
+  box.innerHTML = PSG_SPEEDS.map(function(v){
+    const on = Math.abs(v - psgRSpeed) < 0.001;
+    return '<button class="psg-rsp mono text-[10px] px-1.5 py-1 rounded-lg transition active:scale-95" data-v="' + v + '" style="border:1px solid ' +
+      (on ? 'rgba(34,211,238,.65)' : 'rgba(255,255,255,.12)') + ';background:' +
+      (on ? 'rgba(34,211,238,.14)' : 'rgba(0,0,0,.22)') + ';color:' + (on ? '#67e8f9' : '#94a3b8') + '">' + v.toFixed(2).replace(/0$/, '') + '×</button>';
+  }).join('');
+  box.querySelectorAll('.psg-rsp').forEach(function(b){
+    b.addEventListener('click', function(){
+      psgRSpeed = parseFloat(b.dataset.v) || 1.0;
+      if(psgRAudio){ try{ psgRAudio.playbackRate = psgRSpeed; }catch(e){} }
+      psgRRenderSpeed();
+    });
+  });
+}
+
+/* ---- 记录 & 统计 ---- */
+function psgStats(){
+  psgEnsure();
+  const recs = S.psg.recs || [];
+  $('psgHn').textContent = recs.length;
+  const hc = $('psgHistCount'); if(hc) hc.textContent = recs.length;
+  if(!recs.length){
+    $('psgAvg').textContent = '—'; $('psgTrend').textContent = '';
+    $('psgCause').innerHTML = '<div class="text-[10px] text-slate-500">还没有数据</div>';
+    $('psgWeak').textContent = '';
+    $('psgRecs').innerHTML = '';
+    $('psgRecEmpty').classList.remove('hidden');
+    return;
+  }
+  $('psgRecEmpty').classList.add('hidden');
+  const avg = recs.reduce(function(a,r){ return a + (r.total || 0); }, 0) / recs.length;
+  $('psgAvg').textContent = avg.toFixed(1);
+  const last3 = recs.slice(-3);
+  const first3 = recs.slice(0, 3);
+  const a3 = last3.reduce(function(a,r){ return a + (r.total || 0); }, 0) / last3.length;
+  const b3 = first3.reduce(function(a,r){ return a + (r.total || 0); }, 0) / first3.length;
+  const dv = a3 - b3;
+  $('psgTrend').innerHTML = '最近 3 次 <b class="text-slate-200">' + a3.toFixed(1) + '</b> 分<br>' +
+    (recs.length >= 4 ? '<span style="color:' + (dv >= 0 ? '#6ee7b7' : '#fda4af') + '">' + (dv >= 0 ? '▲ +' : '▼ ') + dv.toFixed(1) + '</span> 对比最初 3 次' : '再练 ' + (4 - recs.length) + ' 次可看趋势');
+  /* 原因占比（用累计计数，和记录里的一致） */
+  const c = S.psg.cause || {};
+  const tot = Object.keys(c).reduce(function(a,k){ return a + c[k]; }, 0);
+  if(!tot){
+    $('psgCause').innerHTML = '<div class="text-[10px] text-slate-500">暂时没有漏听，保持住</div>';
+    $('psgWeak').textContent = '';
+  }else{
+    const ks = Object.keys(c).sort(function(a,b){ return c[b] - c[a]; });
+    $('psgCause').innerHTML = ks.map(function(k){
+      const cc = PSG_CAUSE[k]; if(!cc) return '';
+      const pct = Math.round(c[k] / tot * 100);
+      return '<div><div class="flex items-center justify-between text-[10px]"><span class="text-slate-300">' + cc.ico + ' ' + cc.name + '</span>' +
+        '<span class="mono text-slate-500">' + pct + '% · ' + c[k] + ' 句</span></div>' +
+        '<div class="h-1.5 rounded-full bg-white/10 mt-1 overflow-hidden"><div style="width:' + pct + '%;background:linear-gradient(90deg,#22d3ee,#f59e0b)" class="h-full rounded-full"></div></div></div>';
+    }).join('');
+    const top = ks[0];
+    const weak = psgWeakKey();
+    $('psgWeak').textContent = '🎯 当前最该补：' + PSG_CAUSE[top].name + '（占 ' + Math.round(c[top] / tot * 100) + '%）。' +
+      (weak ? '接下来生成的素材会优先加强这一类，练完再看占比有没有下降。' : '再多练 2-3 次，系统就会自动加重新素材。');
+  }
+  /* 记录列表 */
+  $('psgRecs').innerHTML = recs.slice().reverse().map(function(r, idx){
+    const i = recs.length - 1 - idx;
+    const d = new Date(r.ts);
+    const ds = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const cs = psgCauseTop(r.cause);
+    const ctag = cs && PSG_CAUSE[cs] ? '<span class="text-[9px] px-1.5 py-0.5 rounded" style="background:rgba(251,113,133,.12);color:#fda4af">' + PSG_CAUSE[cs].ico + ' ' + PSG_CAUSE[cs].short + '</span>' : '<span class="text-[9px] text-emerald-300">全对</span>';
+    const col = r.total >= 70 ? '#67e8f9' : r.total >= 55 ? '#fbbf24' : '#fb7185';
+    return '<button class="psg-rec w-full flex items-center justify-between gap-2 rounded-xl bg-black/25 border border-white/10 px-2.5 py-2 active:scale-[.99] transition text-left" data-ts="' + r.ts + '">' +
+      '<span class="min-w-0"><span class="text-[11px] text-slate-200 block truncate">' + wrEsc(r.topic) + ' · ' + (r.style === 'report' ? '新闻' : '短文') + ' ' + ctag + '</span>' +
+      '<span class="mono text-[9px] text-slate-500">' + ds + ' · ' + (r.speed || 1) + '× · ' + r.wc + ' 词</span></span>' +
+      '<span class="mono text-base font-black shrink-0" style="color:' + col + '">' + (r.total || 0).toFixed(1) + '</span></button>';
+  }).join('');
+  $('psgRecs').querySelectorAll('.psg-rec').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const ts = parseInt(btn.dataset.ts, 10);
+      const rec = (S.psg.recs || []).filter(function(x){ return x.ts === ts; })[0];
+      if(!rec) return;
+      /* 让「再听一遍」可用：把当前素材指回这条记录对应的篇章 */
+      const bb = PSG_BANK.filter(function(x){ return x.id === rec.pid; })[0];
+      if(bb){
+        psgCur = { pid: bb.id, topic: bb.topic, style: bb.style, title: bb.title, sents: bb.sents, wc: rec.wc || 0, weak: '' };
+        psgReplayOf = rec;
+      }
+      psgShowRes({
+        pid: rec.pid, topic: rec.topic, style: rec.style, en: rec.en, wc: rec.wc, total: rec.total,
+        dims: rec.dims, scov: rec.scov, scs: rec.scs, cause: rec.cause, input: rec.input,
+        speed: rec.speed, ts: rec.ts
+      }, null);
+    });
+  });
+}
+function psgOpenHist(){
+  psgStats();
+  psgShow('psgHist');
+}
+/* ---- 事件绑定 ---- */
+(function psgBind(){
+  const on = function(id, ev, fn){ const el = $(id); if(el) el.addEventListener(ev, fn); };
+  on('psgStart', 'click', function(){ unlockTTS(); psgStartNew(); });
+  on('psgHistBtn', 'click', psgOpenHist);
+  on('psgResHist', 'click', psgOpenHist);
+  on('psgBack', 'click', function(){ psgTTSTop(); psgShow('quizHome'); renderQuizHome(); });
+  on('psgHistBack', 'click', function(){
+    /* 记录在听段练习流程内：有当前素材就回练习页，否则回快答首页 */
+    if(psgCur){ psgShow('psgPlay'); }
+    else { psgShow('quizHome'); renderQuizHome(); }
+  });
+  on('psgResBack', 'click', function(){
+    /* 返回练习页（保留已写内容），记录走右上角 📚 */
+    if(psgCur) psgShow('psgPlay'); else psgOpenHist();
+  });
+  on('psgSubmit', 'click', psgSubmit);
+  on('psgResPlayBtn', 'click', function(){ unlockTTS(); psgRToggle(); });
+  on('psgSents', 'click', function(e){
+    const b = e.target && e.target.closest ? e.target.closest('.psg-sent-play') : null;
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    psgRPlayFrom(parseInt(b.dataset.i, 10) || 0);
+  });
+  psgRRenderSpeed();
+  on('psgAgain', 'click', function(){
+    if(!psgCur) return;
+    psgReplayOf = null;
+    psgRenderPlay();
+  });
+  on('psgNext', 'click', function(){ psgStartNew(); });
+  on('psgInput', 'input', function(){
+    const n = psgN($('psgInput').value).length;
+    $('psgChar').textContent = n + ' 字';
+  });
+  psgBoundPlay();
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState !== 'visible' && psgRPlay === 1){
+      try{ psgRAudio.pause(); }catch(e){}
+      psgRPlay = 2; psgRSolo = -1; psgRBtn('▶ 继续播放');
+    }
+    if(document.visibilityState !== 'visible' && psgPlaying === 1){
+      if(psgAudio && !psgAudioFail){ try{ psgAudio.pause(); }catch(e){} }
+      else { try{ speechSynthesis.pause(); }catch(e){} }
+      psgPlaying = 2; psgStopTick();
+      const b = $('psgPlayBtn'); if(b) b.textContent = '▶ 继续播放';
+    }
+  });
+})();
+/* 仅用于自动化测试的只读挂钩（不影响页面运行） */
+try{ window.__psg = { bank:PSG_BANK, score:psgScore, gen:psgGen, cause:PSG_CAUSE, weak:psgWeakKey, pick:psgPickBlock, norm:psgN, showRes:psgShowRes, times:PSG_TIMES, rload:psgRLoad, rplayFrom:psgRPlayFrom, rstop:psgRStop }; }catch(e){}
+
 /* ================= 视图切换 ================= */
 /* 五个顶层板块：日历 → 快答 → 模考 → 听力 → 写作；导入/设置走右上角齿轮 */
 const VIEWS = ['stats','quiz','exam','listen','write','settings'];
@@ -4076,7 +5812,8 @@ function setView(v){
   if(v==='write') renderWrite();
   if(v==='settings') bkRenderStat();
   if(v==='stats') renderStatsView();
-  if(v==='quiz') renderQuizHome();
+  if(v==='quiz'){ psgShow('quizHome'); renderQuizHome(); }
+  else { try{ psgTTSTop(); }catch(e){} }
   if(v==='exam') renderExam();
   window.scrollTo(0,0);
 }

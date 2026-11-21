@@ -1,8 +1,8 @@
-const CACHE = 'cet4-v39';
+const CACHE = 'cet4-v42';
 /* 核心文件：必须缓存到（离线时靠它兜底） */
 /* 只预缓存根路径：index.html 现在内置了 8 篇音频（约 3.5MB），
    再单独 add('./index.html') 会把同一份内容下载两次，白耗手机流量。 */
-const CORE = ['./'];
+const CORE = ['./', './tailwind.js'];
 /* 可选文件：缺失（404）也不影响 Service Worker 安装，逐个容错 */
 const OPTIONAL = ['./manifest.json', './icon-192.png', './icon-512.png'];
 

@@ -1,8 +1,8 @@
-const CACHE = 'cet4-v42';
+const CACHE = 'cet4-v43';
 /* 核心文件：必须缓存到（离线时靠它兜底） */
 /* 只预缓存根路径：index.html 现在内置了 8 篇音频（约 3.5MB），
    再单独 add('./index.html') 会把同一份内容下载两次，白耗手机流量。 */
-const CORE = ['./', './tailwind.js'];
+const CORE = ['./'];
 /* 可选文件：缺失（404）也不影响 Service Worker 安装，逐个容错 */
 const OPTIONAL = ['./manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -31,15 +31,21 @@ self.addEventListener('fetch', e => {
   if (isMedia || e.request.destination === 'audio' || url.pathname.includes('/listening/') || url.pathname.includes('/psg/')) return;
   const isDoc = e.request.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isDoc) {
-    // 页面文档：网络优先，保证改版后立刻生效；离线时回退缓存
+    /* 页面文档：缓存优先 + 后台更新（stale-while-revalidate）。
+       历史缺陷：曾用「网络优先」，每次打开都要重新下载整份 index.html（约 4MB），
+       用户体感为「每次打开都在加载词库」。现在打开立刻出缓存，后台拉新版写回；
+       改版最多晚一次打开生效（配合 CACHE 版本号升级可立即强制刷新）。 */
     e.respondWith(
-      fetch(e.request).then(res => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
-        return res;
-      }).catch(() => caches.match(e.request).then(hit => hit || caches.match('./index.html')))
+      caches.match(e.request).then(hit => {
+        const net = fetch(e.request).then(res => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, copy));
+          }
+          return res;
+        }).catch(() => hit || caches.match('./index.html'));
+        return hit || net;
+      })
     );
     return;
   }

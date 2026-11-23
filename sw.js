@@ -1,4 +1,4 @@
-const CACHE = 'cet4-v44';
+const CACHE = 'cet4-v46';
 /* 核心文件：必须缓存到（离线时靠它兜底）
    注意只写 ['./']：index.html 已经瘦身到 0.8MB，再 add('./index.html') 会重复下载一次。 */
 const CORE = ['./', './bank.json'];
